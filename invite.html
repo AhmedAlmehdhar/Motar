@@ -1,0 +1,220 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دعوة زواج</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Amiri', serif;
+      text-align: center;
+      background-color: #FDFCFB;
+      background-image: url('https://www.transparenttextures.com/patterns/subtle-white-feathers.png');
+      color: #4a4a4a;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      margin-bottom: 25px;
+      color: #B999A1;
+      font-weight: 700;
+      font-size: 2.5em;
+    }
+    canvas {
+      border-radius: 16px;
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+      margin-bottom: 30px;
+    }
+    .question {
+      margin-top: 20px;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+    .question p {
+      font-size: 1.3em;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .question button {
+      padding: 14px 32px;
+      margin: 5px;
+      font-size: 1.1em;
+      font-family: 'Amiri', serif;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      background-color: #C0A0A8;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(192, 160, 168, 0.3);
+    }
+    .question button:hover:not(:disabled) {
+      background-color: #A98990;
+      transform: translateY(-3px);
+      box-shadow: 0 7px 20px rgba(192, 160, 168, 0.4);
+    }
+    .question button:disabled {
+      background-color: #D9C8CC;
+      cursor: not-allowed;
+      opacity: 0.7;
+      box-shadow: none;
+    }
+    #loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #333;
+    }
+    #spinner {
+      width: 20px; height: 20px;
+      border: 3px solid #D9C8CC;
+      border-top-color: #C0A0A8;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #notification {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.1em;
+      min-height: 25px;
+      transition: color 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>بطاقة الدعوة</h1>
+    <canvas id="cardCanvas" style="display: none;"></canvas>
+
+    <div id="loading">
+      <div id="spinner"></div>
+      <span>جاري تحميل الكرت...</span>
+    </div>
+
+    <div id="rsvp-section" style="display: none;">
+        <div class="question">
+          <p>هل ستتمكن من الحضور؟</p>
+          <button class="yes" disabled>نعم</button>
+          <button class="no" disabled>لا</button>
+        </div>
+        <div id="notification"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import { getDatabase, ref as databaseRef, update, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
+
+    const canvas = document.getElementById("cardCanvas");
+    const loadingDiv = document.getElementById("loading");
+    const rsvpSection = document.getElementById("rsvp-section");
+    const notif = document.getElementById("notification");
+    const yesBtn = document.querySelector(".yes");
+    const noBtn = document.querySelector(".no");
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+
+      const params = new URLSearchParams(window.location.search);
+      const imgUrl = params.get("img");
+      const cardId = params.get("id");
+
+      if (!imgUrl) throw new Error("رابط الدعوة غير صالح. يرجى التأكد من أن الرابط صحيح.");
+      
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+        loadingDiv.style.display = "none";
+        canvas.style.display = "block";
+
+        if (cardId) {
+            rsvpSection.style.display = "block";
+            checkPreviousAnswer();
+        }
+      };
+      img.onerror = () => { throw new Error("خطأ في تحميل صورة الكرت."); };
+      img.src = imgUrl;
+
+      function showNotification(message, color = "#A98990") {
+        notif.textContent = message;
+        notif.style.color = color;
+      }
+
+      async function recordAnswer(answer) {
+        if (!cardId) return;
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+        try {
+          await update(databaseRef(database, cardId), { حضور: answer });
+          showNotification("تم تسجيل إجابتك: " + answer);
+        } catch (e) {
+          showNotification("خطأ: " + e.message, "red");
+          checkPreviousAnswer();
+        }
+      }
+      
+      async function checkPreviousAnswer() {
+        if (!cardId) return;
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+
+        try {
+          const snapshot = await get(databaseRef(database, cardId));
+          const data = snapshot.val();
+          if (data && data.حضور) {
+            showNotification("لقد أجبت بالفعل: " + data.حضور);
+          } else {
+            yesBtn.disabled = false;
+            noBtn.disabled = false;
+          }
+        } catch (e) {
+          console.error(e);
+          showNotification("خطأ في التحقق من الإجابة السابقة", "red");
+        }
+      }
+      if(cardId) {
+        yesBtn.addEventListener("click", () => recordAnswer("نعم"));
+        noBtn.addEventListener("click", () => recordAnswer("لا"));
+      }
+    } catch (error) {
+      loadingDiv.textContent = error.message;
+      loadingDiv.style.color = "red";
+      canvas.style.display = 'none';
+      rsvpSection.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
