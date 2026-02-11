@@ -1,0 +1,304 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step 3: Guest Check-in</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --font-main: 'Plus Jakarta Sans', sans-serif; }
+  html[lang="ar"] { --font-main: 'Cairo', sans-serif; }
+  body {
+    font-family: var(--font-main);
+    background-color: #0f172a; /* Dark blue-slate background */
+    background-image:
+      radial-gradient(at 20% 25%, hsla(212,80%,30%,0.3) 0px, transparent 50%),
+      radial-gradient(at 80% 20%, hsla(280,75%,40%,0.3) 0px, transparent 50%),
+      radial-gradient(at 50% 80%, hsla(320,70%,50%,0.2) 0px, transparent 50%);
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  }
+  .btn-primary {
+    @apply font-bold py-3 px-6 rounded-lg text-white transition-all duration-300 ease-in-out;
+    background: linear-gradient(90deg, #6366F1, #8B5CF6);
+    box-shadow: 0 4px 15px 0 rgba(116, 79, 168, 0.5);
+  }
+  .btn-primary:hover:not(:disabled) { @apply shadow-2xl scale-105; }
+  
+  #video-container.scanning::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #8B5CF6, transparent);
+    box-shadow: 0 0 10px #8B5CF6;
+    animation: scan 2s linear infinite;
+  }
+  @keyframes scan {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(calc(100% - 3px)); }
+    100% { transform: translateY(0); }
+  }
+</style>
+</head>
+<body class="text-gray-200">
+
+<header class="bg-slate-900/50 backdrop-blur-lg border-b border-white/10 sticky top-0 z-20">
+  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold text-gray-100" data-lang-key="headerTitle">Step 3: Guest Check-in</h1>
+    <div>
+        <a href="index.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToHub">&larr; Back to Hub</a>
+        <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors ms-4">AR</button>
+    </div>
+  </div>
+</header>
+
+<main class="container mx-auto p-4 md:p-8 space-y-8">
+  <div class="glass-card p-6 rounded-2xl">
+    <h2 class="text-xl font-semibold text-gray-100 mb-4 text-center border-b border-white/10 pb-3" data-lang-key="scannerTitle">QR Code Scanner</h2>
+    <div class="max-w-md mx-auto">
+      <div id="video-container" class="relative w-full aspect-square bg-slate-900 rounded-lg overflow-hidden border border-white/10">
+        <video id="video" class="w-full h-full object-cover hidden" playsinline muted autoplay></video>
+        <div id="placeholder-container" class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="w-full h-full border-4 border-dashed border-slate-600 rounded-lg flex items-center justify-center">
+                <svg class="w-16 h-16 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5zM13.5 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z" /></svg>
+            </div>
+        </div>
+        <canvas id="qrCanvas" class="hidden"></canvas>
+      </div>
+      <button id="scanButton" class="mt-6 w-full btn-primary text-lg" data-lang-key="startCamera">
+        Start Camera
+      </button>
+    </div>
+  </div>
+
+  <div class="glass-card p-6 rounded-2xl">
+     <h2 class="text-xl font-semibold text-gray-100 mb-4 border-b border-white/10 pb-3" data-lang-key="guestListTitle">Guest List</h2>
+     <div id="output" class="text-center text-gray-400">
+        <p data-lang-key="loadingGuests">Loading guest list...</p>
+     </div>
+  </div>
+</main>
+
+<div id="notification" class="fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
+<audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="alreadySound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+<audio id="notFoundSound" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum.ogg"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref as databaseRef, onValue, update } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
+
+const translations = {
+    en: {
+        headerTitle: "Step 3: Guest Check-in",
+        backToHub: "← Back to Hub",
+        scannerTitle: "QR Code Scanner",
+        startCamera: "Start Camera",
+        stopCamera: "Stop Camera",
+        guestListTitle: "Guest List",
+        loadingGuests: "Loading guest list...",
+        noGuests: "No guests found.",
+        tableHeaderName: "Name",
+        tableHeaderStatus: "Status",
+        statusCheckedIn: "Checked In",
+        statusNotHere: "Not Here",
+        scanSuccess: "Guest checked in successfully!",
+        scanAlready: "Guest already checked in.",
+        scanNotFound: "QR code not found in guest list.",
+        cameraError: "Could not access camera. Please check permissions.",
+    },
+    ar: {
+        headerTitle: "الخطوة ٣: تسجيل وصول الضيوف",
+        backToHub: "→ العودة للمركز",
+        scannerTitle: "ماسح رمز QR",
+        startCamera: "تشغيل الكاميرا",
+        stopCamera: "إيقاف الكاميرا",
+        guestListTitle: "قائمة الضيوف",
+        loadingGuests: "جاري تحميل قائمة الضيوف...",
+        noGuests: "لا يوجد ضيوف.",
+        tableHeaderName: "الاسم",
+        tableHeaderStatus: "الحالة",
+        statusCheckedIn: "تم تسجيل الوصول",
+        statusNotHere: "لم يصل بعد",
+        scanSuccess: "تم تسجيل وصول الضيف بنجاح!",
+        scanAlready: "الضيف مسجل وصوله بالفعل.",
+        scanNotFound: "رمز QR غير موجود في قائمة الضيوف.",
+        cameraError: "لا يمكن الوصول إلى الكاميرا. يرجى التحقق من الأذونات.",
+    }
+};
+
+let currentLang = localStorage.getItem('language') || 'en';
+const setLanguage = (lang) => {
+    localStorage.setItem('language', lang);
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('lang-switcher').textContent = lang === 'ar' ? 'EN' : 'AR';
+    document.querySelectorAll('[data-lang-key]').forEach(el => {
+        const key = el.getAttribute('data-lang-key');
+        if (translations[lang][key]) {
+            el.textContent = translations[lang][key];
+        }
+    });
+    document.title = translations[lang].headerTitle;
+    if (isScanning) {
+        document.getElementById('scanButton').textContent = translations[lang].stopCamera;
+    }
+    readData();
+};
+
+document.getElementById('lang-switcher').addEventListener('click', () => {
+    const newLang = currentLang === 'en' ? 'ar' : 'en';
+    setLanguage(newLang);
+});
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const scannedBarcodes = new Set();
+let animationFrameId;
+
+const scanButton = document.getElementById('scanButton');
+const video = document.getElementById('video');
+const videoContainer = document.getElementById('video-container');
+const placeholderContainer = document.getElementById('placeholder-container');
+const canvasEl = document.getElementById('qrCanvas');
+const context = canvasEl.getContext('2d', { willReadFrequently: true });
+let isScanning = false;
+
+document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
+
+function readData() {
+    onValue(databaseRef(database), snapshot => {
+        const data = snapshot.val();
+        const outputDiv = document.getElementById('output');
+        scannedBarcodes.clear();
+        if (!data || typeof data !== 'object') {
+            outputDiv.innerHTML = `<p class="text-center text-gray-400">${translations[currentLang].noGuests}</p>`;
+            return;
+        }
+        const parentNodes = Object.keys(data).sort().reverse();
+        let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr>
+                        <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th>
+                        <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderStatus}</th></tr></thead>
+                        <tbody class="text-gray-300">`;
+        parentNodes.forEach(parentNode => {
+            const nodeData = data[parentNode];
+            const isScanned = nodeData.scanned === true;
+            if (isScanned && nodeData['رقم_عشوائي']) scannedBarcodes.add(nodeData['رقم_عشوائي']);
+            
+            const statusText = isScanned ? translations[currentLang].statusCheckedIn : translations[currentLang].statusNotHere;
+            const statusClass = isScanned ? 'bg-green-500/20 text-green-300' : 'bg-slate-500/20 text-slate-300';
+
+            tableHTML += `<tr id="row-${parentNode}" class="border-b border-white/10 hover:bg-white/5 transition-colors">
+                    <td class="py-4 px-4 font-semibold text-white">${nodeData['الإسم'] || ''}</td>
+                    <td class="py-4 px-4 status-cell"><span class="${statusClass} text-xs font-medium px-2.5 py-1 rounded-full">${statusText}</span></td></tr>`;
+        });
+        tableHTML += `</tbody></table></div>`;
+        outputDiv.innerHTML = tableHTML;
+    });
+}
+
+scanButton.addEventListener('click', () => { isScanning ? stopCamera() : startCamera(); });
+
+function startCamera() {
+    video.classList.remove('hidden');
+    placeholderContainer.classList.add('hidden');
+    videoContainer.classList.add('scanning');
+    scanButton.textContent = translations[currentLang].stopCamera;
+    scanButton.style.background = 'linear-gradient(90deg, #F43F5E, #D946EF)';
+    isScanning = true;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+            video.srcObject = stream;
+            video.play();
+            animationFrameId = requestAnimationFrame(tick);
+        })
+        .catch(err => {
+            console.error(err);
+            stopCamera();
+            showNotification('cameraError', 'red');
+        });
+}
+
+function stopCamera() {
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    isScanning = false;
+    video.classList.add('hidden');
+    placeholderContainer.classList.remove('hidden');
+    videoContainer.classList.remove('scanning');
+    scanButton.textContent = translations[currentLang].startCamera;
+    scanButton.style.background = 'linear-gradient(90deg, #6366F1, #8B5CF6)';
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+}
+
+function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvasEl.width = video.videoWidth;
+        canvasEl.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvasEl.width, canvasEl.height);
+        const imageData = context.getImageData(0, 0, canvasEl.width, canvasEl.height);
+        const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+            handleScan(code.data);
+            stopCamera();
+            return;
+        }
+    }
+    animationFrameId = requestAnimationFrame(tick);
+}
+
+function handleScan(qrCodeData) {
+    onValue(databaseRef(database), (snapshot) => {
+        const data = snapshot.val();
+        let found = false, alreadyScanned = false, parentId = null;
+        for (const key in data) {
+            if (data[key]['رقم_عشوائي'] === qrCodeData) {
+                found = true;
+                parentId = key;
+                alreadyScanned = data[key].scanned === true;
+                break;
+            }
+        }
+        if (found && !alreadyScanned) {
+            showNotification('scanSuccess', 'green');
+            document.getElementById('successSound').play().catch(() => {});
+            update(databaseRef(database, parentId), { scanned: true, scanDate: new Date().toISOString() });
+        } else if (found && alreadyScanned) {
+            showNotification('scanAlready', 'red');
+            document.getElementById('alreadySound').play().catch(() => {});
+        } else if (!found) {
+            showNotification('scanNotFound', 'yellow');
+            document.getElementById('notFoundSound').play().catch(() => {});
+        }
+    }, { onlyOnce: true });
+}
+
+function showNotification(messageKey, type = 'green') {
+    const notification = document.getElementById('notification');
+    const message = translations[currentLang][messageKey];
+    const colors = { green: 'bg-green-500', red: 'bg-red-500', yellow: 'bg-yellow-500' };
+    notification.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`;
+    notification.textContent = message;
+    notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(0)';
+    setTimeout(() => {
+        notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)';
+    }, 3000);
+}
+</script>
+</body>
+</html>
