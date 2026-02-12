@@ -31,13 +31,15 @@
     box-shadow: 0 0 25px 0 var(--glow-color);
   }
 </style>
-<link rel="stylesheet" href="/index.css">
 </head>
-<body class="text-gray-200">
+<body class="text-gray-200" style="display: none;">
 
 <header class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
     <div></div>
-    <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors">AR</button>
+    <div class="flex items-center gap-4">
+        <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors">AR</button>
+        <button id="logout-button" class="font-bold text-sm bg-red-600/50 border border-red-500/30 text-red-300 rounded-md px-3 py-1.5 hover:bg-red-600/70 transition-colors" data-lang-key="logout">Logout</button>
+    </div>
 </header>
 
 <div class="container mx-auto px-4 py-6">
@@ -84,38 +86,33 @@
   </div>
 </main>
 
-<script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+    const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
+    
     const translations = {
-        en: {
-            title: "Invitation Management Hub",
-            subtitle: "The all-in-one solution for creating, managing, and tracking your event invitations with futuristic flair.",
-            card1Title: "1. Design Your Card",
-            card1Desc: "Visually craft your invitation. Upload a base design and interactively place guest details.",
-            card2Title: "2. Manage Guests",
-            card2Desc: "Generate unique, personalized invitation links and monitor guest RSVP status in real-time.",
-            card3Title: "3. Guest Check-in",
-            card3Desc: "Streamline event entry. Use any device camera to scan guest QR codes for instant check-in.",
-        },
-        ar: {
-            title: "مركز إدارة الدعوات",
-            subtitle: "الحل المتكامل لإنشاء وإدارة وتتبع دعوات مناسباتك بلمسة عصرية ومستقبلية.",
-            card1Title: "١. صمم بطاقتك",
-            card1Desc: "صمم دعوتك بشكل مرئي. ارفع التصميم الأساسي وضع تفاصيل الضيف بشكل تفاعلي.",
-            card2Title: "٢. إدارة الضيوف",
-            card2Desc: "أنشئ روابط دعوة فريدة وشخصية وراقب حالة ردود الضيوف في الوقت الفعلي.",
-            card3Title: "٣. تسجيل وصول الضيوف",
-            card3Desc: "بسط عملية الدخول للفعالية. استخدم كاميرا أي جهاز لمسح رموز QR الخاصة بالضيوف لتسجيل وصول فوري.",
-        }
+        en: { title: "Invitation Management Hub", subtitle: "The all-in-one solution for creating, managing, and tracking your event invitations with futuristic flair.", card1Title: "1. Design Your Card", card1Desc: "Visually craft your invitation. Upload a base design and interactively place guest details.", card2Title: "2. Manage Guests", card2Desc: "Generate unique, personalized invitation links and monitor guest RSVP status in real-time.", card3Title: "3. Guest Check-in", card3Desc: "Streamline event entry. Use any device camera to scan guest QR codes for instant check-in.", logout: "Logout" },
+        ar: { title: "مركز إدارة الدعوات", subtitle: "الحل المتكامل لإنشاء وإدارة وتتبع دعوات مناسباتك بلمسة عصرية ومستقبلية.", card1Title: "١. صمم بطاقتك", card1Desc: "صمم دعوتك بشكل مرئي. ارفع التصميم الأساسي وضع تفاصيل الضيف بشكل تفاعلي.", card2Title: "٢. إدارة الضيوف", card2Desc: "أنشئ روابط دعوة فريدة وشخصية وراقب حالة ردود الضيوف في الوقت الفعلي.", card3Title: "٣. تسجيل وصول الضيوف", card3Desc: "بسط عملية الدخول للفعالية. استخدم كاميرا أي جهاز لمسح رموز QR الخاصة بالضيوف لتسجيل وصول فوري.", logout: "تسجيل الخروج" }
     };
 
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.body.style.display = 'block';
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
     const langSwitcher = document.getElementById('lang-switcher');
-    
     const setLanguage = (lang) => {
         localStorage.setItem('language', lang);
         document.documentElement.lang = lang;
         document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
         langSwitcher.textContent = lang === 'ar' ? 'EN' : 'AR';
-        
         document.querySelectorAll('[data-lang-key]').forEach(element => {
             const key = element.getAttribute('data-lang-key');
             if (translations[lang][key]) {
@@ -126,8 +123,11 @@
 
     langSwitcher.addEventListener('click', () => {
         const currentLang = localStorage.getItem('language') || 'en';
-        const newLang = currentLang === 'en' ? 'ar' : 'en';
-        setLanguage(newLang);
+        setLanguage(currentLang === 'en' ? 'ar' : 'en');
+    });
+
+    document.getElementById('logout-button').addEventListener('click', () => {
+        signOut(auth);
     });
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -135,6 +135,5 @@
         setLanguage(currentLang);
     });
 </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
