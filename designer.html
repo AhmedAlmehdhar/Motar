@@ -277,26 +277,8 @@ function addNewText(content = 'New Text') { const newText = { id: 'el' + Date.no
 function addIconFromLibrary(iconName) { const newIcon = { id: 'el' + Date.now(), type: 'icon', iconName: iconName, x: 50, y: 50, size: 50, color: '#dddddd' }; activeTemplate.elements.push(newIcon); renderTemplate(); selectElement(newIcon.id); DOMElements.iconLibraryModal.classList.add('hidden'); }
 function addNewImage(src, originalWidth, originalHeight) { const maxWidth = DOMElements.canvasContainer.offsetWidth * 0.5; let width = originalWidth; let height = originalHeight; if (width > maxWidth) { const ratio = maxWidth / width; width = maxWidth; height = height * ratio; } const newImage = { id: 'el' + Date.now(), type: 'image', src, x: 50, y: 50, width: Math.round(width), height: Math.round(height), originalWidth, originalHeight }; activeTemplate.elements.push(newImage); renderTemplate(); selectElement(newImage.id); }
 
-function imageSrcToPngBlob(src) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            canvas.toBlob(resolve, 'image/png');
-        };
-        img.onerror = (err) => {
-            reject(new Error("Could not load image from clipboard data."));
-        };
-        img.src = src;
-    });
-}
-
 async function handlePaste(e) {
+    // Prevent paste in inputs/textareas
     if (e.target.isContentEditable || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
     e.preventDefault();
 
@@ -305,7 +287,6 @@ async function handlePaste(e) {
     let plainText = null;
     let htmlText = null;
 
-    // Asynchronously read all clipboard items
     const promises = [];
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
@@ -325,36 +306,46 @@ async function handlePaste(e) {
         return;
     }
 
-    // Priority 2: Image or SVG found within HTML content (e.g., from Canva)
+    // Priority 2: Render complex HTML from clipboard using html2canvas
     if (htmlText) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlText;
-        const imgElement = tempDiv.querySelector('img');
-        const svgElement = tempDiv.querySelector('svg');
-        
-        let imageSrc = null;
+        let pasteContainer;
+        try {
+            // Create a temporary, off-screen container to render the pasted HTML
+            pasteContainer = document.createElement('div');
+            pasteContainer.style.position = 'absolute';
+            pasteContainer.style.left = '-9999px';
+            pasteContainer.style.top = '0px';
+            // Set a default text color that's visible against a transparent background if needed
+            pasteContainer.style.color = 'black'; 
+            
+            // Clean the HTML fragment from comments added by browsers/editors
+            const cleanHtml = htmlText.replace(/^<!--StartFragment-->/, '').replace(/<!--EndFragment-->$/, '');
+            pasteContainer.innerHTML = cleanHtml;
+            document.body.appendChild(pasteContainer);
+            
+            // The main content is usually the first child element of the pasted fragment
+            const elementToRender = pasteContainer.firstElementChild;
 
-        if (imgElement && imgElement.src) {
-            // Found a standard <img> tag
-            imageSrc = imgElement.src;
-        } else if (svgElement) {
-            // Found an inline <svg> element, common with Canva objects
-            const serializer = new XMLSerializer();
-            const svgString = serializer.serializeToString(svgElement);
-            // Create a data URI from the SVG string. The encoding dance handles Unicode characters.
-            imageSrc = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgString)))}`;
-        }
-
-        if (imageSrc) {
-             try {
-                // Convert the found image/svg source to a standard PNG blob
-                const blobFromHtml = await imageSrcToPngBlob(imageSrc);
-                if (blobFromHtml) {
-                    uploadPastedImage(blobFromHtml);
-                    return; // Success, we're done.
+            if (elementToRender) {
+                const canvas = await html2canvas(elementToRender, { 
+                    backgroundColor: null, // Use transparent background
+                    logging: false,
+                    useCORS: true // Attempt to load cross-origin images
+                });
+                
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                
+                if (blob) {
+                    uploadPastedImage(blob);
+                    return; // Success!
                 }
-            } catch (error) {
-                console.warn("Could not process image/svg from HTML, falling back to text.", error);
+            }
+        } catch (error) {
+            console.warn("Could not render pasted HTML content, falling back to text.", error);
+        } finally {
+            // Ensure the temporary container is always removed
+            if (pasteContainer && pasteContainer.parentElement) {
+                document.body.removeChild(pasteContainer);
             }
         }
     }
