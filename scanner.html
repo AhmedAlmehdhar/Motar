@@ -89,7 +89,7 @@
   </div>
 </main>
 
-<div id="notification" class="fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
+<div id="notification" class="fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-full rtl:-translate-x-full opacity-0 transition-all duration-500 ease-in-out z-50"></div>
 <audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
 <audio id="alreadySound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 <audio id="notFoundSound" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum.ogg"></audio>
@@ -142,6 +142,7 @@ document.getElementById('lang-switcher').addEventListener('click', () => {
 const database = getDatabase(app);
 const scannedBarcodes = new Set();
 let animationFrameId;
+let notificationTimeout;
 
 const scanButton = document.getElementById('scanButton');
 const video = document.getElementById('video');
@@ -203,7 +204,7 @@ function startCamera() {
         .catch(err => {
             console.error(err);
             stopCamera();
-            showNotification('cameraError', 'red');
+            showNotification(translations[currentLang].cameraError, 'red');
         });
 }
 
@@ -249,16 +250,16 @@ async function handleScan(qrCodeData) {
             const guestData = snapshot.val()[guestId];
             
             if (guestData.scanned) {
-                showNotification('scanAlready', 'red');
+                showNotification(translations[currentLang].scanAlready, 'red');
                 document.getElementById('alreadySound').play().catch(()=>{});
             } else {
-                showNotification('scanSuccess', 'green');
+                showNotification(translations[currentLang].scanSuccess, 'green');
                 document.getElementById('successSound').play().catch(()=>{});
                 const updates = { scanned: true, scanDate: new Date().toISOString() };
                 await update(databaseRef(database, `users/${currentUser.uid}/guests/${guestId}`), updates);
             }
         } else {
-            showNotification('scanNotFound', 'yellow');
+            showNotification(translations[currentLang].scanNotFound, 'yellow');
             document.getElementById('notFoundSound').play().catch(()=>{});
         }
     } catch (error) {
@@ -266,15 +267,29 @@ async function handleScan(qrCodeData) {
     }
 }
 
-function showNotification(messageKey, type = 'green') {
+function showNotification(message, type = 'green') {
     const notification = document.getElementById('notification');
-    const message = translations[currentLang][messageKey];
-    const colors = { green: 'bg-green-500', red: 'bg-red-500', yellow: 'bg-yellow-500' };
-    notification.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`;
+    if (!notification) return;
+
+    clearTimeout(notificationTimeout);
+
+    const colors = {
+        green: 'bg-green-500',
+        red: 'bg-red-500',
+        yellow: 'bg-yellow-500'
+    };
+    
+    notification.className = `fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform transition-all duration-500 ease-in-out z-50 ${colors[type] || 'bg-gray-500'}`;
     notification.textContent = message;
-    notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(0)';
-    setTimeout(() => {
-        notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)';
+
+    requestAnimationFrame(() => {
+        notification.classList.remove('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
+        notification.classList.add('translate-x-0', 'opacity-100');
+    });
+
+    notificationTimeout = setTimeout(() => {
+        notification.classList.add('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
+        notification.classList.remove('translate-x-0', 'opacity-100');
     }, 3000);
 }
 
