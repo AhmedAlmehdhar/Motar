@@ -16,27 +16,34 @@
   body {
     font-family: var(--font-main);
     background-color: #0f172a;
+    user-select: none;
   }
   #canvas-container {
       width: 500px;
       height: 667px;
       transform-origin: top left;
   }
-  .editable-text {
+  .editable-element {
       position: absolute;
       padding: 5px;
-      cursor: pointer;
+      cursor: move;
       border: 2px dashed transparent;
       transition: border-color 0.2s ease;
       white-space: pre-wrap;
       transform-origin: center center;
   }
-  .editable-text:hover {
+  .editable-element:hover {
       border-color: rgba(139, 92, 246, 0.5);
   }
-  .editable-text.selected {
+  .editable-element.selected {
       border-color: #8B5CF6;
       border-style: solid;
+  }
+  .editable-element svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none; /* Important for drag */
   }
 </style>
 </head>
@@ -58,10 +65,23 @@
 <div class="flex-1 flex overflow-hidden">
     <!-- Sidebar -->
     <aside id="sidebar" class="w-80 bg-slate-800 p-4 overflow-y-auto space-y-6 flex-shrink-0">
+        <!-- ADD ELEMENTS SECTION -->
+        <div class="space-y-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400" data-lang-key="addElements">Add Elements</h3>
+            <button id="add-text-btn" class="w-full text-left p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center gap-3">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3.5 4A1.5 1.5 0 002 5.5v2A1.5 1.5 0 003.5 9h1.155a1 1 0 01.744.331l2.585 3.447-2.585 3.447a1 1 0 01-.744.331H3.5A1.5 1.5 0 002 18.5v-2A1.5 1.5 0 003.5 15h1a.5.5 0 01.5.5v1.5a.5.5 0 01-1 0V16a.5.5 0 00-1 0v.5A1.5 1.5 0 003.5 18h1.155a2.5 2.5 0 001.86-4.175l2.12-2.825a.5.5 0 000-.662l-2.12-2.825A2.5 2.5 0 004.655 4H3.5zM12.5 4h-1a.5.5 0 01-.5-.5V2a.5.5 0 011 0v1.5a.5.5 0 001 0V2A1.5 1.5 0 0011.5.5h-1A1.5 1.5 0 009 2v1.5a.5.5 0 01-1 0V2a.5.5 0 00-1 0v1.5A1.5 1.5 0 008.5 5h1a.5.5 0 01.5.5v10a.5.5 0 01-.5.5h-1a1.5 1.5 0 00-1.5 1.5v.5a.5.5 0 001 0v-.5a.5.5 0 011-1.5h1a.5.5 0 01.5.5v.5a.5.5 0 001 0v-.5A1.5 1.5 0 0012.5 15h1a1.5 1.5 0 001.5-1.5v-10A1.5 1.5 0 0012.5 2h-1A1.5 1.5 0 0010 3.5V4a.5.5 0 01-1 0V3.5a.5.5 0 00-1 0V4a.5.5 0 01-.5.5h-1A1.5 1.5 0 005.5 6h1a.5.5 0 01.5.5v.5a.5.5 0 001 0v-.5A1.5 1.5 0 006.5 5h-1A1.5 1.5 0 004 6.5V7a.5.5 0 01-1 0V6.5A.5.5 0 002.5 6H2a.5.5 0 010-1h.5A1.5 1.5 0 014 3.5h1A1.5 1.5 0 016.5 5h1A1.5 1.5 0 009 3.5v-1A1.5 1.5 0 007.5 1H8a.5.5 0 010 1H7.5A.5.5 0 007 2.5v1A.5.5 0 016.5 4h-1A.5.5 0 015 3.5V3a.5.5 0 011 0v.5a.5.5 0 001 0V3A1.5 1.5 0 005.5 1.5h1A1.5 1.5 0 018 3v1a.5.5 0 01.5.5h.5a.5.5 0 01.5-.5H10a.5.5 0 01.5.5v10a.5.5 0 01-.5.5h-.5a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-1a.5.5 0 00-1 0v1A1.5 1.5 0 008.5 18h1a1.5 1.5 0 001.5-1.5v-.5a.5.5 0 011 0v.5a.5.5 0 001 0v-.5A1.5 1.5 0 0012.5 15h1a.5.5 0 01.5.5v.5a.5.5 0 001 0v-.5a.5.5 0 011-1.5h.5a.5.5 0 010 1h-.5a.5.5 0 00-.5.5v.5a.5.5 0 01-1 0v-.5a.5.5 0 00-1 0v.5a.5.5 0 01-1 0v-.5a.5.5 0 00-1 0v.5A1.5 1.5 0 0010.5 19h1a1.5 1.5 0 001.5-1.5v-.5a.5.5 0 011 0v.5a.5.5 0 001 0V17a.5.5 0 01.5-.5h.5a.5.5 0 010 1h-.5A1.5 1.5 0 0115 17.5V18a.5.5 0 01-1 0v-.5a.5.5 0 00-1 0v.5a.5.5 0 01-1 0v-.5a.5.5 0 00-1 0v.5A1.5 1.5 0 0012.5 20h-1a2.5 2.5 0 01-2.5-2.5V6a2.5 2.5 0 012.5-2.5h1z" /></svg>
+                <span data-lang-key="addText">Add Text</span>
+            </button>
+            <div id="icon-container" class="grid grid-cols-4 gap-2"></div>
+        </div>
+        <hr class="border-slate-700">
+
+        <!-- EDITOR SECTION -->
         <div id="no-element-selected" class="text-center text-gray-400 p-4 border border-dashed border-slate-600 rounded-lg">
             <p data-lang-key="selectElement">Select an element on the card to edit its properties.</p>
         </div>
-        <div id="element-editor" class="hidden space-y-4">
+        <!-- TEXT EDITOR -->
+        <div id="text-editor" class="hidden space-y-4">
             <div>
                 <label for="text-content" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="textContent">Text Content</label>
                 <textarea id="text-content" rows="3" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200"></textarea>
@@ -99,6 +119,20 @@
                 </div>
             </div>
         </div>
+        <!-- ICON EDITOR -->
+        <div id="icon-editor" class="hidden space-y-4">
+             <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="icon-size" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="iconSize">Size</label>
+                    <input type="number" id="icon-size" min="10" max="300" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200">
+                </div>
+                <div>
+                    <label for="icon-color" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="iconColor">Color</label>
+                    <input type="color" id="icon-color" class="w-full h-10 p-1 bg-slate-700 border border-slate-600 rounded-lg">
+                </div>
+            </div>
+        </div>
+
     </aside>
 
     <!-- Main Canvas Area -->
@@ -116,7 +150,8 @@ const DOMElements = {
     canvasContainer: document.getElementById('canvas-container'),
     sidebar: document.getElementById('sidebar'),
     noElementSelected: document.getElementById('no-element-selected'),
-    elementEditor: document.getElementById('element-editor'),
+    textEditor: document.getElementById('text-editor'),
+    iconEditor: document.getElementById('icon-editor'),
     textContent: document.getElementById('text-content'),
     fontFamily: document.getElementById('font-family'),
     fontSize: document.getElementById('font-size'),
@@ -124,13 +159,17 @@ const DOMElements = {
     fontBold: document.getElementById('font-bold'),
     fontItalic: document.getElementById('font-italic'),
     textAlignContainer: document.getElementById('font-align'),
+    iconSize: document.getElementById('icon-size'),
+    iconColor: document.getElementById('icon-color'),
+    iconContainer: document.getElementById('icon-container'),
+    addTextBtn: document.getElementById('add-text-btn'),
     saveButton: document.getElementById('save-design-button'),
     spinner: document.getElementById('btn-spinner'),
 };
 
 const translations = {
-    en: { headerTitle: "Card Designer", backToTemplates: "← Back to Templates", saveBtn: "Save & Continue", saving: "Saving...", selectElement: "Select an element on the card to edit its properties.", textContent: "Text Content", fontFamily: "Font Family", fontSize: "Size", fontColor: "Color", textAlign: "Alignment", saveSuccess: "Design saved! Redirecting...", saveError: "Could not save design: "},
-    ar: { headerTitle: "مصمم البطاقات", backToTemplates: "→ العودة للقوالب", saveBtn: "حفظ ومتابعة", saving: "جاري الحفظ...", selectElement: "اختر عنصرًا على البطاقة لتعديل خصائصه.", textContent: "محتوى النص", fontFamily: "نوع الخط", fontSize: "الحجم", fontColor: "اللون", textAlign: "المحاذاة", saveSuccess: "تم حفظ التصميم! جارٍ إعادة التوجيه...", saveError: "لم يتم حفظ التصميم: " }
+    en: { headerTitle: "Card Designer", backToTemplates: "← Back to Templates", saveBtn: "Save & Continue", saving: "Saving...", selectElement: "Select an element on the card to edit its properties.", textContent: "Text Content", fontFamily: "Font Family", fontSize: "Size", fontColor: "Color", textAlign: "Alignment", saveSuccess: "Design saved! Redirecting...", saveError: "Could not save design: ", addElements: "Add Elements", addText: "Add Text", iconSize: "Size", iconColor: "Color" },
+    ar: { headerTitle: "مصمم البطاقات", backToTemplates: "→ العودة للقوالب", saveBtn: "حفظ ومتابعة", saving: "جاري الحفظ...", selectElement: "اختر عنصرًا على البطاقة لتعديل خصائصه.", textContent: "محتوى النص", fontFamily: "نوع الخط", fontSize: "الحجم", fontColor: "اللون", textAlign: "المحاذاة", saveSuccess: "تم حفظ التصميم! جارٍ إعادة التوجيه...", saveError: "لم يتم حفظ التصميم: ", addElements: "إضافة عناصر", addText: "إضافة نص", iconSize: "الحجم", iconColor: "اللون" }
 };
 
 let currentLang = localStorage.getItem('language') || 'en';
@@ -147,32 +186,41 @@ const templates = {
     modern: {
         backgroundColor: '#0d1a2f',
         elements: [
-            { id: 'el1', type: 'text', content: 'SAVE THE DATE', x: 50, y: 25, color: '#a5b4fc', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 300, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.2em' },
-            { id: 'el2', type: 'text', content: 'S & M', x: 50, y: 40, color: '#ffffff', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 96, fontWeight: 800, fontStyle: 'normal', textAlign: 'center' },
-            { id: 'el3', type: 'text', content: '08 . 24 . 2024', x: 50, y: 55, color: '#ffffff', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 600, fontStyle: 'normal', textAlign: 'center' }
+            { id: 'el1', type: 'text', content: 'احفظ التاريخ', x: 50, y: 25, color: '#a5b4fc', fontFamily: "'Cairo', sans-serif", fontSize: 24, fontWeight: 300, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.2em' },
+            { id: 'el2', type: 'text', content: 'س & م', x: 50, y: 40, color: '#ffffff', fontFamily: "'Cairo', sans-serif", fontSize: 96, fontWeight: 800, fontStyle: 'normal', textAlign: 'center' },
+            { id: 'el3', type: 'text', content: '٢٤ أغسطس ٢٠٢٤', x: 50, y: 55, color: '#ffffff', fontFamily: "'Cairo', sans-serif", fontSize: 22, fontWeight: 600, fontStyle: 'normal', textAlign: 'center' }
         ]
     },
     floral: {
         backgroundColor: '#FBF6F0',
         elements: [
-            { id: 'el1', type: 'text', content: 'You are invited to celebrate\nthe wedding of', x: 50, y: 20, color: '#B999A1', fontFamily: "'Dancing Script', cursive", fontSize: 40, fontWeight: 400, fontStyle: 'normal', textAlign: 'center' },
-            { id: 'el2', type: 'text', content: 'Aisha & Omar', x: 50, y: 50, color: '#8a7f80', fontFamily: "'Amiri', serif", fontSize: 80, fontWeight: 700, fontStyle: 'normal', textAlign: 'center' },
-            { id: 'el3', type: 'text', content: 'SATURDAY, 24 AUGUST 2024\nAT 7:00 PM\nTHE GRAND HALL', x: 50, y: 75, color: '#5D5D5D', fontFamily: "'Roboto', sans-serif", fontSize: 18, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', lineHeight: '1.6' }
+            { id: 'el1', type: 'text', content: 'تتشرفون بدعوتكم لحضور\nحفل زفاف', x: 50, y: 20, color: '#B999A1', fontFamily: "'Dancing Script', cursive", fontSize: 40, fontWeight: 400, fontStyle: 'normal', textAlign: 'center' },
+            { id: 'el2', type: 'text', content: 'عائشة و عمر', x: 50, y: 50, color: '#8a7f80', fontFamily: "'Amiri', serif", fontSize: 80, fontWeight: 700, fontStyle: 'normal', textAlign: 'center' },
+            { id: 'el3', type: 'text', content: 'السبت, ٢٤ أغسطس ٢٠٢٤\nالساعة ٧:٠٠ مساءً\nفي قاعة الفخامة', x: 50, y: 75, color: '#5D5D5D', fontFamily: "'Cairo', sans-serif", fontSize: 18, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', lineHeight: '1.6' }
         ]
     },
     classic: {
         backgroundColor: '#F5EFE6',
         border: '16px solid #E8DFD3',
         elements: [
-            { id: 'el1', type: 'text', content: 'TOGETHER WITH THEIR FAMILIES', x: 50, y: 20, color: '#6A5A4F', fontFamily: "'Amiri', serif", fontSize: 20, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.2em' },
-            { id: 'el2', type: 'text', content: 'Fatima\n&\nYoussef', x: 50, y: 50, color: '#6A5A4F', fontFamily: "'Dancing Script', cursive", fontSize: 80, fontWeight: 700, fontStyle: 'normal', textAlign: 'center', lineHeight: '1.2' },
-            { id: 'el3', type: 'text', content: 'request the honor of your presence\nat their wedding celebration', x: 50, y: 80, color: '#6A5A4F', fontFamily: "'Amiri', serif", fontSize: 18, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.1em' }
+            { id: 'el1', type: 'text', content: 'مع عائلاتهم', x: 50, y: 20, color: '#6A5A4F', fontFamily: "'Amiri', serif", fontSize: 20, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.1em' },
+            { id: 'el2', type: 'text', content: 'فاطمة\n&\nيوسف', x: 50, y: 50, color: '#6A5A4F', fontFamily: "'Dancing Script', cursive", fontSize: 80, fontWeight: 700, fontStyle: 'normal', textAlign: 'center', lineHeight: '1.2' },
+            { id: 'el3', type: 'text', content: 'يتشرفون بدعوتكم لحضور\nحفل زفافهم', x: 50, y: 80, color: '#6A5A4F', fontFamily: "'Amiri', serif", fontSize: 18, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.1em' }
         ]
     }
 };
 
+const icons = {
+    calendar: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zM4.5 6.75A1.25 1.25 0 015.75 8h8.5a1.25 1.25 0 011.25-1.25V6.75h-11v0zM5.75 10a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 015.75 10zm3 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018.75 10zm3 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75z" clip-rule="evenodd" /></svg>',
+    rings: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8.22 6.112a4.5 4.5 0 10-5.644 5.644 4.5 4.5 0 005.644-5.644zM1.5 9.75a6 6 0 1111.43 2.016A4.496 4.496 0 009.75 6a4.496 4.496 0 00-4.266 2.016A5.96 5.96 0 011.5 9.75z" /><path d="M11.78 13.888a4.5 4.5 0 105.644-5.644 4.5 4.5 0 00-5.644 5.644zM18.5 10.25a6 6 0 11-11.43-2.016A4.496 4.496 0 0010.25 14a4.496 4.496 0 004.266-2.016 5.96 5.96 0 013.984-1.734z" /></svg>',
+    noPhone: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.903 4.097a.75.75 0 010 1.06l-11.83 11.83a.75.75 0 01-1.06-1.06l11.83-11.83a.75.75 0 011.06 0zm-2.23.167a.75.75 0 011.06 0l.969.97a.75.75 0 010 1.06l-3.38 3.38a.75.75 0 01-1.06-1.06l3.41-3.41zM3.96 13.98l-1.09-1.09a.75.75 0 010-1.06l8.06-8.06a.75.75 0 011.06 1.06l-8.06 8.06a.75.75 0 01-1.06 0zm6.521-1.06a.75.75 0 010 1.06l-1.09 1.09a.75.75 0 01-1.06-1.06l1.09-1.09a.75.75 0 011.06 0z" clip-rule="evenodd" /><path d="M6 3a3 3 0 00-3 3v8a3 3 0 003 3h8a3 3 0 003-3V6a3 3 0 00-3-3H6zm2.75 12.25a.75.75 0 000-1.5h2.5a.75.75 0 000 1.5h-2.5z" /></svg>',
+    dinner: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.067a1.5 1.5 0 01-2.93 0L4.22 3.175A.5.5 0 003.793 3H3.5a.5.5 0 00-.5.5v13a.5.5 0 00.5.5h.293a.5.5 0 00.447-.276l.78-1.56a1.5 1.5 0 012.94 0l.78 1.56a.5.5 0 00.447.276H9.5a.5.5 0 00.5-.5v-13a.5.5 0 00-.5-.5H9.207a.5.5 0 00-.447.276L8.04 4.74a1.5 1.5 0 01-2.93 0L4.394 1.675A1.5 1.5 0 015.858 0h8.284a1.5 1.5 0 011.465 1.175l.716 3.067a1.5 1.5 0 01-2.93 0l-.716-3.067a.5.5 0 00-.488-.425H12.5a.5.5 0 00-.5.5v13a.5.5 0 00.5.5h.293a.5.5 0 00.447-.276l.78-1.56a1.5 1.5 0 012.94 0l.78 1.56a.5.5 0 00.447.276H17.5a1.5 1.5 0 01-1.5-1.5V3.5a.5.5 0 00-.5-.5h-.207a.5.5 0 00-.447.276l-.716 1.432a1.5 1.5 0 01-2.93 0l-.716-1.432A.5.5 0 0010.207 3H10a1.5 1.5 0 01-1.5-1.5V0" /></svg>'
+};
+
 let activeTemplate;
 let selectedElement = null;
+let isDragging = false;
+let dragOffsetX, dragOffsetY;
 
 function renderTemplate() {
     DOMElements.canvasContainer.innerHTML = '';
@@ -182,91 +230,155 @@ function renderTemplate() {
     activeTemplate.elements.forEach(el => {
         const div = document.createElement('div');
         div.id = el.id;
-        div.className = 'editable-text';
-        div.textContent = el.content;
+        div.className = 'editable-element';
         
         // Apply styles
         div.style.left = `${el.x}%`;
         div.style.top = `${el.y}%`;
-        div.style.color = el.color;
-        div.style.fontFamily = el.fontFamily;
-        div.style.fontSize = `${el.fontSize}px`;
-        div.style.fontWeight = el.fontWeight;
-        div.style.fontStyle = el.fontStyle;
-        div.style.textAlign = el.textAlign;
-        div.style.letterSpacing = el.letterSpacing || 'normal';
-        div.style.lineHeight = el.lineHeight || 'normal';
+        
+        if (el.type === 'text') {
+            div.textContent = el.content;
+            div.style.color = el.color;
+            div.style.fontFamily = el.fontFamily;
+            div.style.fontSize = `${el.fontSize}px`;
+            div.style.fontWeight = el.fontWeight;
+            div.style.fontStyle = el.fontStyle;
+            div.style.textAlign = el.textAlign;
+            div.style.letterSpacing = el.letterSpacing || 'normal';
+            div.style.lineHeight = el.lineHeight || 'normal';
+        } else if (el.type === 'icon') {
+            div.innerHTML = el.svg;
+            div.style.width = `${el.size}px`;
+            div.style.height = `${el.size}px`;
+            div.style.color = el.color;
+        }
 
-        // Set transform for centering
         div.style.transform = 'translate(-50%, -50%)';
-
-        div.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectElement(el.id);
-        });
-
+        div.addEventListener('mousedown', (e) => startDrag(e, el.id));
         DOMElements.canvasContainer.appendChild(div);
     });
 }
 
 function selectElement(elementId) {
-    if (selectedElement) {
-        document.getElementById(selectedElement.id)?.classList.remove('selected');
-    }
-
+    document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected'));
+    
     selectedElement = activeTemplate.elements.find(el => el.id === elementId);
     
     if (selectedElement) {
         document.getElementById(selectedElement.id).classList.add('selected');
         DOMElements.noElementSelected.classList.add('hidden');
-        DOMElements.elementEditor.classList.remove('hidden');
-        updateSidebar();
+        if (selectedElement.type === 'text') {
+            DOMElements.textEditor.classList.remove('hidden');
+            DOMElements.iconEditor.classList.add('hidden');
+            updateSidebarForText();
+        } else if (selectedElement.type === 'icon') {
+            DOMElements.iconEditor.classList.remove('hidden');
+            DOMElements.textEditor.classList.add('hidden');
+            updateSidebarForIcon();
+        }
     }
 }
 
-function updateSidebar() {
-    if (!selectedElement) return;
+function updateSidebarForText() {
     DOMElements.textContent.value = selectedElement.content;
     DOMElements.fontFamily.value = selectedElement.fontFamily;
     DOMElements.fontSize.value = selectedElement.fontSize;
     DOMElements.fontColor.value = selectedElement.color;
-    // Update bold/italic/align buttons state
     DOMElements.fontBold.classList.toggle('bg-indigo-500', selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold');
     DOMElements.fontItalic.classList.toggle('bg-indigo-500', selectedElement.fontStyle === 'italic');
     DOMElements.textAlignContainer.querySelectorAll('button').forEach(btn => {
         btn.classList.toggle('bg-indigo-500', btn.dataset.align === selectedElement.textAlign);
     });
 }
+function updateSidebarForIcon() {
+    DOMElements.iconSize.value = selectedElement.size;
+    DOMElements.iconColor.value = selectedElement.color;
+}
 
 function updateElementFromSidebar() {
     if (!selectedElement) return;
     
-    const propertyMap = {
-        'text-content': 'content',
-        'font-family': 'fontFamily',
-        'font-size': 'fontSize',
-        'font-color': 'color',
-    };
-
-    for (const [id, prop] of Object.entries(propertyMap)) {
-        const input = DOMElements[id.replace(/-/g, '')];
-        if (input.type === 'number') {
-            selectedElement[prop] = parseInt(input.value, 10);
-        } else {
-            selectedElement[prop] = input.value;
-        }
+    if(selectedElement.type === 'text') {
+        selectedElement.content = DOMElements.textContent.value;
+        selectedElement.fontFamily = DOMElements.fontFamily.value;
+        selectedElement.fontSize = parseInt(DOMElements.fontSize.value, 10);
+        selectedElement.color = DOMElements.fontColor.value;
+    } else if (selectedElement.type === 'icon') {
+        selectedElement.size = parseInt(DOMElements.iconSize.value, 10);
+        selectedElement.color = DOMElements.iconColor.value;
     }
     
     renderTemplate();
     document.getElementById(selectedElement.id)?.classList.add('selected');
 }
 
-async function saveAndContinue() {
-    // Deselect element to remove border before capturing
-    if (selectedElement) {
-        document.getElementById(selectedElement.id).classList.remove('selected');
-        selectedElement = null;
+// DRAG AND DROP LOGIC
+function startDrag(e, elementId) {
+    e.preventDefault();
+    selectElement(elementId);
+    isDragging = true;
+    const el = document.getElementById(elementId);
+    const rect = el.getBoundingClientRect();
+    const containerRect = DOMElements.canvasContainer.getBoundingClientRect();
+
+    dragOffsetX = e.clientX - rect.left + containerRect.left;
+    dragOffsetY = e.clientY - rect.top + containerRect.top;
+
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', stopDrag);
+}
+function dragMove(e) {
+    if (!isDragging || !selectedElement) return;
+    const containerRect = DOMElements.canvasContainer.getBoundingClientRect();
+    const x = e.clientX - containerRect.left - dragOffsetX + (selectedElement.size ? selectedElement.size/2 : 0);
+    const y = e.clientY - containerRect.top - dragOffsetY + (selectedElement.fontSize ? selectedElement.fontSize/2 : 0) + 10;
+    
+    selectedElement.x = (x / containerRect.width) * 100;
+    selectedElement.y = (y / containerRect.height) * 100;
+    
+    const el = document.getElementById(selectedElement.id);
+    el.style.left = `${selectedElement.x}%`;
+    el.style.top = `${selectedElement.y}%`;
+}
+function stopDrag() {
+    isDragging = false;
+    document.removeEventListener('mousemove', dragMove);
+    document.removeEventListener('mouseup', stopDrag);
+}
+
+// ADDING ELEMENTS
+function addNewText() {
+    const newText = {
+        id: 'el' + Date.now(), type: 'text', content: 'نص جديد',
+        x: 50, y: 50, color: '#333333',
+        fontFamily: "'Cairo', sans-serif", fontSize: 28, fontWeight: 'normal', fontStyle: 'normal',
+        textAlign: 'center'
+    };
+    activeTemplate.elements.push(newText);
+    renderTemplate();
+    selectElement(newText.id);
+}
+function addIcon(iconKey) {
+    const newIcon = {
+        id: 'el' + Date.now(), type: 'icon', svg: icons[iconKey],
+        x: 50, y: 50, size: 50, color: '#333333'
+    };
+    activeTemplate.elements.push(newIcon);
+    renderTemplate();
+    selectElement(newIcon.id);
+}
+function populateIcons() {
+    for (const key in icons) {
+        const btn = document.createElement('button');
+        btn.className = 'p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center justify-center';
+        btn.innerHTML = icons[key];
+        btn.addEventListener('click', () => addIcon(key));
+        DOMElements.iconContainer.appendChild(btn);
     }
+}
+
+async function saveAndContinue() {
+    document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected'));
     
     DOMElements.saveButton.disabled = true;
     DOMElements.spinner.classList.remove('hidden');
@@ -300,38 +412,13 @@ async function saveAndContinue() {
 }
 
 // Event Listeners
-['input', 'change'].forEach(evt => {
-    DOMElements.elementEditor.addEventListener(evt, updateElementFromSidebar);
-});
-
-DOMElements.fontBold.addEventListener('click', () => {
-    if (!selectedElement) return;
-    selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700;
-    updateSidebar();
-    updateElementFromSidebar();
-});
-DOMElements.fontItalic.addEventListener('click', () => {
-    if (!selectedElement) return;
-    selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic';
-    updateSidebar();
-    updateElementFromSidebar();
-});
-DOMElements.textAlignContainer.addEventListener('click', (e) => {
-    if (e.target.tagName === 'BUTTON' && e.target.dataset.align) {
-        if (!selectedElement) return;
-        selectedElement.textAlign = e.target.dataset.align;
-        updateSidebar();
-        updateElementFromSidebar();
-    }
-});
-DOMElements.canvasContainer.addEventListener('click', () => {
-     if (selectedElement) {
-        document.getElementById(selectedElement.id)?.classList.remove('selected');
-    }
-    selectedElement = null;
-    DOMElements.noElementSelected.classList.remove('hidden');
-    DOMElements.elementEditor.classList.add('hidden');
-});
+DOMElements.textEditor.addEventListener('input', updateElementFromSidebar);
+DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar);
+DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement) return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementFromSidebar(); });
+DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement) return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementFromSidebar(); });
+DOMElements.textAlignContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' && e.target.dataset.align) { if (!selectedElement) return; selectedElement.textAlign = e.target.dataset.align; updateSidebarForText(); updateElementFromSidebar(); } });
+DOMElements.canvasContainer.addEventListener('mousedown', () => { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); });
+DOMElements.addTextBtn.addEventListener('click', addNewText);
 DOMElements.saveButton.addEventListener('click', saveAndContinue);
 
 // Initialization
@@ -339,6 +426,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const templateId = urlParams.get('template') || 'modern';
 activeTemplate = JSON.parse(JSON.stringify(templates[templateId])); // Deep copy to allow edits
 
+populateIcons();
 renderTemplate();
 </script>
 
