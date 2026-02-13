@@ -1,0 +1,8 @@
+
+{
+  "name": "Copy 1 of Simple HTML Welcome Page",
+  "description": "A very simple and elegant single-page website built with only HTML and Tailwind CSS, showcasing a welcome message.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
