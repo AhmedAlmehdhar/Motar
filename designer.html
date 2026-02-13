@@ -61,6 +61,7 @@
     <h1 class="text-lg font-bold text-gray-100" data-lang-key="headerTitle">Card Designer</h1>
     <div class="flex items-center gap-4">
         <a href="templates.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToTemplates">&larr; Back to Templates</a>
+        <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors">AR</button>
         <button id="save-design-button" class="font-bold text-sm bg-green-600 hover:bg-green-500 text-white rounded-md px-4 py-2 transition-colors flex items-center gap-2">
             <span data-lang-key="saveBtn">Save & Continue</span>
             <div id="btn-spinner" class="hidden h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent"></div>
@@ -191,6 +192,7 @@ const DOMElements = {
     addIconBtn: document.getElementById('add-icon-btn'),
     saveButton: document.getElementById('save-design-button'),
     spinner: document.getElementById('btn-spinner'),
+    langSwitcher: document.getElementById('lang-switcher'),
     iconLibraryModal: document.getElementById('icon-library-modal'),
     closeModalBtn: document.getElementById('close-modal-btn'),
     iconSearchInput: document.getElementById('icon-search-input'),
@@ -204,16 +206,23 @@ const translations = {
 };
 
 let currentLang = localStorage.getItem('language') || 'en';
-document.documentElement.lang = currentLang;
-document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-document.querySelectorAll('[data-lang-key]').forEach(el => {
-    const key = el.getAttribute('data-lang-key');
-    if (translations[currentLang][key]) {
-        if(el.placeholder !== undefined) el.placeholder = translations[currentLang][key];
-        else el.textContent = translations[currentLang][key];
-    }
-});
-document.title = translations[currentLang].headerTitle;
+
+const setLanguage = (lang) => {
+    localStorage.setItem('language', lang);
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    DOMElements.langSwitcher.textContent = lang === 'ar' ? 'EN' : 'AR';
+    document.querySelectorAll('[data-lang-key]').forEach(el => {
+        const key = el.getAttribute('data-lang-key');
+        if (translations[lang][key]) {
+            if(el.placeholder !== undefined) el.placeholder = translations[lang][key];
+            else el.textContent = translations[lang][key];
+        }
+    });
+    document.title = translations[lang].headerTitle;
+};
+
 
 const templates = {
     modern: { backgroundColor: '#0d1a2f', elements: [ { id: 'el1', type: 'text', content: 'احفظ التاريخ', x: 50, y: 25, color: '#a5b4fc', fontFamily: "'Cairo', sans-serif", fontSize: 24, fontWeight: 300, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.2em' }, { id: 'el2', type: 'text', content: 'س & م', x: 50, y: 40, color: '#ffffff', fontFamily: "'Cairo', sans-serif", fontSize: 96, fontWeight: 800, fontStyle: 'normal', textAlign: 'center' }, { id: 'el3', type: 'text', content: '٢٤ أغسطس ٢٠٢٤', x: 50, y: 55, color: '#ffffff', fontFamily: "'Cairo', sans-serif", fontSize: 22, fontWeight: 600, fontStyle: 'normal', textAlign: 'center' } ] },
@@ -257,9 +266,11 @@ DOMElements.addIconBtn.addEventListener('click', () => DOMElements.iconLibraryMo
 DOMElements.closeModalBtn.addEventListener('click', () => DOMElements.iconLibraryModal.classList.add('hidden'));
 DOMElements.iconSearchInput.addEventListener('input', filterIcons);
 DOMElements.saveButton.addEventListener('click', saveAndContinue);
+DOMElements.langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
 window.addEventListener('resize', resizeCanvas);
 const urlParams = new URLSearchParams(window.location.search); const templateId = urlParams.get('template') || 'modern'; activeTemplate = JSON.parse(JSON.stringify(templates[templateId]));
 populateIconLibrary(); renderTemplate(); resizeCanvas();
+setLanguage(currentLang);
 </script>
 
 </body>
