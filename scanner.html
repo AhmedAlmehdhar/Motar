@@ -97,20 +97,13 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-import { getDatabase, ref as databaseRef, onValue, update } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+import { getDatabase, ref as databaseRef, onValue, update, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.body.style.display = 'block';
-    } else {
-        window.location.href = 'login.html';
-    }
-});
+let currentUser = null;
 
 document.getElementById('logout-button').addEventListener('click', () => {
     signOut(auth);
@@ -158,32 +151,33 @@ const canvasEl = document.getElementById('qrCanvas');
 const context = canvasEl.getContext('2d', { willReadFrequently: true });
 let isScanning = false;
 
-document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
-
 function readData() {
-    onValue(databaseRef(database), snapshot => {
+    if (!currentUser) return;
+    onValue(databaseRef(database, `users/${currentUser.uid}/guests`), snapshot => {
         const data = snapshot.val();
         const outputDiv = document.getElementById('output');
         scannedBarcodes.clear();
-        if (!data || typeof data !== 'object') {
-            outputDiv.innerHTML = `<p class="text-center text-gray-400">${translations[currentLang].noGuests}</p>`;
+        if (!data) {
+            outputDiv.innerHTML = `<p>${translations[currentLang].noGuests}</p>`;
             return;
         }
-        const parentNodes = Object.keys(data).sort().reverse();
+        
+        const guests = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
+        
         let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr>
                         <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th>
                         <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderStatus}</th></tr></thead>
                         <tbody class="text-gray-300">`;
-        parentNodes.forEach(parentNode => {
-            const nodeData = data[parentNode];
-            const isScanned = nodeData.scanned === true;
-            if (isScanned && nodeData['رقم_عشوائي']) scannedBarcodes.add(nodeData['رقم_عشوائي']);
+        
+        guests.forEach(guest => {
+            const isScanned = guest.scanned === true;
+            if (isScanned && guest['رقم_عشوائي']) scannedBarcodes.add(guest['رقم_عشوائي']);
             
             const statusText = isScanned ? translations[currentLang].statusCheckedIn : translations[currentLang].statusNotHere;
             const statusClass = isScanned ? 'bg-green-500/20 text-green-300' : 'bg-slate-500/20 text-slate-300';
 
-            tableHTML += `<tr id="row-${parentNode}" class="border-b border-white/10 hover:bg-white/5 transition-colors">
-                    <td class="py-4 px-4 font-semibold text-white">${nodeData['الإسم'] || ''}</td>
+            tableHTML += `<tr id="row-${guest.id}" class="border-b border-white/10 hover:bg-white/5 transition-colors">
+                    <td class="py-4 px-4 font-semibold text-white">${guest['الإسم'] || ''}</td>
                     <td class="py-4 px-4 status-cell"><span class="${statusClass} text-xs font-medium px-2.5 py-1 rounded-full">${statusText}</span></td></tr>`;
         });
         tableHTML += `</tbody></table></div>`;
@@ -243,30 +237,33 @@ function tick() {
     animationFrameId = requestAnimationFrame(tick);
 }
 
-function handleScan(qrCodeData) {
-    onValue(databaseRef(database), (snapshot) => {
-        const data = snapshot.val();
-        let found = false, alreadyScanned = false, parentId = null;
-        for (const key in data) {
-            if (data[key]['رقم_عشوائي'] === qrCodeData) {
-                found = true;
-                parentId = key;
-                alreadyScanned = data[key].scanned === true;
-                break;
+async function handleScan(qrCodeData) {
+    if (!currentUser) return;
+    const guestsRef = databaseRef(database, `users/${currentUser.uid}/guests`);
+    const q = query(guestsRef, orderByChild('رقم_عشوائي'), equalTo(qrCodeData));
+    
+    try {
+        const snapshot = await get(q);
+        if (snapshot.exists()) {
+            const guestId = Object.keys(snapshot.val())[0];
+            const guestData = snapshot.val()[guestId];
+            
+            if (guestData.scanned) {
+                showNotification('scanAlready', 'red');
+                document.getElementById('alreadySound').play().catch(()=>{});
+            } else {
+                showNotification('scanSuccess', 'green');
+                document.getElementById('successSound').play().catch(()=>{});
+                const updates = { scanned: true, scanDate: new Date().toISOString() };
+                await update(databaseRef(database, `users/${currentUser.uid}/guests/${guestId}`), updates);
             }
-        }
-        if (found && !alreadyScanned) {
-            showNotification('scanSuccess', 'green');
-            document.getElementById('successSound').play().catch(() => {});
-            update(databaseRef(database, parentId), { scanned: true, scanDate: new Date().toISOString() });
-        } else if (found && alreadyScanned) {
-            showNotification('scanAlready', 'red');
-            document.getElementById('alreadySound').play().catch(() => {});
-        } else if (!found) {
+        } else {
             showNotification('scanNotFound', 'yellow');
-            document.getElementById('notFoundSound').play().catch(() => {});
+            document.getElementById('notFoundSound').play().catch(()=>{});
         }
-    }, { onlyOnce: true });
+    } catch (error) {
+        console.error("Error handling scan:", error);
+    }
 }
 
 function showNotification(messageKey, type = 'green') {
@@ -280,6 +277,16 @@ function showNotification(messageKey, type = 'green') {
         notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)';
     }, 3000);
 }
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        document.body.style.display = 'block';
+        setLanguage(currentLang);
+    } else {
+        window.location.href = 'login.html';
+    }
+});
 </script>
 </body>
 </html>
