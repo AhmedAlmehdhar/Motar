@@ -8,7 +8,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&family=Amiri:wght@700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&family=Amiri:wght@700&family=Dancing+Script:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root { --font-main: 'Plus Jakarta Sans', sans-serif; }
   html[lang="ar"] { --font-main: 'Cairo', sans-serif; }
@@ -101,14 +101,52 @@
         <h3 class="font-bold text-lg text-white" data-lang-key="template3Title">Classic Elegance</h3>
       </div>
     </a>
+    
+    <!-- Template 4: Watercolor -->
+    <a href="designer.html?template=watercolor" class="group block glass-card rounded-2xl overflow-hidden template-card">
+      <div class="aspect-[3/4] bg-[#F8F9FA] p-6 flex flex-col justify-center items-center text-center text-[#4B5563] relative">
+        <span class="absolute text-9xl text-red-500/10 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2">🌸</span>
+        <p style="font-family: 'Dancing Script', cursive;" class="text-3xl">Kindly join us for the wedding of</p>
+        <p style="font-family: 'Amiri', serif;" class="text-5xl font-bold text-red-500 my-4">Amelia & Noah</p>
+        <p style="font-family: 'Plus Jakarta Sans', sans-serif;" class="text-sm">SATURDAY, 25 OCTOBER 2025</p>
+      </div>
+      <div class="p-4 bg-slate-800">
+        <h3 class="font-bold text-lg text-white" data-lang-key="template4Title">Watercolor Bloom</h3>
+      </div>
+    </a>
+
+    <!-- Template 5: Gilded Art Deco -->
+    <a href="designer.html?template=artdeco" class="group block glass-card rounded-2xl overflow-hidden template-card">
+       <div class="aspect-[3/4] bg-[#2c3e50] p-6 flex flex-col justify-around items-center text-center text-[#D4AF37] border-8 border-[#D4AF37]">
+          <p style="font-family: 'Roboto', sans-serif;" class="text-sm font-bold tracking-[0.3em]">TOGETHER WITH THEIR FAMILIES</p>
+          <p style="font-family: 'Amiri', serif;" class="text-6xl text-white leading-tight">Eleanora<br>&amp;<br>Jasper</p>
+          <p style="font-family: 'Roboto', sans-serif;" class="text-sm font-bold tracking-[0.3em]">SATURDAY | 10.12.2025</p>
+       </div>
+       <div class="p-4 bg-slate-800">
+        <h3 class="font-bold text-lg text-white" data-lang-key="template5Title">Gilded Art Deco</h3>
+      </div>
+    </a>
+
+    <!-- Template 6: Boho Chic -->
+    <a href="designer.html?template=boho" class="group block glass-card rounded-2xl overflow-hidden template-card">
+       <div class="aspect-[3/4] bg-[#EAE7E1] p-6 flex flex-col justify-center items-center text-center text-[#5a4e46]">
+          <p class="text-5xl text-[#BF8A6B]">🌿</p>
+          <p style="font-family: 'Dancing Script', cursive;" class="text-7xl my-4">Luna & Kai</p>
+          <p style="font-family: 'Plus Jakarta Sans', sans-serif;" class="text-sm font-bold text-[#BF8A6B] tracking-widest">ARE GETTING MARRIED</p>
+           <p class="mt-8 text-lg" style="font-family: 'Roboto', sans-serif;">12.08.2025</p>
+       </div>
+       <div class="p-4 bg-slate-800">
+        <h3 class="font-bold text-lg text-white" data-lang-key="template6Title">Boho Chic</h3>
+      </div>
+    </a>
 
   </div>
 </main>
 
 <script type="module">
 const translations = {
-    en: { headerTitle: "Choose a Template", backToHub: "← Back to Hub", mainTitle: "Select a Starting Point", subtitle: "Each template is fully customizable in the next step. Click on a design to start editing.", template1Title: "Modern & Clean", template2Title: "Elegant Floral", template3Title: "Classic Elegance" },
-    ar: { headerTitle: "اختر قالبًا", backToHub: "→ العودة للمركز", mainTitle: "اختر نقطة البداية", subtitle: "كل قالب قابل للتخصيص بالكامل في الخطوة التالية. انقر على التصميم لبدء التعديل.", template1Title: "عصري ونظيف", template2Title: "زهري أنيق", template3Title: "أناقة كلاسيكية" }
+    en: { headerTitle: "Choose a Template", backToHub: "← Back to Hub", mainTitle: "Select a Starting Point", subtitle: "Each template is fully customizable in the next step. Click on a design to start editing.", template1Title: "Modern & Clean", template2Title: "Elegant Floral", template3Title: "Classic Elegance", template4Title: "Watercolor Bloom", template5Title: "Gilded Art Deco", template6Title: "Boho Chic" },
+    ar: { headerTitle: "اختر قالبًا", backToHub: "→ العودة للمركز", mainTitle: "اختر نقطة البداية", subtitle: "كل قالب قابل للتخصيص بالكامل في الخطوة التالية. انقر على التصميم لبدء التعديل.", template1Title: "عصري ونظيف", template2Title: "زهري أنيق", template3Title: "أناقة كلاسيكية", template4Title: "ألوان مائية", template5Title: "آرت ديكو ذهبي", template6Title: "بوهيمي أنيق" }
 };
 
 const langSwitcher = document.getElementById('lang-switcher');
