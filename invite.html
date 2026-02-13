@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>دعوة زواج</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
@@ -104,6 +103,13 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    #notification {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.1em;
+      min-height: 25px;
+      transition: color 0.3s ease;
+    }
     #lang-switcher-invite {
         position: fixed;
         top: 20px;
@@ -117,7 +123,6 @@
         color: #B999A1;
         cursor: pointer;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        z-index: 50;
     }
     html[dir="rtl"] #lang-switcher-invite {
         right: auto;
@@ -142,10 +147,9 @@
           <button class="yes" disabled data-lang-key="yes">نعم</button>
           <button class="no" disabled data-lang-key="no">لا</button>
         </div>
+        <div id="notification"></div>
     </div>
   </div>
-  
-  <div id="notification" class="fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-2 px-5 rounded-lg shadow-lg transform translate-x-full rtl:-translate-x-full opacity-0 transition-all duration-500 ease-in-out z-50"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
@@ -185,10 +189,10 @@
     const canvas = document.getElementById("cardCanvas");
     const loadingDiv = document.getElementById("loading");
     const rsvpSection = document.getElementById("rsvp-section");
+    const notif = document.getElementById("notification");
     const yesBtn = document.querySelector(".yes");
     const noBtn = document.querySelector(".no");
     const langSwitcher = document.getElementById('lang-switcher-invite');
-    let notificationTimeout;
 
     const setLanguage = (lang) => {
         localStorage.setItem('language', lang);
@@ -214,32 +218,6 @@
 
     function getTranslatedText(key) {
         return translations[getCurrentLanguage()][key];
-    }
-    
-    function showNotification(message, type = 'green') {
-        const notification = document.getElementById('notification');
-        if (!notification) return;
-
-        clearTimeout(notificationTimeout);
-
-        const colors = {
-            green: 'bg-emerald-500',
-            red: 'bg-rose-500',
-            yellow: 'bg-amber-500'
-        };
-        
-        notification.className = `fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-2 px-5 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out z-50 ${colors[type] || 'bg-slate-600'}`;
-        notification.textContent = message;
-
-        requestAnimationFrame(() => {
-            notification.classList.remove('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-            notification.classList.add('translate-x-0', 'opacity-100');
-        });
-
-        notificationTimeout = setTimeout(() => {
-            notification.classList.add('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-            notification.classList.remove('translate-x-0', 'opacity-100');
-        }, 3000);
     }
 
     try {
@@ -272,6 +250,11 @@
       img.onerror = () => { throw new Error(getTranslatedText("loadError")); };
       img.src = imgUrl;
 
+      function showNotification(message, color = "#A98990") {
+        notif.textContent = message;
+        notif.style.color = color;
+      }
+
       async function recordAnswer(answer) {
         if (!cardId) return;
         yesBtn.disabled = true;
@@ -279,9 +262,9 @@
         const answerText = answer === 'Yes' ? getTranslatedText('yes') : getTranslatedText('no');
         try {
           await update(databaseRef(database, cardId), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
-          showNotification(getTranslatedText("answerRecorded") + answerText, 'green');
+          showNotification(getTranslatedText("answerRecorded") + answerText);
         } catch (e) {
-          showNotification(getTranslatedText("answerError") + e.message, 'red');
+          showNotification(getTranslatedText("answerError") + e.message, "red");
           checkPreviousAnswer();
         }
       }
@@ -296,7 +279,7 @@
           const data = snapshot.val();
           if (data && data.حضور) {
             const answerDisplay = data.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
-            showNotification(getTranslatedText("alreadyAnswered") + answerDisplay, 'yellow');
+            showNotification(getTranslatedText("alreadyAnswered") + answerDisplay);
           } else {
             yesBtn.disabled = false;
             noBtn.disabled = false;
