@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Step 1: Customize Invitation</title>
+<title>Step 1: Design Your Card</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,7 +49,7 @@
 
 <header class="bg-slate-900/50 backdrop-blur-lg border-b border-white/10 sticky top-0 z-20">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold text-gray-100" data-lang-key="headerTitle">Step 1: Customize Your Invitation</h1>
+    <h1 class="text-xl font-bold text-gray-100" data-lang-key="headerTitle">Step 1: Design Your Card</h1>
     <div class="flex items-center gap-4">
         <a href="index.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToHub">&larr; Back to Hub</a>
         <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors">AR</button>
@@ -60,9 +60,25 @@
 
 <main class="container mx-auto p-4 md:p-8 flex flex-col items-center">
   <div class="w-full max-w-7xl">
-    <div id="editor-section">
+    <div id="template-selection-section">
+        <div class="glass-card p-6 rounded-2xl">
+            <h2 class="text-2xl font-bold text-gray-100 mb-6 text-center" data-lang-key="selectTemplateTitle">1. Choose a Template</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="template-choice cursor-pointer group" data-template-url="https://firebasestorage.googleapis.com/v0/b/final-draft-8f39d.appspot.com/o/template_preview.jpg?alt=media&token=e9e6a71d-1510-4824-9b2f-2875f56b06e4">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/final-draft-8f39d.appspot.com/o/template_preview.jpg?alt=media&token=e9e6a71d-1510-4824-9b2f-2875f56b06e4" alt="Elegant Floral Template" class="rounded-lg w-full h-auto border-4 border-slate-700/50 group-hover:border-indigo-500 transition-all duration-300">
+                    <p class="text-center mt-3 font-semibold text-gray-300 group-hover:text-white transition-colors" data-lang-key="template1Name">Elegant Floral</p>
+                </div>
+                <div class="template-choice cursor-pointer group" data-template-url="https://i.ibb.co/jZ6D1nv/Screen-Shot-2026-02-13-at-11-01-22-AM.png">
+                    <img src="https://i.ibb.co/jZ6D1nv/Screen-Shot-2026-02-13-at-11-01-22-AM.png" alt="Modern Geometric Template" class="rounded-lg w-full h-auto border-4 border-slate-700/50 group-hover:border-indigo-500 transition-all duration-300">
+                     <p class="text-center mt-3 font-semibold text-gray-300 group-hover:text-white transition-colors" data-lang-key="template2Name">Modern Geometric</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editor-section" class="hidden">
       <div class="glass-card p-6 rounded-2xl">
-        <h2 class="text-xl font-semibold text-gray-100 mb-2" data-lang-key="editorTitle">1. Position & Style Guest Details</h2>
+        <h2 class="text-xl font-semibold text-gray-100 mb-2" data-lang-key="editorTitle">2. Position & Style Guest Details</h2>
         <p class="text-sm text-gray-400 mb-6" data-lang-key="editorDesc">Drag the placeholders to position them and use the controls on the right to customize their appearance.</p>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div id="positioning-area" class="lg-col-span-2 relative inline-block select-none overflow-hidden rounded-lg border-2 border-white/10 bg-black">
@@ -133,8 +149,8 @@
     });
     
     const translations = {
-        en: { headerTitle: "Step 1: Customize Your Invitation", backToHub: "← Back to Hub", editorTitle: "1. Position & Style Guest Details", editorDesc: "Drag the placeholders to position them and use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", designSaved: "Design saved! Redirecting...", logout: "Logout" },
-        ar: { headerTitle: "الخطوة ١: تخصيص دعوتك", backToHub: "→ العودة للمركز", editorTitle: "١. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "اسحب العناصر لتحديد أماكنها واستخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", logout: "تسجيل الخروج" }
+        en: { headerTitle: "Step 1: Design Your Card", backToHub: "← Back to Hub", selectTemplateTitle: "1. Choose a Template", template1Name: "Elegant Floral", template2Name: "Modern Geometric", editorTitle: "2. Position & Style Guest Details", editorDesc: "Drag the placeholders to position them and use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", designSaved: "Design saved! Redirecting...", logout: "Logout" },
+        ar: { headerTitle: "الخطوة ١: تصميم بطاقتك", backToHub: "→ العودة للمركز", selectTemplateTitle: "١. اختر قالبًا", template1Name: "أزهار أنيقة", template2Name: "هندسي حديث", editorTitle: "٢. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "اسحب العناصر لتحديد أماكنها واستخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", logout: "تسجيل الخروج" }
     };
     const langSwitcher = document.getElementById('lang-switcher');
     let currentLang = localStorage.getItem('language') || 'en';
@@ -155,15 +171,26 @@
     function initializeControls() { controls.color.value = settings.name.color; controls.family.value = settings.name.family; controls.size.value = settings.name.size; controls.rotation.value = settings.name.rotation; controls.bold.checked = settings.name.bold; controls.italic.checked = settings.name.italic; controls.shadow.checked = settings.name.shadow.enabled; controls.shadowColor.value = settings.name.shadow.color; controls.shadowBlur.value = settings.name.shadow.blur; controls.shadowX.value = settings.name.shadow.x; controls.shadowY.value = settings.name.shadow.y; controls.stroke.checked = settings.name.stroke.enabled; controls.strokeColor.value = settings.name.stroke.color; controls.strokeWidth.value = settings.name.stroke.width; controls.qrSize.value = settings.qr.size; controls.qrColorDark.value = settings.qr.colorDark; controls.qrColorLight.value = settings.qr.colorLight; }
     const saveAndRedirect = () => { if (!cardImageUrl) { return; } const areaRect = DOMElements.positioningArea.getBoundingClientRect(); const nameRect = DOMElements.namePlaceholder.getBoundingClientRect(); const qrRect = DOMElements.qrPlaceholder.getBoundingClientRect(); const cardTemplate = { imageUrl: cardImageUrl, nameSettings: { ...settings.name, x: (nameRect.left - areaRect.left + nameRect.width / 2) / areaRect.width, y: (nameRect.top - areaRect.top + nameRect.height / 2) / areaRect.height, fontSize: settings.name.size / areaRect.height }, qrSettings: { ...settings.qr, x: (qrRect.left - areaRect.left + qrRect.width / 2) / areaRect.width, y: (qrRect.top - areaRect.top + qrRect.height / 2) / areaRect.height, size: settings.qr.size / areaRect.width, } }; localStorage.setItem('cardTemplate', JSON.stringify(cardTemplate)); showNotification('designSaved', 'green'); setTimeout(() => window.location.href = 'manager.html', 1500); };
     
-    function initializeEditorWithTemplate() {
-        const BUILT_IN_TEMPLATE_URL = "https://firebasestorage.googleapis.com/v0/b/final-draft-8f39d.appspot.com/o/template_preview.jpg?alt=media&token=e9e6a71d-1510-4824-9b2f-2875f56b06e4";
-        cardImageUrl = BUILT_IN_TEMPLATE_URL;
-        DOMElements.editorImagePreview.src = BUILT_IN_TEMPLATE_URL;
+    function setupTemplateSelection() {
+        const selectionSection = document.getElementById('template-selection-section');
+        const editorSection = DOMElements.editorSection;
+        const choices = document.querySelectorAll('.template-choice');
+
+        choices.forEach(choice => {
+            choice.addEventListener('click', () => {
+                const selectedUrl = choice.dataset.templateUrl;
+                cardImageUrl = selectedUrl;
+                DOMElements.editorImagePreview.src = selectedUrl;
+
+                selectionSection.classList.add('hidden');
+                editorSection.classList.remove('hidden');
+            });
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         setLanguage(currentLang);
-        initializeEditorWithTemplate();
+        setupTemplateSelection();
     });
 
     initializeControls();
