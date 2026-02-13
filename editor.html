@@ -212,36 +212,8 @@
     // --- APP LOGIC START ---
 
     const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
+    let DOMElements = {};
     
-    const DOMElements = {
-        sideSelection: document.getElementById('side-selection-section'),
-        templateSection: document.getElementById('template-section'),
-        editorSection: document.getElementById('editor-section'),
-        imageUploader: document.getElementById('imageUploader'),
-        imagePreview: document.getElementById('imagePreview'),
-        continueToEditorBtn: document.getElementById('continue-to-editor-btn'),
-        uploadSpinner: document.getElementById('uploadSpinner'),
-        imageDropArea: document.getElementById('image-drop-area'),
-        positioningArea: document.getElementById('positioning-area'),
-        namePlaceholder: document.getElementById('name-placeholder'),
-        qrPlaceholder: document.getElementById('qr-placeholder'),
-        qrPlaceholderImg: document.getElementById('qr-placeholder-img'),
-        locationQrPlaceholder: document.getElementById('location-qr-placeholder'),
-        locationQrPlaceholderImg: document.getElementById('location-qr-placeholder-img'),
-        savePositionsButton: document.getElementById('save-positions-button'),
-        notification: document.getElementById('notification'),
-        templateGallery: document.getElementById('template-gallery'),
-        includeNameToggle: document.getElementById('include-name-toggle'),
-        includeLocationQrToggle: document.getElementById('include-location-qr-toggle'),
-        locationUrlGroup: document.getElementById('location-url-group'),
-        locationUrlInput: document.getElementById('location-url'),
-        nameCustomizationGroup: document.getElementById('name-customization-group'),
-        guestQrCustomizationGroup: document.getElementById('guest-qr-customization-group'),
-        locationQrCustomizationGroup: document.getElementById('location-qr-customization-group'),
-        backToSideSelectBtn: document.getElementById('back-to-side-select'),
-        backToTemplatesBtn: document.getElementById('back-to-templates'),
-    };
-
     const PRESET_TEMPLATES = [ "https://i.ibb.co/6r0M7r1/template1.jpg", "https://i.ibb.co/RPKC6rY/template2.jpg", "https://i.ibb.co/pzv5pJR/template3.jpg", "https://i.ibb.co/3kCg53g/template4.jpg" ];
     const FONT_OPTIONS = ['Amiri', 'Cairo', 'Roboto', 'Dancing Script'];
 
@@ -251,7 +223,37 @@
     let selectedCardImageUrl = null;
     let settings = {};
 
-    function initializeApp() {
+    function initializeEditor() {
+        // Defer DOM element selection until app starts
+        DOMElements = {
+            sideSelection: document.getElementById('side-selection-section'),
+            templateSection: document.getElementById('template-section'),
+            editorSection: document.getElementById('editor-section'),
+            imageUploader: document.getElementById('imageUploader'),
+            imagePreview: document.getElementById('imagePreview'),
+            continueToEditorBtn: document.getElementById('continue-to-editor-btn'),
+            uploadSpinner: document.getElementById('uploadSpinner'),
+            imageDropArea: document.getElementById('image-drop-area'),
+            positioningArea: document.getElementById('positioning-area'),
+            namePlaceholder: document.getElementById('name-placeholder'),
+            qrPlaceholder: document.getElementById('qr-placeholder'),
+            qrPlaceholderImg: document.getElementById('qr-placeholder-img'),
+            locationQrPlaceholder: document.getElementById('location-qr-placeholder'),
+            locationQrPlaceholderImg: document.getElementById('location-qr-placeholder-img'),
+            savePositionsButton: document.getElementById('save-positions-button'),
+            notification: document.getElementById('notification'),
+            templateGallery: document.getElementById('template-gallery'),
+            includeNameToggle: document.getElementById('include-name-toggle'),
+            includeLocationQrToggle: document.getElementById('include-location-qr-toggle'),
+            locationUrlGroup: document.getElementById('location-url-group'),
+            locationUrlInput: document.getElementById('location-url'),
+            nameCustomizationGroup: document.getElementById('name-customization-group'),
+            guestQrCustomizationGroup: document.getElementById('guest-qr-customization-group'),
+            locationQrCustomizationGroup: document.getElementById('location-qr-customization-group'),
+            backToSideSelectBtn: document.getElementById('back-to-side-select'),
+            backToTemplatesBtn: document.getElementById('back-to-templates'),
+        };
+
         try {
             const savedDesigns = JSON.parse(localStorage.getItem('invitationDesigns'));
             if (savedDesigns) { designs = savedDesigns; }
@@ -300,8 +302,7 @@
         DOMElements.includeNameToggle.addEventListener('change', updateOptionalElementsVisibility);
         DOMElements.includeLocationQrToggle.addEventListener('change', updateOptionalElementsVisibility);
         DOMElements.locationUrlInput.addEventListener('input', () => {
-            const currentLang = localStorage.getItem('language') || 'en';
-            updateLocationQrCode(DOMElements.locationUrlInput.value, currentLang);
+            updateLocationQrCode(DOMElements.locationUrlInput.value);
         });
     }
 
@@ -514,7 +515,7 @@
         createInput('fontColor', 'color', 'name-color', settings.name.style.color, nameGroup, (e) => { settings.name.style.color = e.target.value; applyNameStyle(); });
         createInput('fontFamily', 'select', 'name-font', settings.name.style.fontFamily, nameGroup, (e) => { settings.name.style.fontFamily = e.target.value; applyNameStyle(); }, { choices: FONT_OPTIONS });
         createInput('fontSize', 'range', 'name-size', settings.name.style.fontSize, nameGroup, (e) => { settings.name.style.fontSize = e.target.value; applyNameStyle(); }, { min: 12, max: 120, step: 1 });
-        createInput('rotation', 'range', 'name-rotation', (settings.name.style.transform.match(/-?\\d+/) || ['0'])[0], nameGroup, (e) => { settings.name.style.transform = `rotate(${e.target.value}deg)`; applyNameStyle(); }, { min: -45, max: 45, step: 1 });
+        createInput('rotation', 'range', 'name-rotation', (settings.name.style.transform.match(/-?\d+/) || ['0'])[0], nameGroup, (e) => { settings.name.style.transform = `rotate(${e.target.value}deg)`; applyNameStyle(); }, { min: -45, max: 45, step: 1 });
         createInput('bold', 'checkbox', 'name-bold', settings.name.style.fontWeight === 'bold', nameGroup, (e) => { settings.name.style.fontWeight = e.target.checked ? 'bold' : 'normal'; applyNameStyle(); });
         createInput('italic', 'checkbox', 'name-italic', settings.name.style.fontStyle === 'italic', nameGroup, (e) => { settings.name.style.fontStyle = e.target.checked ? 'italic' : 'normal'; applyNameStyle(); });
 
@@ -530,7 +531,6 @@
     }
 
     function applyAllSettings() {
-        const currentLang = localStorage.getItem('language') || 'en';
         applyNameStyle();
         applyQrStyle('guestQr');
         applyQrStyle('locationQr');
@@ -539,7 +539,7 @@
         DOMElements.includeLocationQrToggle.checked = settings.includeLocationQr;
         DOMElements.locationUrlInput.value = settings.locationUrl;
         updateOptionalElementsVisibility();
-        updateLocationQrCode(settings.locationUrl, currentLang);
+        updateLocationQrCode(settings.locationUrl);
     }
     
     function updateOptionalElementsVisibility() {
@@ -657,7 +657,7 @@
             document.body.style.display = 'block';
             const currentLang = localStorage.getItem('language') || 'en';
             setLanguage(currentLang);
-            initializeApp();
+            initializeEditor();
         } else { 
             window.location.href = 'login.html'; 
         } 
