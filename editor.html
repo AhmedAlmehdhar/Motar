@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Step 1: Design Card</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://sdk.canva.com/v3/beta/button.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Dancing+Script:wght@700&family=Roboto:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
@@ -59,29 +60,37 @@
 </header>
 
 <main class="container mx-auto p-4 md:p-8 flex flex-col items-center">
+  <div id="canva-api-key-warning" class="hidden w-full max-w-7xl mb-6 bg-red-900 border border-red-500/50 text-red-300 p-4 rounded-lg text-sm">
+    <strong class="font-bold block mb-1" data-lang-key="canvaApiWarningTitle">Canva Integration is not configured!</strong>
+    <p data-lang-key="canvaApiWarningBody">To enable the 'Design on Canva' feature, you must obtain a Canva API Key from the Canva for Developers portal and replace the placeholder "YOUR_CANVA_API_KEY" in the `editor.html` file with your actual key.</p>
+  </div>
+
   <div class="w-full max-w-7xl">
-    <div id="uploader-section" class="glass-card p-6 rounded-2xl text-center">
-        <h2 class="text-xl font-semibold text-gray-100 mb-2" data-lang-key="uploadTitle">1. Upload Your Card Design</h2>
-        <p class="text-sm text-gray-400 mb-6" data-lang-key="uploadDesc">Start by uploading your invitation background image. JPG or PNG are supported.</p>
-        <div id="drop-zone" class="mt-4 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-600 border-dashed rounded-md cursor-pointer hover:border-gray-500 transition-colors">
-            <div class="space-y-1 text-center">
-                <svg class="mx-auto h-12 w-12 text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
-                <div class="flex text-sm text-gray-400">
-                    <label for="file-upload" class="relative cursor-pointer bg-slate-800 rounded-md font-medium text-indigo-400 hover:text-indigo-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-slate-900 focus-within:ring-indigo-500 px-1">
-                        <span data-lang-key="uploadFile">Upload a file</span>
-                    </label>
-                    <input id="file-upload" name="file-upload" type="file" class="sr-only" accept="image/png, image/jpeg">
-                    <p class="pl-1" data-lang-key="dragDrop">or drag and drop</p>
+    <div id="uploader-section" class="glass-card p-6 md:p-8 rounded-2xl">
+        <h2 class="text-2xl font-bold text-gray-100 mb-6 text-center" data-lang-key="designChoiceTitle">1. Choose Your Design Method</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-8">
+            <!-- Option 1: Upload -->
+            <div class="text-center flex flex-col h-full">
+                <h3 class="font-semibold text-lg" data-lang-key="uploadOptionTitle">Upload Your Own</h3>
+                <p class="text-sm text-gray-400 mb-4" data-lang-key="uploadOptionDesc">For when you already have a complete design file.</p>
+                <div id="drop-zone" class="mt-4 flex flex-grow justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-600 border-dashed rounded-md cursor-pointer hover:border-gray-500 transition-colors">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        <div class="flex text-sm text-gray-400"><label for="file-upload" class="relative cursor-pointer bg-slate-800 rounded-md font-medium text-indigo-400 hover:text-indigo-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-slate-900 focus-within:ring-indigo-500 px-1"><span data-lang-key="uploadFile">Upload a file</span></label><input id="file-upload" name="file-upload" type="file" class="sr-only" accept="image/png, image/jpeg"><p class="pl-1" data-lang-key="dragDrop">or drag and drop</p></div>
+                        <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                <div id="upload-spinner" class="hidden mt-4"><div class="flex items-center justify-center gap-2 text-gray-300"><div class="h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent" role="status"></div><span data-lang-key="uploading">Uploading...</span></div></div>
             </div>
-        </div>
-        <div id="upload-spinner" class="hidden mt-4">
-            <div class="flex items-center justify-center gap-2 text-gray-300">
-                <div class="h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent" role="status"></div>
-                <span data-lang-key="uploading">Uploading...</span>
+            
+            <!-- Option 2: Canva -->
+            <div class="text-center flex flex-col h-full">
+                <h3 class="font-semibold text-lg" data-lang-key="canvaOptionTitle">Customize a Template</h3>
+                <p class="text-sm text-gray-400 mb-4" data-lang-key="canvaOptionDesc">Start with our professional template and edit it in Canva.</p>
+                <a href="https://www.canva.com/design/DAHBL3-aM7Y/bGLZcghgqs-U9Z-je3l6Cg/view" target="_blank" class="block mb-4 rounded-lg overflow-hidden border-2 border-slate-700 hover:border-indigo-500 transition-all"><img src="https://firebasestorage.googleapis.com/v0/b/final-draft-8f39d.appspot.com/o/template_preview.jpg?alt=media&token=e9e6a71d-1510-4824-9b2f-2875f56b06e4" alt="Canva Template Preview" class="w-full"></a>
+                <div class="flex-grow flex items-end justify-center">
+                    <canva-button id="canva-button" text="Edit Template on Canva" logo="true" type="--cta" size="--large"></canva-button>
+                </div>
             </div>
         </div>
     </div>
@@ -159,8 +168,8 @@
     });
     
     const translations = {
-        en: { headerTitle: "Step 1: Design Your Card", backToHub: "← Back to Hub", uploadTitle: "1. Upload Your Card Design", uploadDesc: "Start by uploading your invitation background image. JPG or PNG are supported.", uploadFile: "Upload a file", dragDrop: "or drag and drop", uploading: "Uploading...", uploadImageFirst: "Please upload an image first.", editorTitle: "2. Position & Style Guest Details", editorDesc: "Your design is loaded. Now, drag the placeholders to position them and use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", designSaved: "Design saved! Redirecting...", logout: "Logout" },
-        ar: { headerTitle: "الخطوة ١: تصميم بطاقتك", backToHub: "→ العودة للمركز", uploadTitle: "١. ارفع تصميم بطاقتك", uploadDesc: "ابدأ بتحميل صورة خلفية دعوتك. الصيغ المدعومة هي JPG, PNG.", uploadFile: "اختر ملف", dragDrop: "أو اسحبه وأفلته هنا", uploading: "جاري الرفع...", uploadImageFirst: "الرجاء رفع صورة أولاً.", editorTitle: "٢. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "تم تحميل تصميمك. الآن، اسحب العناصر لتحديد أماكنها واستخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", logout: "تسجيل الخروج" }
+        en: { headerTitle: "Step 1: Design Your Card", backToHub: "← Back to Hub", designChoiceTitle: "1. Choose Your Design Method", uploadOptionTitle: "Upload Your Own", uploadOptionDesc: "For when you already have a complete design file.", canvaOptionTitle: "Customize a Template", canvaOptionDesc: "Start with our professional template and edit it in Canva.", uploadFile: "Upload a file", dragDrop: "or drag and drop", uploading: "Uploading...", uploadImageFirst: "Please upload an image first.", editorTitle: "2. Position & Style Guest Details", editorDesc: "Your design is loaded. Now, drag the placeholders to position them and use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", designSaved: "Design saved! Redirecting...", logout: "Logout", canvaApiWarningTitle: "Canva Integration is not configured!", canvaApiWarningBody: "To enable the 'Design on Canva' feature, you must obtain a Canva API Key from the Canva for Developers portal and replace the placeholder \"YOUR_CANVA_API_KEY\" in the `editor.html` file with your actual key." },
+        ar: { headerTitle: "الخطوة ١: تصميم بطاقتك", backToHub: "→ العودة للمركز", designChoiceTitle: "١. اختر طريقة التصميم", uploadOptionTitle: "ارفع تصميمك الخاص", uploadOptionDesc: "إذا كان لديك ملف تصميم جاهز بالفعل.", canvaOptionTitle: "خصص قالبًا جاهزًا", canvaOptionDesc: "ابدأ بقالبنا الاحترافي وقم بتعديله في كانفا.", uploadFile: "اختر ملف", dragDrop: "أو اسحبه وأفلته هنا", uploading: "جاري الرفع...", uploadImageFirst: "الرجاء رفع صورة أولاً.", editorTitle: "٢. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "تم تحميل تصميمك. الآن، اسحب العناصر لتحديد أماكنها واستخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", logout: "تسجيل الخروج", canvaApiWarningTitle: "تكامل كانفا غير مهيأ!", canvaApiWarningBody: "لتمكين ميزة 'التصميم على كانفا'، يجب عليك الحصول على مفتاح API من بوابة مطوري كانفا واستبدال النص النائب \"YOUR_CANVA_API_KEY\" في ملف `editor.html` بالمفتاح الفعلي الخاص بك." }
     };
     const langSwitcher = document.getElementById('lang-switcher');
     let currentLang = localStorage.getItem('language') || 'en';
@@ -181,54 +190,67 @@
     function initializeControls() { controls.color.value = settings.name.color; controls.family.value = settings.name.family; controls.size.value = settings.name.size; controls.rotation.value = settings.name.rotation; controls.bold.checked = settings.name.bold; controls.italic.checked = settings.name.italic; controls.shadow.checked = settings.name.shadow.enabled; controls.shadowColor.value = settings.name.shadow.color; controls.shadowBlur.value = settings.name.shadow.blur; controls.shadowX.value = settings.name.shadow.x; controls.shadowY.value = settings.name.shadow.y; controls.stroke.checked = settings.name.stroke.enabled; controls.strokeColor.value = settings.name.stroke.color; controls.strokeWidth.value = settings.name.stroke.width; controls.qrSize.value = settings.qr.size; controls.qrColorDark.value = settings.qr.colorDark; controls.qrColorLight.value = settings.qr.colorLight; }
     const saveAndRedirect = () => { if (!cardImageUrl) { showNotification('uploadImageFirst', 'red', true); return; } const areaRect = DOMElements.positioningArea.getBoundingClientRect(); const nameRect = DOMElements.namePlaceholder.getBoundingClientRect(); const qrRect = DOMElements.qrPlaceholder.getBoundingClientRect(); const cardTemplate = { imageUrl: cardImageUrl, nameSettings: { ...settings.name, x: (nameRect.left - areaRect.left + nameRect.width / 2) / areaRect.width, y: (nameRect.top - areaRect.top + nameRect.height / 2) / areaRect.height, fontSize: settings.name.size / areaRect.height }, qrSettings: { ...settings.qr, x: (qrRect.left - areaRect.left + qrRect.width / 2) / areaRect.width, y: (qrRect.top - areaRect.top + qrRect.height / 2) / areaRect.height, size: settings.qr.size / areaRect.width, } }; localStorage.setItem('cardTemplate', JSON.stringify(cardTemplate)); showNotification('designSaved', 'green'); setTimeout(() => window.location.href = 'manager.html', 1500); };
     
+    function proceedToEditor(url) {
+        cardImageUrl = url;
+        DOMElements.editorImagePreview.src = url;
+        DOMElements.uploaderSection.classList.add('hidden');
+        DOMElements.editorSection.classList.remove('hidden');
+    }
+
     function setupUploader() {
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-upload');
         const uploadSpinner = document.getElementById('upload-spinner');
-
         const handleFiles = (files) => {
             if (files.length === 0) return;
             const file = files[0];
             uploadSpinner.classList.remove('hidden');
             dropZone.style.display = 'none';
-
             uploadAndSetUrl(file, (url) => {
-                cardImageUrl = url;
-                DOMElements.editorImagePreview.src = url;
-                DOMElements.uploaderSection.classList.add('hidden');
-                DOMElements.editorSection.classList.remove('hidden');
+                proceedToEditor(url);
                 uploadSpinner.classList.add('hidden');
                 dropZone.style.display = 'flex';
             });
         };
-
         dropZone.addEventListener('click', () => fileInput.click());
         fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('border-indigo-500'); });
+        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('border-indigo-500'); });
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('border-indigo-500'); handleFiles(e.dataTransfer.files); });
+    }
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropZone.classList.add('border-indigo-500');
-        });
-
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropZone.classList.remove('border-indigo-500');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropZone.classList.remove('border-indigo-500');
-            const files = e.dataTransfer.files;
-            handleFiles(files);
-        });
+    async function initializeCanvaButton() {
+        const CANVA_API_KEY = "YOUR_CANVA_API_KEY"; // <-- IMPORTANT: Replace with your actual Canva API key
+        
+        if (CANVA_API_KEY === "YOUR_CANVA_API_KEY" || !CANVA_API_KEY) {
+            document.getElementById('canva-api-key-warning').classList.remove('hidden');
+            document.getElementById('canva-button').style.display = 'none';
+            return; 
+        }
+    
+        try {
+            const api = await window.Canva.CanvaButton.initialize({ apiKey: CANVA_API_KEY });
+            const button = document.getElementById("canva-button");
+            button.onclick = async () => {
+                await api.createDesign({
+                    design: { id: 'DAHBL3-aM7Y', type: 'Design' },
+                    onPublish: (opts) => proceedToEditor(opts.exportUrl),
+                });
+            };
+        } catch (e) {
+            console.error("Canva Button initialization failed:", e);
+            const warningDiv = document.getElementById('canva-api-key-warning');
+            warningDiv.classList.remove('hidden');
+            warningDiv.querySelector('strong').textContent = "Canva Initialization Failed";
+            warningDiv.querySelector('p').textContent = "There was an error initializing the Canva button. This could be due to an invalid API key or a network issue. Please check your API key and the browser console for more details.";
+            document.getElementById('canva-button').style.display = 'none';
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         setLanguage(currentLang);
         setupUploader();
+        initializeCanvaButton();
     });
 
     initializeControls();
