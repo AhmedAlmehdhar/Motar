@@ -1,323 +1,119 @@
 
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دعوة زواج</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
-  <style>
-    :root { 
-      --font-ar: 'Amiri', serif;
-      --font-en: 'Plus Jakarta Sans', sans-serif;
-    }
-    body {
-      font-family: var(--font-ar);
-      text-align: center;
-      background-color: #FDFCFB;
-      background-image: url('https://www.transparenttextures.com/patterns/subtle-white-feathers.png');
-      color: #4a4a4a;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      box-sizing: border-box;
-    }
-    html[lang="en"] body {
-        font-family: var(--font-en);
-    }
-    .container {
-      max-width: 500px;
-      width: 100%;
-    }
-    h1 {
-      margin-bottom: 25px;
-      color: #B999A1;
-      font-weight: 700;
-      font-size: 2.5em;
-    }
-    canvas {
-      border-radius: 16px;
-      max-width: 100%;
-      height: auto;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-      margin-bottom: 30px;
-    }
-    .question {
-      margin-top: 20px;
-      background: white;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    }
-    .question p {
-      font-size: 1.3em;
-      margin-top: 0;
-      margin-bottom: 15px;
-    }
-    .question button {
-      padding: 14px 32px;
-      margin: 5px;
-      font-size: 1.1em;
-      font-family: inherit;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      color: white;
-      background-color: #C0A0A8;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(192, 160, 168, 0.3);
-    }
-    .question button:hover:not(:disabled) {
-      background-color: #A98990;
-      transform: translateY(-3px);
-      box-shadow: 0 7px 20px rgba(192, 160, 168, 0.4);
-    }
-    .question button:disabled {
-      background-color: #D9C8CC;
-      cursor: not-allowed;
-      opacity: 0.7;
-      box-shadow: none;
-    }
-    #loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 15px;
-      font-weight: bold;
-      font-size: 1.1em;
-      color: #333;
-    }
-    #spinner {
-      width: 20px; height: 20px;
-      border: 3px solid #D9C8CC;
-      border-top-color: #C0A0A8;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #lang-switcher-invite {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #fff;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        padding: 8px 12px;
-        font-size: 1em;
-        font-weight: bold;
-        color: #B999A1;
-        cursor: pointer;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        z-index: 50;
-    }
-    html[dir="rtl"] #lang-switcher-invite {
-        right: auto;
-        left: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Invitation Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --font-main: 'Plus Jakarta Sans', sans-serif; }
+        html[lang="ar"] { --font-main: 'Cairo', sans-serif; }
+        body { font-family: var(--font-main); background-color: #0f172a; background-image: radial-gradient(at 20% 25%, hsla(212,80%,30%,0.3) 0px, transparent 50%), radial-gradient(at 80% 20%, hsla(280,75%,40%,0.3) 0px, transparent 50%), radial-gradient(at 50% 80%, hsla(320,70%,50%,0.2) 0px, transparent 50%); }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15); }
+        .btn-primary { @apply font-bold py-3 px-6 rounded-lg text-white transition-all duration-300 ease-in-out; background: linear-gradient(90deg, #6366F1, #8B5CF6); box-shadow: 0 4px 15px 0 rgba(116, 79, 168, 0.5); }
+        .btn-primary:hover:not(:disabled) { @apply shadow-2xl scale-105; box-shadow: 0 6px 20px 0 rgba(116, 79, 168, 0.65); }
+    </style>
 </head>
-<body>
-  <button id="lang-switcher-invite">EN</button>
-  <div class="container">
-    <h1 data-lang-key="title">بطاقة الدعوة</h1>
-    <canvas id="cardCanvas" style="display: none;"></canvas>
+<body class="text-gray-200 flex items-center justify-center min-h-screen p-4">
 
-    <div id="loading">
-      <div id="spinner"></div>
-      <span data-lang-key="loading">جاري تحميل الكرت...</span>
+<div class="w-full max-w-md">
+    <div class="text-center mb-8">
+        <h1 data-lang-key="title" class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-300 to-gray-400">Invitation Hub</h1>
+        <p data-lang-key="subtitle" class="text-gray-400 mt-2">Please log in to continue</p>
     </div>
 
-    <div id="rsvp-section" style="display: none;">
-        <div class="question">
-          <p data-lang-key="question">هل ستتمكن من الحضور؟</p>
-          <button class="yes" disabled data-lang-key="yes">نعم</button>
-          <button class="no" disabled data-lang-key="no">لا</button>
-        </div>
+    <div class="glass-card p-8 rounded-2xl">
+        <form id="login-form">
+            <div class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="emailLabel">Email Address</label>
+                <input type="email" id="email" name="email" required class="w-full p-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" autocomplete="email">
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="passwordLabel">Password</label>
+                <input type="password" id="password" name="password" required class="w-full p-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" autocomplete="current-password">
+            </div>
+            <button type="submit" id="login-button" class="w-full btn-primary flex items-center justify-center gap-2">
+                <span data-lang-key="loginBtn">Login</span>
+                <div id="btn-spinner" class="hidden h-5 w-5 animate-spin rounded-full border-2 border-solid border-white border-r-transparent"></div>
+            </button>
+        </form>
     </div>
-  </div>
-  
-  <div id="notification" class="fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-2 px-5 rounded-lg shadow-lg transform translate-x-full rtl:-translate-x-full opacity-0 transition-all duration-500 ease-in-out z-50"></div>
+    
+    <p id="error-message" class="text-red-400 text-sm mt-4 text-center h-5"></p>
 
-  <script type="module">
+    <div class="text-center mt-4">
+         <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors">AR</button>
+    </div>
+</div>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getDatabase, ref as databaseRef, update, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
-
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
     const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
-
+    
     const translations = {
-        en: {
-            title: "Invitation Card",
-            loading: "Loading card...",
-            question: "Will you be able to attend?",
-            yes: "Yes",
-            no: "No",
-            invalidLink: "Invalid invitation link. Please make sure the link is correct.",
-            loadError: "Error loading the invitation card.",
-            answerRecorded: "Your answer has been recorded: ",
-            alreadyAnswered: "You have already answered: ",
-            answerError: "Error: ",
-            checkAnswerError: "Error checking previous answer.",
-        },
-        ar: {
-            title: "بطاقة الدعوة",
-            loading: "جاري تحميل الكرت...",
-            question: "هل ستتمكن من الحضور؟",
-            yes: "نعم",
-            no: "لا",
-            invalidLink: "رابط الدعوة غير صالح. يرجى التأكد من أن الرابط صحيح.",
-            loadError: "خطأ في تحميل صورة الكرت.",
-            answerRecorded: "تم تسجيل إجابتك: ",
-            alreadyAnswered: "لقد أجبت بالفعل: ",
-            answerError: "خطأ: ",
-            checkAnswerError: "خطأ في التحقق من الإجابة السابقة.",
-        }
+        en: { title: "Invitation Hub", subtitle: "Please log in to continue", emailLabel: "Email Address", passwordLabel: "Password", loginBtn: "Login", loginLoading: "Logging in...", error: "Invalid email or password. Please try again." },
+        ar: { title: "مركز الدعوات", subtitle: "الرجاء تسجيل الدخول للمتابعة", emailLabel: "البريد الإلكتروني", passwordLabel: "كلمة المرور", loginBtn: "تسجيل الدخول", loginLoading: "جاري التسجيل...", error: "البريد الإلكتروني أو كلمة المرور غير صحيحة. حاول مرة أخرى." }
     };
 
-    const canvas = document.getElementById("cardCanvas");
-    const loadingDiv = document.getElementById("loading");
-    const rsvpSection = document.getElementById("rsvp-section");
-    const yesBtn = document.querySelector(".yes");
-    const noBtn = document.querySelector(".no");
-    const langSwitcher = document.getElementById('lang-switcher-invite');
-    let notificationTimeout;
+    const langSwitcher = document.getElementById('lang-switcher');
+    let currentLang = localStorage.getItem('language') || 'en';
 
     const setLanguage = (lang) => {
         localStorage.setItem('language', lang);
+        currentLang = lang;
         document.documentElement.lang = lang;
         document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
         langSwitcher.textContent = lang === 'ar' ? 'EN' : 'AR';
-        
-        document.querySelectorAll('[data-lang-key]').forEach(element => {
-            const key = element.getAttribute('data-lang-key');
-            element.textContent = translations[lang][key];
+        document.querySelectorAll('[data-lang-key]').forEach(el => {
+            const key = el.getAttribute('data-lang-key');
+            if (translations[lang][key]) el.textContent = translations[lang][key];
         });
-        
-        document.title = translations[lang].title;
     };
 
-    const getCurrentLanguage = () => localStorage.getItem('language') || 'ar';
+    langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
     
-    langSwitcher.addEventListener('click', () => {
-        const newLang = getCurrentLanguage() === 'en' ? 'ar' : 'en';
-        setLanguage(newLang);
-        checkPreviousAnswer(); // Re-check to update notification language
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    
+    const loginForm = document.getElementById('login-form');
+    const loginButton = document.getElementById('login-button');
+    const spinner = document.getElementById('btn-spinner');
+    const errorMessage = document.getElementById('error-message');
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.location.href = 'index.html';
+        }
     });
 
-    function getTranslatedText(key) {
-        return translations[getCurrentLanguage()][key];
-    }
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+        
+        loginButton.disabled = true;
+        spinner.classList.remove('hidden');
+        loginButton.querySelector('span').textContent = translations[currentLang].loginLoading;
+        errorMessage.textContent = '';
+        
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            // onAuthStateChanged will handle redirection
+        } catch (error) {
+            errorMessage.textContent = translations[currentLang].error;
+            loginButton.disabled = false;
+            spinner.classList.add('hidden');
+            loginButton.querySelector('span').textContent = translations[currentLang].loginBtn;
+        }
+    });
     
-    function showNotification(message, type = 'green') {
-        const notification = document.getElementById('notification');
-        if (!notification) return;
+    document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
+</script>
 
-        clearTimeout(notificationTimeout);
-
-        const colors = {
-            green: 'bg-emerald-500',
-            red: 'bg-rose-500',
-            yellow: 'bg-amber-500'
-        };
-        
-        notification.className = `fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-2 px-5 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out z-50 ${colors[type] || 'bg-slate-600'}`;
-        notification.textContent = message;
-
-        requestAnimationFrame(() => {
-            notification.classList.remove('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-            notification.classList.add('translate-x-0', 'opacity-100');
-        });
-
-        notificationTimeout = setTimeout(() => {
-            notification.classList.add('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-            notification.classList.remove('translate-x-0', 'opacity-100');
-        }, 3000);
-    }
-
-    try {
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
-
-      const params = new URLSearchParams(window.location.search);
-      const imgUrl = params.get("img");
-      const cardId = params.get("id");
-
-      if (!imgUrl) throw new Error(getTranslatedText("invalidLink"));
-      
-      const ctx = canvas.getContext("2d");
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        
-        loadingDiv.style.display = "none";
-        canvas.style.display = "block";
-
-        if (cardId) {
-            rsvpSection.style.display = "block";
-            checkPreviousAnswer();
-        }
-      };
-      img.onerror = () => { throw new Error(getTranslatedText("loadError")); };
-      img.src = imgUrl;
-
-      async function recordAnswer(answer) {
-        if (!cardId) return;
-        yesBtn.disabled = true;
-        noBtn.disabled = true;
-        const answerText = answer === 'Yes' ? getTranslatedText('yes') : getTranslatedText('no');
-        try {
-          await update(databaseRef(database, cardId), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
-          showNotification(getTranslatedText("answerRecorded") + answerText, 'green');
-        } catch (e) {
-          showNotification(getTranslatedText("answerError") + e.message, 'red');
-          checkPreviousAnswer();
-        }
-      }
-      
-      async function checkPreviousAnswer() {
-        if (!cardId) return;
-        yesBtn.disabled = true;
-        noBtn.disabled = true;
-
-        try {
-          const snapshot = await get(databaseRef(database, cardId));
-          const data = snapshot.val();
-          if (data && data.حضور) {
-            const answerDisplay = data.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
-            showNotification(getTranslatedText("alreadyAnswered") + answerDisplay, 'yellow');
-          } else {
-            yesBtn.disabled = false;
-            noBtn.disabled = false;
-          }
-        } catch (e) {
-          console.error(e);
-          showNotification(getTranslatedText("checkAnswerError"), "red");
-        }
-      }
-      if(cardId) {
-        yesBtn.addEventListener("click", () => recordAnswer("Yes"));
-        noBtn.addEventListener("click", () => recordAnswer("No"));
-      }
-    } catch (error) {
-      loadingDiv.textContent = error.message;
-      loadingDiv.style.color = "red";
-      canvas.style.display = 'none';
-      rsvpSection.style.display = 'none';
-    }
-
-    setLanguage(getCurrentLanguage());
-  </script>
 </body>
 </html>
