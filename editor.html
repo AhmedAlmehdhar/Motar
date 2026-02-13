@@ -395,9 +395,12 @@
                 if (result.success) {
                     showNotification(translations[currentLang].uploadSuccess, 'green');
                     setupEditor(result.data.url);
-                } else { throw new Error(result.error.message); }
+                } else { 
+                    const errorMessage = result.error?.message || (typeof result.error === 'string' ? result.error : 'Image upload failed');
+                    throw new Error(errorMessage);
+                }
             } catch (error) {
-                showNotification(translations[currentLang].uploadFailed + error.message, 'red');
+                showNotification(translations[currentLang].uploadFailed + (error.message || 'An unknown error occurred.'), 'red');
             } finally {
                 DOMElements.uploadSpinner.classList.add('hidden');
                 DOMElements.continueToEditorBtn.disabled = false;
