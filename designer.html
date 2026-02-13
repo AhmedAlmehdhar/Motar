@@ -211,11 +211,12 @@ const templates = {
 };
 
 const icons = {
-    calendar: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zM4.5 6.75A1.25 1.25 0 015.75 8h8.5a1.25 1.25 0 011.25-1.25V6.75h-11v0zM5.75 10a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 015.75 10zm3 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018.75 10zm3 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75z" clip-rule="evenodd" /></svg>',
-    rings: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M8.22 6.112a4.5 4.5 0 10-5.644 5.644 4.5 4.5 0 005.644-5.644zM1.5 9.75a6 6 0 1111.43 2.016A4.496 4.496 0 009.75 6a4.496 4.496 0 00-4.266 2.016A5.96 5.96 0 011.5 9.75z" /><path d="M11.78 13.888a4.5 4.5 0 105.644-5.644 4.5 4.5 0 00-5.644 5.644zM18.5 10.25a6 6 0 11-11.43-2.016A4.496 4.496 0 0010.25 14a4.496 4.496 0 004.266-2.016 5.96 5.96 0 013.984-1.734z" /></svg>',
-    noPhone: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.903 4.097a.75.75 0 010 1.06l-11.83 11.83a.75.75 0 01-1.06-1.06l11.83-11.83a.75.75 0 011.06 0zm-2.23.167a.75.75 0 011.06 0l.969.97a.75.75 0 010 1.06l-3.38 3.38a.75.75 0 01-1.06-1.06l3.41-3.41zM3.96 13.98l-1.09-1.09a.75.75 0 010-1.06l8.06-8.06a.75.75 0 011.06 1.06l-8.06 8.06a.75.75 0 01-1.06 0zm6.521-1.06a.75.75 0 010 1.06l-1.09 1.09a.75.75 0 01-1.06-1.06l1.09-1.09a.75.75 0 011.06 0z" clip-rule="evenodd" /><path d="M6 3a3 3 0 00-3 3v8a3 3 0 003 3h8a3 3 0 003-3V6a3 3 0 00-3-3H6zm2.75 12.25a.75.75 0 000-1.5h2.5a.75.75 0 000 1.5h-2.5z" /></svg>',
-    dinner: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.067a1.5 1.5 0 01-2.93 0L4.22 3.175A.5.5 0 003.793 3H3.5a.5.5 0 00-.5.5v13a.5.5 0 00.5.5h.293a.5.5 0 00.447-.276l.78-1.56a1.5 1.5 0 012.94 0l.78 1.56a.5.5 0 00.447.276H9.5a.5.5 0 00.5-.5v-13a.5.5 0 00-.5-.5H9.207a.5.5 0 00-.447.276L8.04 4.74a1.5 1.5 0 01-2.93 0L4.394 1.675A1.5 1.5 0 015.858 0h8.284a1.5 1.5 0 011.465 1.175l.716 3.067a1.5 1.5 0 01-2.93 0l-.716-3.067a.5.5 0 00-.488-.425H12.5a.5.5 0 00-.5.5v13a.5.5 0 00.5.5h.293a.5.5 0 00.447-.276l.78-1.56a1.5 1.5 0 012.94 0l.78 1.56a.5.5 0 00.447.276H17.5a1.5 1.5 0 01-1.5-1.5V3.5a.5.5 0 00-.5-.5h-.207a.5.5 0 00-.447.276l-.716 1.432a1.5 1.5 0 01-2.93 0l-.716-1.432A.5.5 0 0010.207 3H10a1.5 1.5 0 01-1.5-1.5V0" /></svg>'
+    calendar: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6.5A1.5 1.5 0 013.5 5h13A1.5 1.5 0 0118 6.5v8a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 012 14.5v-8zM13 2.5a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-1 0v-1h-.5a.5.5 0 01-.5-.5zM6 2.5a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1a.5.5 0 01-1 0v-1H6.5a.5.5 0 01-.5-.5z"/></svg>',
+    couple: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a2.5 2.5 0 015 0V4a2 2 0 012 2v2a2 2 0 01-2 2h-.5a1 1 0 00-1 1v.5a3.5 3.5 0 01-7 0V9a1 1 0 00-1-1H5a2 2 0 01-2-2V6a2 2 0 012-2v-.5a2.5 2.5 0 015 0z" /><path d="M5.5 11.5a3.5 3.5 0 017 0V15a1.5 1.5 0 01-3 0V14a1 1 0 00-1-1h-1a1 1 0 00-1 1v1a1.5 1.5 0 01-3 0v-3.5z" /></svg>',
+    noPhone: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.903 4.097a.75.75 0 010 1.06l-11.83 11.83a.75.75 0 01-1.06-1.06l11.83-11.83a.75.75 0 011.06 0zM6 3a3 3 0 00-3 3v8a3 3 0 003 3h8a3 3 0 003-3V6a3 3 0 00-3-3H6zm2.75 12.25a.75.75 0 000-1.5h2.5a.75.75 0 000 1.5h-2.5z" clip-rule="evenodd" /></svg>',
+    dinner: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 2A2.5 2.5 0 003 4.5v11A2.5 2.5 0 005.5 18h9a2.5 2.5 0 002.5-2.5v-11A2.5 2.5 0 0014.5 2h-9zM4 4.5a1.5 1.5 0 011.5-1.5h9A1.5 1.5 0 0116 4.5v11a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 014 15.5v-11z" /><path d="M8.25 5a.75.75 0 000 1.5h3.5a.75.75 0 000-1.5h-3.5z" /></svg>'
 };
+
 
 let activeTemplate;
 let selectedElement = null;
@@ -330,9 +331,11 @@ function startDrag(e, elementId) {
 function dragMove(e) {
     if (!isDragging || !selectedElement) return;
     const containerRect = DOMElements.canvasContainer.getBoundingClientRect();
-    const x = e.clientX - containerRect.left - dragOffsetX + (selectedElement.size ? selectedElement.size/2 : 0);
-    const y = e.clientY - containerRect.top - dragOffsetY + (selectedElement.fontSize ? selectedElement.fontSize/2 : 0) + 10;
-    
+    const elRect = document.getElementById(selectedElement.id).getBoundingClientRect();
+
+    const x = e.clientX - containerRect.left - dragOffsetX + elRect.width / 2;
+    const y = e.clientY - containerRect.top - dragOffsetY + elRect.height / 2;
+
     selectedElement.x = (x / containerRect.width) * 100;
     selectedElement.y = (y / containerRect.height) * 100;
     
@@ -417,7 +420,14 @@ DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar);
 DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement) return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementFromSidebar(); });
 DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement) return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementFromSidebar(); });
 DOMElements.textAlignContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' && e.target.dataset.align) { if (!selectedElement) return; selectedElement.textAlign = e.target.dataset.align; updateSidebarForText(); updateElementFromSidebar(); } });
-DOMElements.canvasContainer.addEventListener('mousedown', () => { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); });
+DOMElements.canvasContainer.addEventListener('mousedown', (e) => { 
+    if (e.target === DOMElements.canvasContainer) {
+        document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); 
+        selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); 
+        DOMElements.textEditor.classList.add('hidden'); 
+        DOMElements.iconEditor.classList.add('hidden'); 
+    }
+});
 DOMElements.addTextBtn.addEventListener('click', addNewText);
 DOMElements.saveButton.addEventListener('click', saveAndContinue);
 
@@ -432,3 +442,4 @@ renderTemplate();
 
 </body>
 </html>
+```
