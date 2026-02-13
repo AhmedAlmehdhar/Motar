@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Step 2: Manage Guests</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBL5gI9kLmbG4dEINcFk1zgTgRpg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&family=Roboto:wght@400;700;900&family=Amiri:wght@700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
@@ -104,6 +103,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebas
 import { getDatabase, ref as databaseRef, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
+import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
 
 const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
 const app = initializeApp(firebaseConfig);
