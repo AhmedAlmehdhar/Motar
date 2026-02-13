@@ -250,17 +250,25 @@
     let settings = {};
 
     function initializeApp() {
-        const savedDesigns = JSON.parse(localStorage.getItem('invitationDesigns'));
-        if (savedDesigns) { designs = savedDesigns; }
+        try {
+            const savedDesigns = JSON.parse(localStorage.getItem('invitationDesigns'));
+            if (savedDesigns) { designs = savedDesigns; }
+        } catch (e) {
+            console.error("Could not parse designs from localStorage:", e);
+            localStorage.removeItem('invitationDesigns'); // Clear corrupted data
+        }
+        
         setupEventListeners();
         populateTemplateGallery();
-        setLanguage(currentLang);
         
-        const guestQrUrl = QRCode.toDataURL('Guest123', { errorCorrectionLevel: 'H', margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
-        const locationQrUrl = QRCode.toDataURL('https://maps.google.com', { errorCorrectionLevel: 'H', margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
-        Promise.all([guestQrUrl, locationQrUrl]).then(([guestUrl, locUrl]) => {
+        Promise.all([
+            QRCode.toDataURL('Guest123', { errorCorrectionLevel: 'H', margin: 2, color: { dark: '#000000', light: '#FFFFFF' } }),
+            QRCode.toDataURL('https://maps.google.com', { errorCorrectionLevel: 'H', margin: 2, color: { dark: '#000000', light: '#FFFFFF' } })
+        ]).then(([guestUrl, locUrl]) => {
             DOMElements.qrPlaceholderImg.src = guestUrl;
             DOMElements.locationQrPlaceholderImg.src = locUrl;
+        }).catch(err => {
+            console.error("Failed to generate placeholder QR codes:", err);
         });
     }
 
@@ -499,7 +507,7 @@
         createInput('fontColor', 'color', 'name-color', settings.name.style.color, nameGroup, (e) => { settings.name.style.color = e.target.value; applyNameStyle(); });
         createInput('fontFamily', 'select', 'name-font', settings.name.style.fontFamily, nameGroup, (e) => { settings.name.style.fontFamily = e.target.value; applyNameStyle(); }, { choices: FONT_OPTIONS });
         createInput('fontSize', 'range', 'name-size', settings.name.style.fontSize, nameGroup, (e) => { settings.name.style.fontSize = e.target.value; applyNameStyle(); }, { min: 12, max: 120, step: 1 });
-        createInput('rotation', 'range', 'name-rotation', settings.name.style.transform.match(/-?\d+/)[0], nameGroup, (e) => { settings.name.style.transform = `rotate(${e.target.value}deg)`; applyNameStyle(); }, { min: -45, max: 45, step: 1 });
+        createInput('rotation', 'range', 'name-rotation', settings.name.style.transform.match(/-?\\d+/)[0], nameGroup, (e) => { settings.name.style.transform = `rotate(${e.target.value}deg)`; applyNameStyle(); }, { min: -45, max: 45, step: 1 });
         createInput('bold', 'checkbox', 'name-bold', settings.name.style.fontWeight === 'bold', nameGroup, (e) => { settings.name.style.fontWeight = e.target.checked ? 'bold' : 'normal'; applyNameStyle(); });
         createInput('italic', 'checkbox', 'name-italic', settings.name.style.fontStyle === 'italic', nameGroup, (e) => { settings.name.style.fontStyle = e.target.checked ? 'italic' : 'normal'; applyNameStyle(); });
 
