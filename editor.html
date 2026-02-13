@@ -147,7 +147,7 @@
     </div>
   </div>
 </main>
-<div id="notification" class="fixed top-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
+<div id="notification" class="fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-full rtl:-translate-x-full opacity-0 transition-all duration-500 ease-in-out z-50"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
@@ -222,6 +222,7 @@
     let selectedFile = null;
     let selectedCardImageUrl = null;
     let settings = {};
+    let notificationTimeout;
 
     function initializeEditor() {
         // Defer DOM element selection until app starts
@@ -644,11 +645,27 @@
     
     function showNotification(message, type = 'green') {
         const notification = DOMElements.notification;
+        if (!notification) return;
+
+        clearTimeout(notificationTimeout);
+
+        const colors = {
+            green: 'bg-green-500',
+            red: 'bg-red-500',
+            yellow: 'bg-yellow-500'
+        };
+        
+        notification.className = `fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform transition-all duration-500 ease-in-out z-50 ${colors[type] || 'bg-gray-500'}`;
         notification.textContent = message;
-        notification.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transform transition-transform duration-500 ease-in-out bg-${type}-500`;
-        notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(0)'; // Adjust for RTL if needed
-        setTimeout(() => {
-            notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(120%)';
+
+        requestAnimationFrame(() => {
+            notification.classList.remove('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
+            notification.classList.add('translate-x-0', 'opacity-100');
+        });
+
+        notificationTimeout = setTimeout(() => {
+            notification.classList.add('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
+            notification.classList.remove('translate-x-0', 'opacity-100');
         }, 3000);
     }
     
