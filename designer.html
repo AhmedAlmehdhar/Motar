@@ -233,7 +233,6 @@ function renderTemplate() {
         div.id = el.id;
         div.className = 'editable-element';
         
-        // Apply styles
         div.style.left = `${el.x}%`;
         div.style.top = `${el.y}%`;
         
@@ -318,31 +317,45 @@ function startDrag(e, elementId) {
     e.preventDefault();
     selectElement(elementId);
     isDragging = true;
-    const el = document.getElementById(elementId);
-    const rect = el.getBoundingClientRect();
+    
     const containerRect = DOMElements.canvasContainer.getBoundingClientRect();
+    
+    const mouseX = e.clientX - containerRect.left;
+    const mouseY = e.clientY - containerRect.top;
 
-    dragOffsetX = e.clientX - rect.left + containerRect.left;
-    dragOffsetY = e.clientY - rect.top + containerRect.top;
+    const elementX = (selectedElement.x / 100) * containerRect.width;
+    const elementY = (selectedElement.y / 100) * containerRect.height;
+
+    dragOffsetX = mouseX - elementX;
+    dragOffsetY = mouseY - elementY;
 
     document.addEventListener('mousemove', dragMove);
     document.addEventListener('mouseup', stopDrag);
 }
+
 function dragMove(e) {
     if (!isDragging || !selectedElement) return;
+    e.preventDefault();
+    
     const containerRect = DOMElements.canvasContainer.getBoundingClientRect();
-    const elRect = document.getElementById(selectedElement.id).getBoundingClientRect();
 
-    const x = e.clientX - containerRect.left - dragOffsetX + elRect.width / 2;
-    const y = e.clientY - containerRect.top - dragOffsetY + elRect.height / 2;
+    const mouseX = e.clientX - containerRect.left;
+    const mouseY = e.clientY - containerRect.top;
 
-    selectedElement.x = (x / containerRect.width) * 100;
-    selectedElement.y = (y / containerRect.height) * 100;
+    let newX = mouseX - dragOffsetX;
+    let newY = mouseY - dragOffsetY;
+
+    newX = Math.max(0, Math.min(newX, containerRect.width));
+    newY = Math.max(0, Math.min(newY, containerRect.height));
+
+    selectedElement.x = (newX / containerRect.width) * 100;
+    selectedElement.y = (newY / containerRect.height) * 100;
     
     const el = document.getElementById(selectedElement.id);
     el.style.left = `${selectedElement.x}%`;
     el.style.top = `${selectedElement.y}%`;
 }
+
 function stopDrag() {
     isDragging = false;
     document.removeEventListener('mousemove', dragMove);
@@ -442,4 +455,3 @@ renderTemplate();
 
 </body>
 </html>
-```
