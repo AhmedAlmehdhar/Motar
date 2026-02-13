@@ -157,8 +157,7 @@
     const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-
-    onAuthStateChanged(auth, (user) => { if (user) { document.body.style.display = 'block'; } else { window.location.href = 'login.html'; } });
+    
     document.getElementById('logout-button').addEventListener('click', () => { signOut(auth); });
     
     const translations = {
@@ -636,7 +635,14 @@
         }, 3000);
     }
     
-    initializeApp();
+    onAuthStateChanged(auth, (user) => { 
+        if (user) { 
+            document.body.style.display = 'block';
+            initializeApp();
+        } else { 
+            window.location.href = 'login.html'; 
+        } 
+    });
 </script>
 </body>
 </html>
