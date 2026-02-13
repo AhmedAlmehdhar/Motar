@@ -7,7 +7,7 @@
 <title>Step 2: Manage Guests</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&family=Roboto:wght@400;700;900&family=Amiri:wght@700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <style>
   :root { --font-main: 'Plus Jakarta Sans', sans-serif; }
@@ -57,8 +57,12 @@
     <div class="glass-card p-6 rounded-2xl">
       <h2 class="text-xl font-semibold text-gray-100 mb-4 border-b border-white/10 pb-3" data-lang-key="createTitle">Create Invitation</h2>
       <div class="mb-4">
-        <label class="font-semibold text-sm text-gray-300" data-lang-key="activeDesign">Active Card Design:</label>
-        <div id="template-preview-container" class="mt-2 p-3 border border-white/10 rounded-lg bg-white/5 min-h-[100px] flex items-center justify-center"></div>
+        <label class="font-semibold text-sm text-gray-300" data-lang-key="activeDesign">Active Card Designs:</label>
+        <div id="template-preview-container" class="mt-2 p-3 border border-white/10 rounded-lg bg-white/5 min-h-[100px] flex flex-col gap-4"></div>
+      </div>
+      <div class="mb-4">
+        <label for="templateTypeSelect" class="font-semibold text-sm text-gray-300" data-lang-key="templateTypeLabel">Invitation For:</label>
+        <select id="templateTypeSelect" class="mt-2 w-full p-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"></select>
       </div>
       <div class="mb-4">
         <label for="guestNameInput" class="font-semibold text-sm text-gray-300" data-lang-key="guestNameLabel">Guest Name:</label>
@@ -96,24 +100,15 @@ const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", auth
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        document.body.style.display = 'block';
-    } else {
-        window.location.href = 'login.html';
-    }
-});
-
-document.getElementById('logout-button').addEventListener('click', () => {
-    signOut(auth);
-});
+onAuthStateChanged(auth, (user) => { if (user) { document.body.style.display = 'block'; } else { window.location.href = 'login.html'; } });
+document.getElementById('logout-button').addEventListener('click', () => signOut(auth));
 
 const translations = {
-    en: { headerTitle: "Step 2: Manage Guests & Invitations", backToHub: "← Back to Hub", createTitle: "Create Invitation", activeDesign: "Active Card Design:", designLoaded: "Design loaded successfully.", noDesign: "No card design found. Please", createDesignLink: "create a card design", noDesignSuffix: "first.", guestNameLabel: "Guest Name:", guestNamePlaceholder: "Enter guest name...", livePreview: "Live Preview:", addGuestBtn: "Add Guest & Generate Link", generating: "Generating...", guestListTitle: "Guest List", loadingGuests: "Loading guest list...", noGuests: "No guests found. Start by generating invitations!", tableHeaderName: "Name", tableHeaderRSVP: "RSVP", tableHeaderActions: "Actions", rsvpYes: "Yes", rsvpNo: "No", rsvpNA: "N/A", viewCard: "View Card", share: "Share", shareMessage: "You are cordially invited. Please view your personalized invitation here: ", creationSuccess: "Invitation created for ", creationError: "Failed to create invitation: ", missingInfoError: "Cannot generate: missing template or guest name.", logout: "Logout" },
-    ar: { headerTitle: "الخطوة ٢: إدارة الضيوف والدعوات", backToHub: "→ العودة للمركز", createTitle: "إنشاء دعوة", activeDesign: "تصميم البطاقة النشط:", designLoaded: "تم تحميل التصميم بنجاح.", noDesign: "لم يتم العثور على تصميم بطاقة. الرجاء", createDesignLink: "إنشاء تصميم بطاقة", noDesignSuffix: "أولاً.", guestNameLabel: "اسم الضيف:", guestNamePlaceholder: "أدخل اسم الضيف...", livePreview: "معاينة حية:", addGuestBtn: "إضافة ضيف وإنشاء رابط", generating: "جاري الإنشاء...", guestListTitle: "قائمة الضيوف", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف. ابدأ بإنشاء بعض الدعوات!", tableHeaderName: "الاسم", tableHeaderRSVP: "تأكيد الحضور", tableHeaderActions: "الإجراءات", rsvpYes: "نعم", rsvpNo: "لا", rsvpNA: "غير محدد", viewCard: "عرض البطاقة", share: "مشاركة", shareMessage: "أنت مدعو بكل سرور. يرجى الاطلاع على دعوتك الشخصية هنا: ", creationSuccess: "تم إنشاء دعوة لـ ", creationError: "فشل إنشاء الدعوة: ", missingInfoError: "لا يمكن الإنشاء: تصميم أو اسم ضيف مفقود.", logout: "تسجيل الخروج" }
+    en: { headerTitle: "Step 2: Manage Guests & Invitations", backToHub: "← Back to Hub", createTitle: "Create Invitation", activeDesign: "Active Card Designs:", designLoaded: "Design loaded successfully.", noDesign: "No card design found. Please", createDesignLink: "create a design", noDesignSuffix: "first.", templateTypeLabel: "Invitation For:", groomGuest: "Groom's Guest", brideGuest: "Bride's Guest", guestNameLabel: "Guest Name:", guestNamePlaceholder: "Enter guest name...", livePreview: "Live Preview:", addGuestBtn: "Add Guest & Generate Link", generating: "Generating...", guestListTitle: "Guest List", loadingGuests: "Loading guest list...", noGuests: "No guests found.", tableHeaderName: "Name", tableHeaderSide: "Side", tableHeaderRSVP: "RSVP", tableHeaderActions: "Actions", rsvpYes: "Yes", rsvpNo: "No", rsvpNA: "N/A", viewCard: "View Card", share: "Share", shareMessage: "You are cordially invited: ", creationSuccess: "Invitation created for ", creationError: "Failed to create invitation: ", missingInfoError: "Cannot generate: missing template or guest name.", logout: "Logout" },
+    ar: { headerTitle: "الخطوة ٢: إدارة الضيوف والدعوات", backToHub: "→ العودة للمركز", createTitle: "إنشاء دعوة", activeDesign: "تصاميم البطاقات النشطة:", designLoaded: "تم تحميل التصميم بنجاح.", noDesign: "لم يتم العثور على تصميم بطاقة. الرجاء", createDesignLink: "إنشاء تصميم", noDesignSuffix: "أولاً.", templateTypeLabel: "الدعوة لـ:", groomGuest: "ضيف العريس", brideGuest: "ضيف العروس", guestNameLabel: "اسم الضيف:", guestNamePlaceholder: "أدخل اسم الضيف...", livePreview: "معاينة حية:", addGuestBtn: "إضافة ضيف وإنشاء رابط", generating: "جاري الإنشاء...", guestListTitle: "قائمة الضيوف", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف.", tableHeaderName: "الاسم", tableHeaderSide: "الجهة", tableHeaderRSVP: "تأكيد الحضور", tableHeaderActions: "الإجراءات", rsvpYes: "نعم", rsvpNo: "لا", rsvpNA: "غير محدد", viewCard: "عرض البطاقة", share: "مشاركة", shareMessage: "أنت مدعو بكل سرور: ", creationSuccess: "تم إنشاء دعوة لـ ", creationError: "فشل إنشاء الدعوة: ", missingInfoError: "لا يمكن الإنشاء: تصميم أو اسم ضيف مفقود.", logout: "تسجيل الخروج" }
 };
 let currentLang = localStorage.getItem('language') || 'en';
-const setLanguage = (lang) => { localStorage.setItem('language', lang); currentLang = lang; document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.getElementById('lang-switcher').textContent = lang === 'ar' ? 'EN' : 'AR'; document.querySelectorAll('[data-lang-key]').forEach(el => { const key = el.getAttribute('data-lang-key'); if (translations[lang][key]) { if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = translations[lang][key]; else el.textContent = translations[lang][key]; } }); document.title = translations[lang].headerTitle; readData(); };
+const setLanguage = (lang) => { localStorage.setItem('language', lang); currentLang = lang; document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.getElementById('lang-switcher').textContent = lang === 'ar' ? 'EN' : 'AR'; document.querySelectorAll('[data-lang-key]').forEach(el => { const key = el.getAttribute('data-lang-key'); if (translations[lang][key]) el.tagName === 'INPUT' ? el.placeholder = translations[lang][key] : el.textContent = translations[lang][key]; }); document.title = translations[lang].headerTitle; initializePage(); readData(); };
 document.getElementById('lang-switcher').addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
 
 const database = getDatabase(app);
@@ -123,63 +118,53 @@ const templatePreviewContainer = document.getElementById('template-preview-conta
 const btnText = document.getElementById('btn-text');
 const btnSpinner = document.getElementById('btn-spinner');
 const previewCanvas = document.getElementById('previewCanvas');
-let cardTemplate = null;
+const templateTypeSelect = document.getElementById('templateTypeSelect');
+const templates = { groom: null, bride: null };
 const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
 
 const loadImage = (src) => new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => resolve(img); img.onerror = reject; img.src = src; });
 
-async function renderCard(canvas, guestName, template, qrCodeValue) {
+async function renderCard(canvas, guestName, template) {
     const ctx = canvas.getContext('2d');
     const bgImg = await loadImage(template.imageUrl);
     canvas.width = bgImg.width;
     canvas.height = bgImg.height;
     ctx.drawImage(bgImg, 0, 0);
 
-    const ns = template.nameSettings;
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = ns.color;
-    const fontStyle = ns.italic ? 'italic' : 'normal';
-    const fontWeight = ns.bold ? 'bold' : 'normal';
-    ctx.font = `${fontStyle} ${fontWeight} ${ns.fontSize * canvas.height}px ${ns.family}`;
-    if (ns.shadow.enabled) {
-        ctx.shadowColor = ns.shadow.color;
-        ctx.shadowBlur = ns.shadow.blur;
-        ctx.shadowOffsetX = ns.shadow.x;
-        ctx.shadowOffsetY = ns.shadow.y;
-    }
-    const nameX = ns.x * canvas.width;
-    const nameY = ns.y * canvas.height;
-    ctx.translate(nameX, nameY);
-    ctx.rotate(ns.rotation * Math.PI / 180);
-    if (ns.stroke.enabled) {
-        ctx.strokeStyle = ns.stroke.color;
-        ctx.lineWidth = ns.stroke.width;
-        ctx.strokeText(guestName, 0, 0);
-    }
-    ctx.fillText(guestName, 0, 0);
-    ctx.restore();
+    const drawElement = async (opts, text) => {
+        if (!opts.enabled) return;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const x = opts.x * canvas.width;
+        const y = opts.y * canvas.height;
+        ctx.translate(x, y);
 
-    const qs = template.qrSettings;
-    const qrDataURL = await QRCode.toDataURL(qrCodeValue, { width: 400, margin: 1, errorCorrectionLevel: 'H', color: { dark: qs.colorDark, light: qs.colorLight } });
-    const qrImg = await loadImage(qrDataURL);
-    const qrSize = qs.size * canvas.width;
-    const qrX = qs.x * canvas.width - qrSize / 2;
-    const qrY = qs.y * canvas.height - qrSize / 2;
-    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-    
-    if (qs.logoUrl) {
-        const logoImg = await loadImage(qs.logoUrl);
-        const logoSize = qrSize * 0.3; 
-        const logoX = qrX + (qrSize - logoSize) / 2;
-        const logoY = qrY + (qrSize - logoSize) / 2;
-        ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
-    }
+        if (text) {
+             ctx.fillStyle = opts.color;
+             ctx.font = `${opts.size / bgImg.height * canvas.height}px sans-serif`;
+             ctx.fillText(text, 0, 0);
+        } else { // QR codes
+            const qrValue = opts.url || `GUEST_ID_${Math.random()}`;
+            const qrDataURL = await QRCode.toDataURL(qrValue, { width: 400, margin: 1, errorCorrectionLevel: 'H', color: opts.colorDark ? { dark: opts.colorDark, light: opts.colorLight } : undefined });
+            const qrImg = await loadImage(qrDataURL);
+            const qrSize = opts.size / bgImg.width * canvas.width;
+            ctx.drawImage(qrImg, -qrSize/2, -qrSize/2, qrSize, qrSize);
+        }
+        ctx.restore();
+    };
+
+    await drawElement(template.name, guestName);
+    await drawElement(template.qr);
+    await drawElement(template.locationQr);
 }
 
-async function previewCard(name) {
-    if (!cardTemplate || !name || name.trim() === '') {
+async function previewCard() {
+    const guestName = guestNameInput.value.trim() || "Guest Name";
+    const selectedTemplateKey = templateTypeSelect.value;
+    const activeTemplate = templates[selectedTemplateKey];
+
+    if (!activeTemplate || !guestName) {
         addGuestButton.disabled = true;
         const ctx = previewCanvas.getContext('2d');
         ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
@@ -188,7 +173,7 @@ async function previewCard(name) {
     addGuestButton.disabled = false;
     const previewContainer = document.getElementById('preview-container');
     const tempCanvas = document.createElement('canvas');
-    await renderCard(tempCanvas, name, cardTemplate, 'PREVIEW-QR');
+    await renderCard(tempCanvas, guestName, activeTemplate);
     
     const aspectRatio = tempCanvas.width / tempCanvas.height;
     const containerWidth = previewContainer.offsetWidth - 8;
@@ -198,31 +183,70 @@ async function previewCard(name) {
     previewCtx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
 }
 
-function initializePage() { try { const savedTemplate = localStorage.getItem('cardTemplate'); if (savedTemplate) { cardTemplate = JSON.parse(savedTemplate); templatePreviewContainer.innerHTML = `<div class="flex items-center gap-4"><img src="${cardTemplate.imageUrl}" class="w-20 h-auto rounded-md border border-white/10" alt="Template Preview"><p class="text-sm text-gray-300">${translations[currentLang].designLoaded}</p></div>`; guestNameInput.disabled = false; } else { throw new Error('No template found'); } } catch (e) { templatePreviewContainer.innerHTML = `<p class="text-sm text-red-400 text-center">${translations[currentLang].noDesign} <a href="editor.html" class="font-bold underline hover:text-red-300">${translations[currentLang].createDesignLink}</a> ${translations[currentLang].noDesignSuffix}</p>`; guestNameInput.disabled = true; addGuestButton.disabled = true; } setLanguage(currentLang); }
-guestNameInput.addEventListener('input', () => previewCard(guestNameInput.value));
-document.addEventListener('DOMContentLoaded', initializePage);
+function initializePage() { 
+    ['groom', 'bride'].forEach(key => {
+        try {
+            const saved = localStorage.getItem(`cardTemplate_${key}`);
+            if (saved) templates[key] = JSON.parse(saved);
+        } catch(e) { console.error(`Failed to parse template ${key}`, e); }
+    });
+    
+    templatePreviewContainer.innerHTML = '';
+    templateTypeSelect.innerHTML = '';
+    let hasTemplates = false;
+    
+    if(templates.groom) {
+        templatePreviewContainer.innerHTML += `<div class="flex items-center gap-2"><img src="${templates.groom.imageUrl}" class="w-16 h-auto rounded border border-white/10"><p class="text-sm font-bold text-gray-300">${translations[currentLang].groomGuest}</p></div>`;
+        templateTypeSelect.innerHTML += `<option value="groom">${translations[currentLang].groomGuest}</option>`;
+        hasTemplates = true;
+    }
+    if(templates.bride) {
+        templatePreviewContainer.innerHTML += `<div class="flex items-center gap-2"><img src="${templates.bride.imageUrl}" class="w-16 h-auto rounded border border-white/10"><p class="text-sm font-bold text-gray-300">${translations[currentLang].brideGuest}</p></div>`;
+        templateTypeSelect.innerHTML += `<option value="bride">${translations[currentLang].brideGuest}</option>`;
+        hasTemplates = true;
+    }
+    
+    if (!hasTemplates) {
+        templatePreviewContainer.innerHTML = `<p class="text-sm text-red-400 text-center">${translations[currentLang].noDesign} <a href="editor.html" class="font-bold underline hover:text-red-300">${translations[currentLang].createDesignLink}</a> ${translations[currentLang].noDesignSuffix}</p>`;
+        guestNameInput.disabled = true; addGuestButton.disabled = true; templateTypeSelect.disabled = true;
+    } else {
+        guestNameInput.disabled = false; templateTypeSelect.disabled = false;
+    }
+    previewCard();
+}
+
+guestNameInput.addEventListener('input', previewCard);
+templateTypeSelect.addEventListener('change', previewCard);
+document.addEventListener('DOMContentLoaded', setLanguage(currentLang));
 
 addGuestButton.addEventListener('click', async () => {
     const guestName = guestNameInput.value.trim();
-    if (!cardTemplate || !guestName) { showNotification(translations[currentLang].missingInfoError, 'red'); return; }
+    const templateType = templateTypeSelect.value;
+    const activeTemplate = templates[templateType];
+
+    if (!activeTemplate || !guestName) { showNotification(translations[currentLang].missingInfoError, 'red'); return; }
     addGuestButton.disabled = true;
     btnText.textContent = translations[currentLang].generating;
     btnSpinner.classList.remove('hidden');
     try {
-        await generateAndUploadCardForGuest(guestName, cardTemplate);
+        await generateAndUploadCardForGuest(guestName, activeTemplate, templateType);
         showNotification(`${translations[currentLang].creationSuccess}${guestName}!`, 'green');
         guestNameInput.value = '';
-        previewCard(''); // Clear preview
+        previewCard('');
         document.getElementById('successSound').play().catch(e => console.log("Sound play failed:", e));
     } catch (error) { console.error("Failed to create invitation:", error); showNotification(`${translations[currentLang].creationError}${error.message}`, 'red'); } finally { btnText.textContent = translations[currentLang].addGuestBtn; btnSpinner.classList.add('hidden'); addGuestButton.disabled = true; }
 });
 
-async function generateAndUploadCardForGuest(guestName, template) {
+async function generateAndUploadCardForGuest(guestName, template, templateType) {
     const newNodeRef = push(databaseRef(database));
     const newNodeKey = newNodeRef.key;
     const randomNumber = Math.random().toString(36).substring(2, 10).toUpperCase();
+    
     const canvas = document.createElement('canvas');
-    await renderCard(canvas, guestName, template, randomNumber);
+    const finalTemplate = JSON.parse(JSON.stringify(template));
+    finalTemplate.qr.url = randomNumber; // Set the actual unique value for the QR
+    await renderCard(canvas, guestName, finalTemplate);
+
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
     const formData = new FormData();
     formData.append('image', blob);
@@ -232,10 +256,10 @@ async function generateAndUploadCardForGuest(guestName, template) {
     const personalizedImageUrl = result.data.url;
     const invitePath = window.location.pathname.replace('manager.html', 'invite.html');
     const inviteLink = `${window.location.origin}${invitePath}?id=${newNodeKey}&img=${encodeURIComponent(personalizedImageUrl)}`;
-    return set(newNodeRef, { 'الإسم': guestName.trim(), 'رقم_عشوائي': randomNumber, 'scanned': false, 'link': inviteLink });
+    return set(newNodeRef, { 'الإسم': guestName.trim(), 'رقم_عشوائي': randomNumber, 'scanned': false, 'link': inviteLink, 'templateType': templateType });
 }
 
-function readData() { onValue(databaseRef(database), snapshot => { const data = snapshot.val(); const outputDiv = document.getElementById('output'); if (!data || typeof data !== 'object') { outputDiv.innerHTML = `<p class="text-center text-gray-400">${translations[currentLang].noGuests}</p>`; return; } const parentNodes = Object.keys(data).sort().reverse(); let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderRSVP}</th><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderActions}</th></tr></thead><tbody class="text-gray-300">`; parentNodes.forEach((parentNode) => { const nodeData = data[parentNode]; const rsvpRaw = nodeData['حضور']; const rsvp = rsvpRaw === 'نعم' ? translations[currentLang].rsvpYes : rsvpRaw === 'لا' ? translations[currentLang].rsvpNo : translations[currentLang].rsvpNA; let rsvpClass = 'text-gray-400'; if (rsvpRaw === 'نعم') rsvpClass = 'text-green-400'; if (rsvpRaw === 'لا') rsvpClass = 'text-red-400'; const shareMessage = encodeURIComponent(`${translations[currentLang].shareMessage}${nodeData.link}`); const whatsappLink = `https://wa.me/?text=${shareMessage}`; tableHTML += `<tr id="row-${parentNode}" class="border-b border-white/10 hover:bg-white/5 transition-colors"><td class="py-4 px-4 font-semibold text-white">${nodeData['الإسم'] || ''}</td><td class="py-4 px-4 font-bold ${rsvpClass}">${rsvp}</td><td class="py-4 px-4"><div class="flex items-center gap-x-6">${nodeData.link ? `<a href="${nodeData.link}" target="_blank" class="text-indigo-400 hover:text-indigo-300 text-sm font-semibold transition-colors">${translations[currentLang].viewCard}</a>` : ''}${nodeData.link ? `<a href="${whatsappLink}" target="_blank" class="text-green-400 hover:text-green-300 text-sm font-semibold transition-colors">${translations[currentLang].share}</a>` : ''}</div></td></tr>`; }); tableHTML += `</tbody></table></div>`; outputDiv.innerHTML = tableHTML; }); }
+function readData() { onValue(databaseRef(database), snapshot => { const data = snapshot.val(); const outputDiv = document.getElementById('output'); if (!data || typeof data !== 'object') { outputDiv.innerHTML = `<p class="text-center text-gray-400">${translations[currentLang].noGuests}</p>`; return; } const parentNodes = Object.keys(data).sort().reverse(); let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderSide}</th><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderRSVP}</th><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderActions}</th></tr></thead><tbody class="text-gray-300">`; parentNodes.forEach((parentNode) => { const nodeData = data[parentNode]; const rsvpRaw = nodeData['حضور']; const rsvp = rsvpRaw === 'نعم' ? translations[currentLang].rsvpYes : rsvpRaw === 'لا' ? translations[currentLang].rsvpNo : translations[currentLang].rsvpNA; let rsvpClass = 'text-gray-400'; if (rsvpRaw === 'نعم') rsvpClass = 'text-green-400'; if (rsvpRaw === 'لا') rsvpClass = 'text-red-400'; const sideText = nodeData.templateType === 'groom' ? translations[currentLang].groomGuest : nodeData.templateType === 'bride' ? translations[currentLang].brideGuest : 'N/A'; const shareMessage = encodeURIComponent(`${translations[currentLang].shareMessage}${nodeData.link}`); const whatsappLink = `https://wa.me/?text=${shareMessage}`; tableHTML += `<tr id="row-${parentNode}" class="border-b border-white/10 hover:bg-white/5 transition-colors"><td class="py-4 px-4 font-semibold text-white">${nodeData['الإسم'] || ''}</td><td class="py-4 px-4">${sideText}</td><td class="py-4 px-4 font-bold ${rsvpClass}">${rsvp}</td><td class="py-4 px-4"><div class="flex items-center gap-x-6">${nodeData.link ? `<a href="${nodeData.link}" target="_blank" class="text-indigo-400 hover:text-indigo-300 text-sm font-semibold transition-colors">${translations[currentLang].viewCard}</a>` : ''}${nodeData.link ? `<a href="${whatsappLink}" target="_blank" class="text-green-400 hover:text-green-300 text-sm font-semibold transition-colors">${translations[currentLang].share}</a>` : ''}</div></td></tr>`; }); tableHTML += `</tbody></table></div>`; outputDiv.innerHTML = tableHTML; }); }
 function showNotification(message, type = 'green') { const notification = document.getElementById('notification'); const colors = { green: 'bg-green-500', red: 'bg-red-500', yellow: 'bg-yellow-500' }; notification.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`; notification.textContent = message; notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(0)'; setTimeout(() => { notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)'; }, 4000); }
 </script>
 </body>
