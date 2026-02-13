@@ -99,6 +99,14 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.body.style.display = 'block';
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+
     const langSwitcher = document.getElementById('lang-switcher');
     const setLanguage = (lang) => {
         localStorage.setItem('language', lang);
@@ -113,16 +121,6 @@
         });
     };
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.body.style.display = 'block';
-            const currentLang = localStorage.getItem('language') || 'en';
-            setLanguage(currentLang);
-        } else {
-            window.location.href = 'login.html';
-        }
-    });
-
     langSwitcher.addEventListener('click', () => {
         const currentLang = localStorage.getItem('language') || 'en';
         setLanguage(currentLang === 'en' ? 'ar' : 'en');
@@ -130,6 +128,11 @@
 
     document.getElementById('logout-button').addEventListener('click', () => {
         signOut(auth);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const currentLang = localStorage.getItem('language') || 'en';
+        setLanguage(currentLang);
     });
 </script>
 </body>
