@@ -271,16 +271,17 @@ async function saveAndContinue() {
     DOMElements.spinner.classList.remove('hidden');
     DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saving;
 
-    const originalTransform = DOMElements.canvasContainer.style.transform;
-
+    // We will screenshot a clone to avoid visual glitches and simplify positioning
+    const clone = DOMElements.canvasContainer.cloneNode(true);
+    
     try {
-        // Preload the background image to ensure it's loaded before canvas capture
+        // Preload the background image for the clone
         await new Promise((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             const bgUrl = activeTemplate.backgroundImage;
             if (!bgUrl) {
-                resolve(); // No background image to load
+                resolve();
                 return;
             }
             img.onload = resolve;
@@ -288,21 +289,52 @@ async function saveAndContinue() {
             img.src = bgUrl;
         });
 
-        // Wait for all fonts to be loaded and ready
         await document.fonts.ready;
 
-        // Remove transform for capture and wait for repaint
-        DOMElements.canvasContainer.style.transform = '';
-        await new Promise(resolve => requestAnimationFrame(resolve));
+        // Prepare the clone for screenshotting
+        clone.style.transform = 'none'; // No scaling
+        clone.style.position = 'absolute';
+        clone.style.left = '-9999px'; // Position offscreen
+        clone.style.top = '0px';
 
-        const canvas = await html2canvas(DOMElements.canvasContainer, {
+        document.body.appendChild(clone);
+
+        // For each element in the clone, convert percentage-based center position
+        // with transform into absolute pixel-based top-left position.
+        // This makes it foolproof for html2canvas.
+        const elementsToProcess = clone.querySelectorAll('.editable-element');
+        elementsToProcess.forEach(el => {
+            const leftPercent = parseFloat(el.style.left);
+            const topPercent = parseFloat(el.style.top);
+
+            const containerWidth = 500;
+            const containerHeight = 667;
+
+            const leftPx = (leftPercent / 100) * containerWidth;
+            const topPx = (topPercent / 100) * containerHeight;
+
+            // Get the element's rendered size
+            const elWidth = el.offsetWidth;
+            const elHeight = el.offsetHeight;
+            
+            el.style.left = `${leftPx - elWidth / 2}px`;
+            el.style.top = `${topPx - elHeight / 2}px`;
+            el.style.transform = 'none';
+        });
+
+        // Give the browser a tick to render the offscreen clone
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        const canvas = await html2canvas(clone, {
             useCORS: true,
             backgroundColor: null,
-            scale: 2, // Render at 2x resolution to improve quality
-            width: 500, // Explicitly set base width
-            height: 667, // Explicitly set base height
+            scale: 2,
+            width: 500,
+            height: 667,
         });
         
+        document.body.removeChild(clone); // Clean up the clone
+
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
         const formData = new FormData();
         formData.append('image', blob);
@@ -319,10 +351,12 @@ async function saveAndContinue() {
             throw new Error(result.error?.message || 'Unknown upload error');
         }
     } catch (error) {
+        if (clone.parentElement) {
+            document.body.removeChild(clone); // Ensure clone is removed on error
+        }
         alert(translations[currentLang].saveError + error.message);
     } finally {
-        // Restore transform and button state
-        DOMElements.canvasContainer.style.transform = originalTransform;
+        // Only need to restore button state, as we didn't touch the original element
         DOMElements.saveButton.disabled = false;
         DOMElements.spinner.classList.add('hidden');
         DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saveBtn;
