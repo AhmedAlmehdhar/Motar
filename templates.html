@@ -20,15 +20,12 @@
       radial-gradient(at 80% 20%, hsla(280,75%,40%,0.3) 0px, transparent 50%),
       radial-gradient(at 50% 80%, hsla(320,70%,50%,0.2) 0px, transparent 50%);
   }
-  .glass-card {
+  .template-card {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
-  }
-  .template-card {
-    border: 2px solid transparent;
+    border-width: 2px;
+    border-color: transparent;
     transition: all 0.3s ease;
   }
   .template-card:hover {
@@ -59,9 +56,9 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     
     <!-- Template 1: Modern -->
-    <a href="designer.html?template=modern" class="group block glass-card rounded-2xl overflow-hidden template-card">
+    <a href="designer.html?template=modern" class="group block rounded-2xl overflow-hidden template-card">
       <div class="aspect-[3/4] relative">
-        <img src="https://i.ibb.co/3kC7G7Y/modern.png" alt="Modern Template Preview" class="absolute inset-0 w-full h-full object-cover">
+        <img src="https://i.ibb.co/3kC7G7Y/modern.png" crossorigin="anonymous" alt="Modern Template Preview" class="absolute inset-0 w-full h-full object-cover">
         <div class="absolute inset-0 p-6 flex flex-col justify-center items-center text-center bg-black/10">
           <p class="text-2xl font-light text-indigo-300 tracking-widest" style="font-family: 'Plus Jakarta Sans', sans-serif;">SAVE THE DATE</p>
           <p class="text-6xl font-extrabold text-white mt-4" style="font-family: 'Plus Jakarta Sans', sans-serif;">S & M</p>
@@ -75,9 +72,9 @@
     </a>
 
     <!-- Template 2: Floral -->
-    <a href="designer.html?template=floral" class="group block glass-card rounded-2xl overflow-hidden template-card">
+    <a href="designer.html?template=floral" class="group block rounded-2xl overflow-hidden template-card">
       <div class="aspect-[3/4] relative">
-        <img src="https://i.ibb.co/C2nKkGj/floral.png" alt="Floral Template Preview" class="absolute inset-0 w-full h-full object-cover">
+        <img src="https://i.ibb.co/C2nKkGj/floral.png" crossorigin="anonymous" alt="Floral Template Preview" class="absolute inset-0 w-full h-full object-cover">
         <div class="absolute inset-0 p-6 flex flex-col justify-between items-center text-center text-[#5D5D5D] bg-white/10">
           <div>
             <p style="font-family: 'Dancing Script', cursive;" class="text-4xl text-[#B999A1]">You are invited to the wedding of</p>
@@ -95,9 +92,9 @@
     </a>
 
     <!-- Template 3: Classic -->
-    <a href="designer.html?template=classic" class="group block glass-card rounded-2xl overflow-hidden template-card">
+    <a href="designer.html?template=classic" class="group block rounded-2xl overflow-hidden template-card">
        <div class="aspect-[3/4] relative">
-        <img src="https://i.ibb.co/L8s8J9B/classic.png" alt="Classic Template Preview" class="absolute inset-0 w-full h-full object-cover">
+        <img src="https://i.ibb.co/L8s8J9B/classic.png" crossorigin="anonymous" alt="Classic Template Preview" class="absolute inset-0 w-full h-full object-cover">
         <div class="absolute inset-0 p-8 flex flex-col justify-center items-center text-center text-[#6A5A4F]">
           <p style="font-family: 'Amiri', serif;" class="text-2xl tracking-wide">Together with their families</p>
           <p style="font-family: 'Dancing Script', cursive;" class="text-7xl my-6">Fatima<br>&amp;<br>Jusuf</p>
@@ -110,9 +107,9 @@
     </a>
     
     <!-- Template 4: Watercolor -->
-    <a href="designer.html?template=watercolor" class="group block glass-card rounded-2xl overflow-hidden template-card">
+    <a href="designer.html?template=watercolor" class="group block rounded-2xl overflow-hidden template-card">
       <div class="aspect-[3/4] relative">
-        <img src="https://i.ibb.co/yY1Smyj/watercolor.png" alt="Watercolor Template Preview" class="absolute inset-0 w-full h-full object-cover">
+        <img src="https://i.ibb.co/yY1Smyj/watercolor.png" crossorigin="anonymous" alt="Watercolor Template Preview" class="absolute inset-0 w-full h-full object-cover">
         <div class="absolute inset-0 p-6 flex flex-col justify-center items-center text-center text-[#4B5563]">
           <p style="font-family: 'Dancing Script', cursive;" class="text-3xl">Kindly join us for the wedding of</p>
           <p style="font-family: 'Amiri', serif;" class="text-5xl font-bold text-red-500 my-4">Amelia & Noah</p>
@@ -125,9 +122,9 @@
     </a>
 
     <!-- Template 5: Gilded Art Deco -->
-    <a href="designer.html?template=artdeco" class="group block glass-card rounded-2xl overflow-hidden template-card">
+    <a href="designer.html?template=artdeco" class="group block rounded-2xl overflow-hidden template-card">
        <div class="aspect-[3/4] relative">
-        <img src="https://i.ibb.co/n7x7hS5/artdeco.png" alt="Art Deco Template Preview" class="absolute inset-0 w-full h-full object-cover">
+        <img src="https://i.ibb.co/n7x7hS5/artdeco.png" crossorigin="anonymous" alt="Art Deco Template Preview" class="absolute inset-0 w-full h-full object-cover">
         <div class="absolute inset-0 p-6 flex flex-col justify-around items-center text-center text-white bg-black/20">
           <p style="font-family: 'Roboto', sans-serif;" class="text-sm font-bold tracking-[0.3em] text-[#D4AF37]">TOGETHER WITH THEIR FAMILIES</p>
           <p style="font-family: 'Amiri', serif;" class="text-6xl text-white leading-tight">Eleanora<br>&amp;<br>Jasper</p>
@@ -140,9 +137,9 @@
     </a>
 
     <!-- Template 6: Boho Chic -->
-    <a href="designer.html?template=boho" class="group block glass-card rounded-2xl overflow-hidden template-card">
+    <a href="designer.html?template=boho" class="group block rounded-2xl overflow-hidden template-card">
        <div class="aspect-[3/4] relative">
-        <img src="https://i.ibb.co/YyLzQj8/boho.png" alt="Boho Template Preview" class="absolute inset-0 w-full h-full object-cover">
+        <img src="https://i.ibb.co/YyLzQj8/boho.png" crossorigin="anonymous" alt="Boho Template Preview" class="absolute inset-0 w-full h-full object-cover">
         <div class="absolute inset-0 p-6 flex flex-col justify-center items-center text-center text-[#5a4e46]">
           <p class="text-5xl" style="color: #6d5d4d">🌿</p>
           <p style="font-family: 'Dancing Script', cursive;" class="text-7xl my-4">Luna & Kai</p>
