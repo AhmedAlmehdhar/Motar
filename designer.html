@@ -305,6 +305,7 @@ async function handlePaste(e) {
     let plainText = null;
     let htmlText = null;
 
+    // Asynchronously read all clipboard items
     const promises = [];
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
@@ -316,35 +317,49 @@ async function handlePaste(e) {
             promises.push(new Promise(resolve => item.getAsString(s => { htmlText = s; resolve(); })));
         }
     }
-    
     await Promise.all(promises);
 
-    // Priority 1: Direct image blob from clipboard
+    // Priority 1: Direct image blob from clipboard (e.g., screenshot)
     if (imageBlob) {
         uploadPastedImage(imageBlob);
         return;
     }
 
-    // Priority 2: Image in HTML content (data URI, remote URL, etc.)
+    // Priority 2: Image or SVG found within HTML content (e.g., from Canva)
     if (htmlText) {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlText;
         const imgElement = tempDiv.querySelector('img');
+        const svgElement = tempDiv.querySelector('svg');
         
+        let imageSrc = null;
+
         if (imgElement && imgElement.src) {
+            // Found a standard <img> tag
+            imageSrc = imgElement.src;
+        } else if (svgElement) {
+            // Found an inline <svg> element, common with Canva objects
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgElement);
+            // Create a data URI from the SVG string. The encoding dance handles Unicode characters.
+            imageSrc = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgString)))}`;
+        }
+
+        if (imageSrc) {
              try {
-                const blobFromHtml = await imageSrcToPngBlob(imgElement.src);
+                // Convert the found image/svg source to a standard PNG blob
+                const blobFromHtml = await imageSrcToPngBlob(imageSrc);
                 if (blobFromHtml) {
                     uploadPastedImage(blobFromHtml);
-                    return;
+                    return; // Success, we're done.
                 }
             } catch (error) {
-                console.warn("Could not process image from HTML, falling back to text.", error);
+                console.warn("Could not process image/svg from HTML, falling back to text.", error);
             }
         }
     }
 
-    // Priority 3: Plain text
+    // Priority 3: Plain text fallback
     if (plainText) {
         addNewText(plainText);
     }
