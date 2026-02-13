@@ -89,7 +89,7 @@
   </div>
 </main>
 
-<div id="notification" class="fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-full rtl:-translate-x-full opacity-0 transition-all duration-500 ease-in-out z-50"></div>
+<div id="notification" class="fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
 <audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
 <audio id="alreadySound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 <audio id="notFoundSound" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum.ogg"></audio>
@@ -97,13 +97,20 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-import { getDatabase, ref as databaseRef, onValue, update, query, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+import { getDatabase, ref as databaseRef, onValue, update } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-let currentUser = null;
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.body.style.display = 'block';
+    } else {
+        window.location.href = 'login.html';
+    }
+});
 
 document.getElementById('logout-button').addEventListener('click', () => {
     signOut(auth);
@@ -142,7 +149,6 @@ document.getElementById('lang-switcher').addEventListener('click', () => {
 const database = getDatabase(app);
 const scannedBarcodes = new Set();
 let animationFrameId;
-let notificationTimeout;
 
 const scanButton = document.getElementById('scanButton');
 const video = document.getElementById('video');
@@ -152,33 +158,32 @@ const canvasEl = document.getElementById('qrCanvas');
 const context = canvasEl.getContext('2d', { willReadFrequently: true });
 let isScanning = false;
 
+document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
+
 function readData() {
-    if (!currentUser) return;
-    onValue(databaseRef(database, `users/${currentUser.uid}/guests`), snapshot => {
+    onValue(databaseRef(database), snapshot => {
         const data = snapshot.val();
         const outputDiv = document.getElementById('output');
         scannedBarcodes.clear();
-        if (!data) {
-            outputDiv.innerHTML = `<p>${translations[currentLang].noGuests}</p>`;
+        if (!data || typeof data !== 'object') {
+            outputDiv.innerHTML = `<p class="text-center text-gray-400">${translations[currentLang].noGuests}</p>`;
             return;
         }
-        
-        const guests = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
-        
+        const parentNodes = Object.keys(data).sort().reverse();
         let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr>
                         <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th>
                         <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderStatus}</th></tr></thead>
                         <tbody class="text-gray-300">`;
-        
-        guests.forEach(guest => {
-            const isScanned = guest.scanned === true;
-            if (isScanned && guest['رقم_عشوائي']) scannedBarcodes.add(guest['رقم_عشوائي']);
+        parentNodes.forEach(parentNode => {
+            const nodeData = data[parentNode];
+            const isScanned = nodeData.scanned === true;
+            if (isScanned && nodeData['رقم_عشوائي']) scannedBarcodes.add(nodeData['رقم_عشوائي']);
             
             const statusText = isScanned ? translations[currentLang].statusCheckedIn : translations[currentLang].statusNotHere;
             const statusClass = isScanned ? 'bg-green-500/20 text-green-300' : 'bg-slate-500/20 text-slate-300';
 
-            tableHTML += `<tr id="row-${guest.id}" class="border-b border-white/10 hover:bg-white/5 transition-colors">
-                    <td class="py-4 px-4 font-semibold text-white">${guest['الإسم'] || ''}</td>
+            tableHTML += `<tr id="row-${parentNode}" class="border-b border-white/10 hover:bg-white/5 transition-colors">
+                    <td class="py-4 px-4 font-semibold text-white">${nodeData['الإسم'] || ''}</td>
                     <td class="py-4 px-4 status-cell"><span class="${statusClass} text-xs font-medium px-2.5 py-1 rounded-full">${statusText}</span></td></tr>`;
         });
         tableHTML += `</tbody></table></div>`;
@@ -204,7 +209,7 @@ function startCamera() {
         .catch(err => {
             console.error(err);
             stopCamera();
-            showNotification(translations[currentLang].cameraError, 'red');
+            showNotification('cameraError', 'red');
         });
 }
 
@@ -238,70 +243,43 @@ function tick() {
     animationFrameId = requestAnimationFrame(tick);
 }
 
-async function handleScan(qrCodeData) {
-    if (!currentUser) return;
-    const guestsRef = databaseRef(database, `users/${currentUser.uid}/guests`);
-    const q = query(guestsRef, orderByChild('رقم_عشوائي'), equalTo(qrCodeData));
-    
-    try {
-        const snapshot = await get(q);
-        if (snapshot.exists()) {
-            const guestId = Object.keys(snapshot.val())[0];
-            const guestData = snapshot.val()[guestId];
-            
-            if (guestData.scanned) {
-                showNotification(translations[currentLang].scanAlready, 'red');
-                document.getElementById('alreadySound').play().catch(()=>{});
-            } else {
-                showNotification(translations[currentLang].scanSuccess, 'green');
-                document.getElementById('successSound').play().catch(()=>{});
-                const updates = { scanned: true, scanDate: new Date().toISOString() };
-                await update(databaseRef(database, `users/${currentUser.uid}/guests/${guestId}`), updates);
+function handleScan(qrCodeData) {
+    onValue(databaseRef(database), (snapshot) => {
+        const data = snapshot.val();
+        let found = false, alreadyScanned = false, parentId = null;
+        for (const key in data) {
+            if (data[key]['رقم_عشوائي'] === qrCodeData) {
+                found = true;
+                parentId = key;
+                alreadyScanned = data[key].scanned === true;
+                break;
             }
-        } else {
-            showNotification(translations[currentLang].scanNotFound, 'yellow');
-            document.getElementById('notFoundSound').play().catch(()=>{});
         }
-    } catch (error) {
-        console.error("Error handling scan:", error);
-    }
+        if (found && !alreadyScanned) {
+            showNotification('scanSuccess', 'green');
+            document.getElementById('successSound').play().catch(() => {});
+            update(databaseRef(database, parentId), { scanned: true, scanDate: new Date().toISOString() });
+        } else if (found && alreadyScanned) {
+            showNotification('scanAlready', 'red');
+            document.getElementById('alreadySound').play().catch(() => {});
+        } else if (!found) {
+            showNotification('scanNotFound', 'yellow');
+            document.getElementById('notFoundSound').play().catch(() => {});
+        }
+    }, { onlyOnce: true });
 }
 
-function showNotification(message, type = 'green') {
+function showNotification(messageKey, type = 'green') {
     const notification = document.getElementById('notification');
-    if (!notification) return;
-
-    clearTimeout(notificationTimeout);
-
-    const colors = {
-        green: 'bg-green-500',
-        red: 'bg-red-500',
-        yellow: 'bg-yellow-500'
-    };
-    
-    notification.className = `fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform transition-all duration-500 ease-in-out z-50 ${colors[type] || 'bg-gray-500'}`;
+    const message = translations[currentLang][messageKey];
+    const colors = { green: 'bg-green-500', red: 'bg-red-500', yellow: 'bg-yellow-500' };
+    notification.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`;
     notification.textContent = message;
-
-    requestAnimationFrame(() => {
-        notification.classList.remove('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-        notification.classList.add('translate-x-0', 'opacity-100');
-    });
-
-    notificationTimeout = setTimeout(() => {
-        notification.classList.add('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-        notification.classList.remove('translate-x-0', 'opacity-100');
+    notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(0)';
+    setTimeout(() => {
+        notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)';
     }, 3000);
 }
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUser = user;
-        document.body.style.display = 'block';
-        setLanguage(currentLang);
-    } else {
-        window.location.href = 'login.html';
-    }
-});
 </script>
 </body>
 </html>
