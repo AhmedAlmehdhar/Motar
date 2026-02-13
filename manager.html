@@ -36,17 +36,7 @@
     box-shadow: 0 6px 20px 0 rgba(34, 197, 94, 0.65);
   }
   .btn-primary:disabled { background: #374151; box-shadow: none; transform: none; cursor: not-allowed; opacity: 0.6; }
-  .design-choice { @apply p-2 border-2 border-slate-700 rounded-lg cursor-pointer transition-all; }
-  .design-choice.selected { @apply border-green-500 ring-2 ring-green-500/50; }
-  .design-choice img { @apply w-full h-24 object-cover rounded; }
-  #preview-container { max-width: 100%; height: auto; border-radius: 8px; }
-  /* This is for the off-screen rendering div */
-  #render-temp-container {
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
-      visibility: hidden;
-  }
+  #previewCanvas { max-width: 100%; height: auto; border-radius: 8px; }
 </style>
 </head>
 <body class="text-gray-200" style="display: none;">
@@ -66,18 +56,18 @@
   <div class="lg:col-span-1 space-y-8">
     <div class="glass-card p-6 rounded-2xl">
       <h2 class="text-xl font-semibold text-gray-100 mb-4 border-b border-white/10 pb-3" data-lang-key="createTitle">Create Invitation</h2>
-      <div id="design-selection-container" class="mb-4">
-        <label class="font-semibold text-sm text-gray-300 mb-2 block" data-lang-key="activeDesign">Choose Card Design:</label>
-        <div id="template-previews" class="grid grid-cols-2 gap-4"></div>
+      <div class="mb-4">
+        <label class="font-semibold text-sm text-gray-300" data-lang-key="activeDesign">Active Card Design:</label>
+        <div id="template-preview-container" class="mt-2 p-3 border border-white/10 rounded-lg bg-white/5 min-h-[100px] flex items-center justify-center"></div>
       </div>
-      <div id="guest-name-group" class="mb-4">
+      <div class="mb-4">
         <label for="guestNameInput" class="font-semibold text-sm text-gray-300" data-lang-key="guestNameLabel">Guest Name:</label>
         <input type="text" id="guestNameInput" data-lang-key="guestNamePlaceholder" placeholder="Enter guest name..." class="mt-2 w-full p-3 bg-slate-800 border border-slate-600 rounded-lg text-gray-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition">
       </div>
       <div class="mt-4">
           <label class="font-semibold text-sm text-gray-300" data-lang-key="livePreview">Live Preview:</label>
-          <div id="preview-container" class="mt-2 p-2 border border-white/10 rounded-lg bg-slate-900 flex items-center justify-center min-h-[200px] overflow-hidden">
-             <!-- Live preview will be rendered here as HTML -->
+          <div id="preview-container" class="mt-2 p-2 border border-white/10 rounded-lg bg-slate-900 flex items-center justify-center min-h-[200px]">
+            <canvas id="previewCanvas"></canvas>
           </div>
       </div>
       <button id="addGuestButton" class="mt-6 w-full btn-primary flex items-center justify-center gap-2 py-2.5" disabled>
@@ -93,345 +83,160 @@
      </div>
   </div>
 </main>
-<div id="notification" class="fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-full rtl:-translate-x-full opacity-0 transition-all duration-500 ease-in-out z-50"></div>
+<div id="notification" class="fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
 <audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-<div id="render-temp-container"></div>
-
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
 import { getDatabase, ref as databaseRef, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
-import html2canvas from 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm';
 
 const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let currentUser = null;
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        currentUser = user;
         document.body.style.display = 'block';
-        initializeAppState();
     } else {
         window.location.href = 'login.html';
     }
 });
-document.getElementById('logout-button').addEventListener('click', () => { signOut(auth); });
+
+document.getElementById('logout-button').addEventListener('click', () => {
+    signOut(auth);
+});
 
 const translations = {
-    en: { headerTitle: "Step 2: Manage Guests & Invitations", backToHub: "← Back to Hub", createTitle: "Create Invitation", activeDesign: "Choose Card Design:", groomSide: "Groom's Side", brideSide: "Bride's Side", designLoaded: "Design loaded successfully.", noDesign: "No card design found. Please", createDesignLink: "create a card design", noDesignSuffix: "first.", guestNameLabel: "Guest Name:", guestNamePlaceholder: "Enter guest name (optional)...", livePreview: "Live Preview:", addGuestBtn: "Add Guest & Generate Link", generating: "Generating...", guestListTitle: "Guest List", loadingGuests: "Loading guest list...", noGuests: "No guests found. Start by generating invitations!", tableHeaderName: "Name", tableHeaderRSVP: "RSVP", tableHeaderActions: "Actions", rsvpYes: "Yes", rsvpNo: "No", rsvpNA: "N/A", viewCard: "View Card", share: "Share", shareMessage: "You are cordially invited. Please view your personalized invitation here: ", creationSuccess: "Invitation created for ", creationError: "Failed to create invitation: ", missingInfoError: "Cannot generate: No design selected.", linkCopied: "Link copied to clipboard!", logout: "Logout" },
-    ar: { headerTitle: "الخطوة ٢: إدارة الضيوف والدعوات", backToHub: "→ العودة للمركز", createTitle: "إنشاء دعوة", activeDesign: "اختر تصميم البطاقة:", groomSide: "جهة العريس", brideSide: "جهة العروس", designLoaded: "تم تحميل التصميم بنجاح.", noDesign: "لم يتم العثور على تصميم بطاقة. الرجاء", createDesignLink: "إنشاء تصميم بطاقة", noDesignSuffix: "أولاً.", guestNameLabel: "اسم الضيف:", guestNamePlaceholder: "أدخل اسم الضيف (اختياري)...", livePreview: "معاينة حية:", addGuestBtn: "إضافة ضيف وإنشاء رابط", generating: "جاري الإنشاء...", guestListTitle: "قائمة الضيوف", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف. ابدأ بإنشاء بعض الدعوات!", tableHeaderName: "الاسم", tableHeaderRSVP: "تأكيد الحضور", tableHeaderActions: "الإجراءات", rsvpYes: "نعم", rsvpNo: "لا", rsvpNA: "غير محدد", viewCard: "عرض البطاقة", share: "مشاركة", shareMessage: "أنت مدعو بكل سرور. يرجى الاطلاع على دعوتك الشخصية هنا: ", creationSuccess: "تم إنشاء دعوة لـ ", creationError: "فشل إنشاء الدعوة: ", missingInfoError: "لا يمكن الإنشاء: لم يتم اختيار تصميم.", linkCopied: "تم نسخ الرابط!", logout: "تسجيل الخروج" }
+    en: { headerTitle: "Step 2: Manage Guests & Invitations", backToHub: "← Back to Hub", createTitle: "Create Invitation", activeDesign: "Active Card Design:", designLoaded: "Design loaded successfully.", noDesign: "No card design found. Please", createDesignLink: "create a card design", noDesignSuffix: "first.", guestNameLabel: "Guest Name:", guestNamePlaceholder: "Enter guest name...", livePreview: "Live Preview:", addGuestBtn: "Add Guest & Generate Link", generating: "Generating...", guestListTitle: "Guest List", loadingGuests: "Loading guest list...", noGuests: "No guests found. Start by generating invitations!", tableHeaderName: "Name", tableHeaderRSVP: "RSVP", tableHeaderActions: "Actions", rsvpYes: "Yes", rsvpNo: "No", rsvpNA: "N/A", viewCard: "View Card", share: "Share", shareMessage: "You are cordially invited. Please view your personalized invitation here: ", creationSuccess: "Invitation created for ", creationError: "Failed to create invitation: ", missingInfoError: "Cannot generate: missing template or guest name.", logout: "Logout" },
+    ar: { headerTitle: "الخطوة ٢: إدارة الضيوف والدعوات", backToHub: "→ العودة للمركز", createTitle: "إنشاء دعوة", activeDesign: "تصميم البطاقة النشط:", designLoaded: "تم تحميل التصميم بنجاح.", noDesign: "لم يتم العثور على تصميم بطاقة. الرجاء", createDesignLink: "إنشاء تصميم بطاقة", noDesignSuffix: "أولاً.", guestNameLabel: "اسم الضيف:", guestNamePlaceholder: "أدخل اسم الضيف...", livePreview: "معاينة حية:", addGuestBtn: "إضافة ضيف وإنشاء رابط", generating: "جاري الإنشاء...", guestListTitle: "قائمة الضيوف", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف. ابدأ بإنشاء بعض الدعوات!", tableHeaderName: "الاسم", tableHeaderRSVP: "تأكيد الحضور", tableHeaderActions: "الإجراءات", rsvpYes: "نعم", rsvpNo: "لا", rsvpNA: "غير محدد", viewCard: "عرض البطاقة", share: "مشاركة", shareMessage: "أنت مدعو بكل سرور. يرجى الاطلاع على دعوتك الشخصية هنا: ", creationSuccess: "تم إنشاء دعوة لـ ", creationError: "فشل إنشاء الدعوة: ", missingInfoError: "لا يمكن الإنشاء: تصميم أو اسم ضيف مفقود.", logout: "تسجيل الخروج" }
 };
 let currentLang = localStorage.getItem('language') || 'en';
-const setLanguage = (lang) => {
-    localStorage.setItem('language', lang);
-    currentLang = lang;
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.getElementById('lang-switcher').textContent = lang === 'ar' ? 'EN' : 'AR';
-    document.querySelectorAll('[data-lang-key]').forEach(element => {
-        const key = element.getAttribute('data-lang-key');
-        if (translations[lang][key]) {
-            element.textContent = translations[lang][key];
-        }
-    });
-    readData();
-};
+const setLanguage = (lang) => { localStorage.setItem('language', lang); currentLang = lang; document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.getElementById('lang-switcher').textContent = lang === 'ar' ? 'EN' : 'AR'; document.querySelectorAll('[data-lang-key]').forEach(el => { const key = el.getAttribute('data-lang-key'); if (translations[lang][key]) { if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = translations[lang][key]; else el.textContent = translations[lang][key]; } }); document.title = translations[lang].headerTitle; readData(); };
 document.getElementById('lang-switcher').addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
 
 const database = getDatabase(app);
 const addGuestButton = document.getElementById('addGuestButton');
 const guestNameInput = document.getElementById('guestNameInput');
+const templatePreviewContainer = document.getElementById('template-preview-container');
 const btnText = document.getElementById('btn-text');
 const btnSpinner = document.getElementById('btn-spinner');
-const previewContainer = document.getElementById('preview-container');
-const tempRenderContainer = document.getElementById('render-temp-container');
-const templatePreviewsContainer = document.getElementById('template-previews');
-const designSelectionContainer = document.getElementById('design-selection-container');
-const guestNameGroup = document.getElementById('guest-name-group');
-
-let designs = {};
-let selectedCardSide = null;
+const previewCanvas = document.getElementById('previewCanvas');
+let cardTemplate = null;
 const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
-let notificationTimeout;
 
-function initializeAppState() {
-    const savedDesigns = JSON.parse(localStorage.getItem('invitationDesigns'));
-    if (savedDesigns) {
-        designs = savedDesigns;
+const loadImage = (src) => new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => resolve(img); img.onerror = reject; img.src = src; });
+
+async function renderCard(canvas, guestName, template, qrCodeValue) {
+    const ctx = canvas.getContext('2d');
+    const bgImg = await loadImage(template.imageUrl);
+    canvas.width = bgImg.width;
+    canvas.height = bgImg.height;
+    ctx.drawImage(bgImg, 0, 0);
+
+    const ns = template.nameSettings;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = ns.color;
+    const fontStyle = ns.italic ? 'italic' : 'normal';
+    const fontWeight = ns.bold ? 'bold' : 'normal';
+    ctx.font = `${fontStyle} ${fontWeight} ${ns.fontSize * canvas.height}px ${ns.family}`;
+    if (ns.shadow.enabled) {
+        ctx.shadowColor = ns.shadow.color;
+        ctx.shadowBlur = ns.shadow.blur;
+        ctx.shadowOffsetX = ns.shadow.x;
+        ctx.shadowOffsetY = ns.shadow.y;
     }
-    setupTemplatePreviews();
-    setLanguage(currentLang);
-    addGuestButton.addEventListener('click', addGuest);
-    guestNameInput.addEventListener('input', () => previewCard(selectedCardSide));
-    readData();
+    const nameX = ns.x * canvas.width;
+    const nameY = ns.y * canvas.height;
+    ctx.translate(nameX, nameY);
+    ctx.rotate(ns.rotation * Math.PI / 180);
+    if (ns.stroke.enabled) {
+        ctx.strokeStyle = ns.stroke.color;
+        ctx.lineWidth = ns.stroke.width;
+        ctx.strokeText(guestName, 0, 0);
+    }
+    ctx.fillText(guestName, 0, 0);
+    ctx.restore();
+
+    const qs = template.qrSettings;
+    const qrDataURL = await QRCode.toDataURL(qrCodeValue, { width: 400, margin: 1, errorCorrectionLevel: 'H', color: { dark: qs.colorDark, light: qs.colorLight } });
+    const qrImg = await loadImage(qrDataURL);
+    const qrSize = qs.size * canvas.width;
+    const qrX = qs.x * canvas.width - qrSize / 2;
+    const qrY = qs.y * canvas.height - qrSize / 2;
+    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+    
+    if (qs.logoUrl) {
+        const logoImg = await loadImage(qs.logoUrl);
+        const logoSize = qrSize * 0.3; 
+        const logoX = qrX + (qrSize - logoSize) / 2;
+        const logoY = qrY + (qrSize - logoSize) / 2;
+        ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+    }
 }
 
-function setupTemplatePreviews() {
-    templatePreviewsContainer.innerHTML = '';
-    let availableDesigns = 0;
-
-    ['groom', 'bride'].forEach(side => {
-        if (designs[side] && designs[side].imageUrl) {
-            availableDesigns++;
-            const designEl = document.createElement('div');
-            designEl.className = 'design-choice';
-            designEl.dataset.side = side;
-            designEl.innerHTML = `
-                <img src="${designs[side].imageUrl}" alt="${side} design preview">
-                <p class="text-xs text-center mt-1 font-semibold">${translations[currentLang][side+'Side']}</p>
-            `;
-            designEl.addEventListener('click', () => selectDesign(side));
-            templatePreviewsContainer.appendChild(designEl);
-        }
-    });
-
-    if (availableDesigns === 0) {
-        designSelectionContainer.innerHTML = `<p class="text-center text-sm text-yellow-400 bg-yellow-500/10 p-3 rounded-lg">${translations[currentLang].noDesign} <a href="editor.html" class="font-bold underline">${translations[currentLang].createDesignLink}</a> ${translations[currentLang].noDesignSuffix}</p>`;
+async function previewCard(name) {
+    if (!cardTemplate || !name || name.trim() === '') {
         addGuestButton.disabled = true;
-    } else if (availableDesigns === 1) {
-        // If only one design exists, auto-select it.
-        const side = (designs.groom && designs.groom.imageUrl) ? 'groom' : 'bride';
-        selectDesign(side);
+        const ctx = previewCanvas.getContext('2d');
+        ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        return;
     }
-}
-
-function selectDesign(side) {
-    selectedCardSide = side;
-    document.querySelectorAll('.design-choice').forEach(el => {
-        el.classList.toggle('selected', el.dataset.side === side);
-    });
     addGuestButton.disabled = false;
+    const previewContainer = document.getElementById('preview-container');
+    const tempCanvas = document.createElement('canvas');
+    await renderCard(tempCanvas, name, cardTemplate, 'PREVIEW-QR');
     
-    const design = designs[selectedCardSide];
-    guestNameGroup.style.display = design.includeName ? 'block' : 'none';
-    if (!design.includeName) {
-        guestNameInput.value = '';
-    }
-
-    previewCard(side);
+    const aspectRatio = tempCanvas.width / tempCanvas.height;
+    const containerWidth = previewContainer.offsetWidth - 8;
+    previewCanvas.width = containerWidth;
+    previewCanvas.height = containerWidth / aspectRatio;
+    const previewCtx = previewCanvas.getContext('2d');
+    previewCtx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
 }
 
-async function previewCard(side) {
-    if (!side || !designs[side]) {
-        previewContainer.innerHTML = '';
-        return;
-    }
+function initializePage() { try { const savedTemplate = localStorage.getItem('cardTemplate'); if (savedTemplate) { cardTemplate = JSON.parse(savedTemplate); templatePreviewContainer.innerHTML = `<div class="flex items-center gap-4"><img src="${cardTemplate.imageUrl}" class="w-20 h-auto rounded-md border border-white/10" alt="Template Preview"><p class="text-sm text-gray-300">${translations[currentLang].designLoaded}</p></div>`; guestNameInput.disabled = false; } else { throw new Error('No template found'); } } catch (e) { templatePreviewContainer.innerHTML = `<p class="text-sm text-red-400 text-center">${translations[currentLang].noDesign} <a href="editor.html" class="font-bold underline hover:text-red-300">${translations[currentLang].createDesignLink}</a> ${translations[currentLang].noDesignSuffix}</p>`; guestNameInput.disabled = true; addGuestButton.disabled = true; } setLanguage(currentLang); }
+guestNameInput.addEventListener('input', () => previewCard(guestNameInput.value));
+document.addEventListener('DOMContentLoaded', initializePage);
 
-    const design = designs[side];
-    const guestName = guestNameInput.value.trim() || (currentLang === 'ar' ? "اسم الضيف" : "Guest Name");
-    const uniqueId = "preview123";
-
-    previewContainer.innerHTML = await buildCardHTML(design, guestName, uniqueId, true);
-}
-
-
-async function buildCardHTML(design, guestName, uniqueId, isPreview = false) {
-    let guestQrUrl = isPreview ? 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=preview' : await QRCode.toDataURL(uniqueId, { errorCorrectionLevel: 'H', margin: 2 });
-    let locationQrUrl = design.includeLocationQr && design.locationUrl ? await QRCode.toDataURL(design.locationUrl, { errorCorrectionLevel: 'H', margin: 2 }) : '';
-
-    const containerWidth = isPreview ? 250 : design.imageWidth; // Use actual width for rendering
-    const scale = containerWidth / design.imageWidth;
-
-    const nameStyle = design.name.style;
-    const nameHTML = design.includeName ? `
-        <div id="name-${uniqueId}" style="
-            position: absolute;
-            top: ${design.name.position.top}%;
-            left: ${design.name.position.left}%;
-            width: ${design.name.width}%;
-            color: ${nameStyle.color};
-            font-family: '${nameStyle.fontFamily}', sans-serif;
-            font-size: ${nameStyle.fontSize * scale}px;
-            font-weight: ${nameStyle.fontWeight};
-            font-style: ${nameStyle.fontStyle};
-            transform: ${nameStyle.transform};
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-        ">${guestName}</div>` : '';
-
-    const guestQrHTML = `
-        <div id="guest-qr-${uniqueId}" style="
-            position: absolute;
-            top: ${design.guestQr.position.top}%;
-            left: ${design.guestQr.position.left}%;
-            width: ${design.guestQr.size}%;
-            height: ${design.guestQr.size}%;
-        "><img src="${guestQrUrl}" style="width:100%; height:100%;"></div>`;
-
-    const locationQrHTML = design.includeLocationQr && locationQrUrl ? `
-        <div id="location-qr-${uniqueId}" style="
-            position: absolute;
-            top: ${design.locationQr.position.top}%;
-            left: ${design.locationQr.position.left}%;
-            width: ${design.locationQr.size}%;
-            height: ${design.locationQr.size}%;
-        "><img src="${locationQrUrl}" style="width:100%; height:100%;"></div>` : '';
-
-    return `
-        <div style="position: relative; width: ${containerWidth}px; aspect-ratio: ${design.imageWidth} / ${design.imageHeight};">
-            <img src="${design.imageUrl}" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
-            ${nameHTML}
-            ${guestQrHTML}
-            ${locationQrHTML}
-        </div>
-    `;
-}
-
-async function addGuest() {
-    if (!selectedCardSide || !designs[selectedCardSide]) {
-        showNotification(translations[currentLang].missingInfoError, 'yellow');
-        return;
-    }
-
-    const design = designs[selectedCardSide];
+addGuestButton.addEventListener('click', async () => {
     const guestName = guestNameInput.value.trim();
-    if (design.includeName && !guestName) {
-        guestNameInput.focus();
-        return;
-    }
-
+    if (!cardTemplate || !guestName) { showNotification(translations[currentLang].missingInfoError, 'red'); return; }
     addGuestButton.disabled = true;
-    btnSpinner.classList.remove('hidden');
     btnText.textContent = translations[currentLang].generating;
-    
+    btnSpinner.classList.remove('hidden');
     try {
-        const uniqueId = Math.random().toString(36).substring(2, 15);
-        
-        // Render card off-screen for html2canvas
-        const renderDiv = document.createElement('div');
-        renderDiv.innerHTML = await buildCardHTML(design, guestName || '', uniqueId);
-        tempRenderContainer.appendChild(renderDiv);
-        
-        const canvas = await html2canvas(renderDiv.firstChild, { 
-            backgroundColor: null, // transparent background
-            useCORS: true, // Needed for external images
-        });
-        
-        tempRenderContainer.innerHTML = ''; // Clean up
-
-        const dataUrl = canvas.toDataURL('image/png');
-        const blob = await (await fetch(dataUrl)).blob();
-        
-        const formData = new FormData();
-        formData.append('image', blob, 'invitation.png');
-
-        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
-        const result = await response.json();
-
-        if (!result.success) {
-            const errorMessage = result.error?.message || (typeof result.error === 'string' ? result.error : 'Image upload failed');
-            throw new Error(errorMessage);
-        }
-
-        const newPostRef = push(databaseRef(database, `users/${currentUser.uid}/guests`));
-        await set(newPostRef, {
-            'الإسم': guestName,
-            'رقم_عشوائي': uniqueId,
-            cardUrl: result.data.url,
-            cardSide: selectedCardSide,
-        });
-
+        await generateAndUploadCardForGuest(guestName, cardTemplate);
+        showNotification(`${translations[currentLang].creationSuccess}${guestName}!`, 'green');
         guestNameInput.value = '';
-        showNotification(translations[currentLang].creationSuccess + (guestName || '...'), 'green');
-        document.getElementById('successSound').play().catch(()=>{});
+        previewCard(''); // Clear preview
+        document.getElementById('successSound').play().catch(e => console.log("Sound play failed:", e));
+    } catch (error) { console.error("Failed to create invitation:", error); showNotification(`${translations[currentLang].creationError}${error.message}`, 'red'); } finally { btnText.textContent = translations[currentLang].addGuestBtn; btnSpinner.classList.add('hidden'); addGuestButton.disabled = true; }
+});
 
-    } catch (error) {
-        console.error("Error creating invitation:", error);
-        showNotification(translations[currentLang].creationError + (error.message || 'An unknown error occurred.'), 'red');
-    } finally {
-        addGuestButton.disabled = false;
-        btnSpinner.classList.add('hidden');
-        btnText.textContent = translations[currentLang].addGuestBtn;
-    }
+async function generateAndUploadCardForGuest(guestName, template) {
+    const newNodeRef = push(databaseRef(database));
+    const newNodeKey = newNodeRef.key;
+    const randomNumber = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const canvas = document.createElement('canvas');
+    await renderCard(canvas, guestName, template, randomNumber);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+    const formData = new FormData();
+    formData.append('image', blob);
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.error?.message || 'ImgBB upload failed');
+    const personalizedImageUrl = result.data.url;
+    const invitePath = window.location.pathname.replace('manager.html', 'invite.html');
+    const inviteLink = `${window.location.origin}${invitePath}?id=${newNodeKey}&img=${encodeURIComponent(personalizedImageUrl)}`;
+    return set(newNodeRef, { 'الإسم': guestName.trim(), 'رقم_عشوائي': randomNumber, 'scanned': false, 'link': inviteLink });
 }
 
-function readData() {
-    if (!currentUser) return;
-    onValue(databaseRef(database, `users/${currentUser.uid}/guests`), snapshot => {
-        const data = snapshot.val();
-        const outputDiv = document.getElementById('output');
-        if (!data) {
-            outputDiv.innerHTML = `<p>${translations[currentLang].noGuests}</p>`;
-            return;
-        }
-
-        const guests = Object.entries(data).map(([key, value]) => ({ id: key, ...value })).reverse();
-        
-        let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr>
-          <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th>
-          <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderRSVP}</th>
-          <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderActions}</th>
-        </tr></thead><tbody class="text-gray-300">`;
-
-        guests.forEach(guest => {
-            const rsvpStatus = guest.حضور === 'نعم' ? `<span class="bg-green-500/20 text-green-300 text-xs font-medium px-2.5 py-1 rounded-full">${translations[currentLang].rsvpYes}</span>`
-                             : guest.حضور === 'لا' ? `<span class="bg-red-500/20 text-red-300 text-xs font-medium px-2.5 py-1 rounded-full">${translations[currentLang].rsvpNo}</span>`
-                             : `<span class="bg-slate-500/20 text-slate-300 text-xs font-medium px-2.5 py-1 rounded-full">${translations[currentLang].rsvpNA}</span>`;
-
-            tableHTML += `<tr class="border-b border-white/10 hover:bg-white/5 transition-colors">
-              <td class="py-4 px-4 font-semibold text-white">${guest['الإسم'] || '<em>(No Name)</em>'}</td>
-              <td class="py-4 px-4">${rsvpStatus}</td>
-              <td class="py-4 px-4 text-sm font-medium space-x-2 rtl:space-x-reverse flex items-center">
-                <a href="invite.html?id=users/${currentUser.uid}/guests/${guest.id}&img=${encodeURIComponent(guest.cardUrl)}" target="_blank" class="text-indigo-400 hover:text-indigo-300">${translations[currentLang].viewCard}</a>
-                <button data-url="invite.html?id=users/${currentUser.uid}/guests/${guest.id}&img=${encodeURIComponent(guest.cardUrl)}" class="share-btn text-green-400 hover:text-green-300">${translations[currentLang].share}</button>
-              </td>
-            </tr>`;
-        });
-        tableHTML += '</tbody></table></div>';
-        outputDiv.innerHTML = tableHTML;
-        
-        document.querySelectorAll('.share-btn').forEach(btn => btn.addEventListener('click', handleShare));
-    });
-}
-
-function handleShare(e) {
-    const url = new URL(e.target.dataset.url, window.location.href).href;
-    const shareData = {
-        title: 'Invitation',
-        text: translations[currentLang].shareMessage,
-        url: url,
-    };
-    if (navigator.share) {
-        navigator.share(shareData).catch(err => console.error("Share failed:", err));
-    } else {
-        navigator.clipboard.writeText(url).then(() => {
-            showNotification(translations[currentLang].linkCopied, 'green');
-        });
-    }
-}
-
-function showNotification(message, type = 'green') {
-    const notification = document.getElementById('notification');
-    if (!notification) return;
-
-    clearTimeout(notificationTimeout);
-
-    const colors = {
-        green: 'bg-green-500',
-        red: 'bg-red-500',
-        yellow: 'bg-yellow-500'
-    };
-
-    notification.className = `fixed top-5 right-5 rtl:right-auto rtl:left-5 text-white py-3 px-6 rounded-lg shadow-xl transform transition-all duration-500 ease-in-out z-50 ${colors[type] || 'bg-gray-500'}`;
-    notification.textContent = message;
-
-    requestAnimationFrame(() => {
-        notification.classList.remove('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-        notification.classList.add('translate-x-0', 'opacity-100');
-    });
-
-    notificationTimeout = setTimeout(() => {
-        notification.classList.add('translate-x-full', 'rtl:-translate-x-full', 'opacity-0');
-        notification.classList.remove('translate-x-0', 'opacity-100');
-    }, 3000);
-}
+function readData() { onValue(databaseRef(database), snapshot => { const data = snapshot.val(); const outputDiv = document.getElementById('output'); if (!data || typeof data !== 'object') { outputDiv.innerHTML = `<p class="text-center text-gray-400">${translations[currentLang].noGuests}</p>`; return; } const parentNodes = Object.keys(data).sort().reverse(); let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderRSVP}</th><th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderActions}</th></tr></thead><tbody class="text-gray-300">`; parentNodes.forEach((parentNode) => { const nodeData = data[parentNode]; const rsvpRaw = nodeData['حضور']; const rsvp = rsvpRaw === 'نعم' ? translations[currentLang].rsvpYes : rsvpRaw === 'لا' ? translations[currentLang].rsvpNo : translations[currentLang].rsvpNA; let rsvpClass = 'text-gray-400'; if (rsvpRaw === 'نعم') rsvpClass = 'text-green-400'; if (rsvpRaw === 'لا') rsvpClass = 'text-red-400'; const shareMessage = encodeURIComponent(`${translations[currentLang].shareMessage}${nodeData.link}`); const whatsappLink = `https://wa.me/?text=${shareMessage}`; tableHTML += `<tr id="row-${parentNode}" class="border-b border-white/10 hover:bg-white/5 transition-colors"><td class="py-4 px-4 font-semibold text-white">${nodeData['الإسم'] || ''}</td><td class="py-4 px-4 font-bold ${rsvpClass}">${rsvp}</td><td class="py-4 px-4"><div class="flex items-center gap-x-6">${nodeData.link ? `<a href="${nodeData.link}" target="_blank" class="text-indigo-400 hover:text-indigo-300 text-sm font-semibold transition-colors">${translations[currentLang].viewCard}</a>` : ''}${nodeData.link ? `<a href="${whatsappLink}" target="_blank" class="text-green-400 hover:text-green-300 text-sm font-semibold transition-colors">${translations[currentLang].share}</a>` : ''}</div></td></tr>`; }); tableHTML += `</tbody></table></div>`; outputDiv.innerHTML = tableHTML; }); }
+function showNotification(message, type = 'green') { const notification = document.getElementById('notification'); const colors = { green: 'bg-green-500', red: 'bg-red-500', yellow: 'bg-yellow-500' }; notification.className = `fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`; notification.textContent = message; notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(0)'; setTimeout(() => { notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)'; }, 4000); }
 </script>
 </body>
 </html>
