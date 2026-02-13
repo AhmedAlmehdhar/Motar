@@ -22,7 +22,8 @@
   #canvas-container {
       width: 500px;
       height: 667px;
-      transform-origin: top left;
+      transform-origin: center;
+      transition: transform 0.2s ease-out;
   }
   .editable-element {
       position: absolute;
@@ -39,6 +40,11 @@
   .editable-element.selected {
       border-color: #8B5CF6;
       border-style: solid;
+  }
+  .editable-element[contenteditable="true"] {
+      cursor: text;
+      outline: 2px solid #8B5CF6;
+      background-color: rgba(139, 92, 246, 0.1);
   }
   .editable-element .material-symbols-outlined {
     pointer-events: none;
@@ -171,6 +177,7 @@
 const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
 
 const DOMElements = {
+    main: document.querySelector('main'),
     canvasContainer: document.getElementById('canvas-container'),
     sidebar: document.getElementById('sidebar'),
     noElementSelected: document.getElementById('no-element-selected'),
@@ -220,206 +227,44 @@ const templates = {
 };
 
 const iconLibrary = {
-    'Favorites': {
-        'calendar_month': { keywords: 'calendar date schedule event month year favorite' },
-        'event': { keywords: 'event calendar schedule date favorite' },
-        'restaurant': { keywords: 'restaurant food dining eat meal dinner favorite' },
-        'local_dining': { keywords: 'dining food restaurant knife fork dinner favorite' },
-        'videocam_off': { keywords: 'no camera video record forbidden prohibited favorite' },
-    },
-    'Events & Time': {
-        'calendar_month': { keywords: 'calendar date schedule event month year' },
-        'schedule': { keywords: 'clock time hour minute schedule' },
-        'event': { keywords: 'event calendar schedule date' },
-        'event_available': { keywords: 'event available check calendar' },
-        'event_busy': { keywords: 'event busy calendar schedule' },
-        'alarm': { keywords: 'alarm clock time notification' },
-        'update': { keywords: 'update time history recent' },
-        'history': { keywords: 'history time recent past' },
-    },
-    'Wedding & Celebration': {
-        'favorite': { keywords: 'heart love wedding romance like' },
-        'card_giftcard': { keywords: 'gift present box birthday wedding' },
-        'cake': { keywords: 'cake birthday party food celebration wedding' },
-        'music_note': { keywords: 'music sound party dance wedding' },
-        'auto_awesome': { keywords: 'sparkles stars magic decoration wedding glitter' },
-        'celebration': { keywords: 'party celebration cheers confetti' },
-        'diamond': { keywords: 'diamond ring jewelry wedding engagement rich' },
-        'church': { keywords: 'church wedding religion ceremony building' },
-        'nightlife': { keywords: 'nightlife party dance club music' },
-        'restaurant': { keywords: 'restaurant food dining eat meal' },
-        'styler': { keywords: 'dress fashion clothing attire style wedding formal' },
-    },
-    'Invitation Details': {
-        'location_on': { keywords: 'map pin location address place marker' },
-        'groups': { keywords: 'users guests people family friends wedding team' },
-        'mail': { keywords: 'envelope mail message email contact' },
-        'call': { keywords: 'phone call contact telephone' },
-        'link': { keywords: 'link url website share connection' },
-        'home': { keywords: 'home house address residence' },
-        'location_city': { keywords: 'city building location address place' },
-        'alternate_email': { keywords: 'email at sign contact' },
-    },
-    'General & UI': {
-        'home': { keywords: 'home house main page' },
-        'settings': { keywords: 'settings cog options preferences' },
-        'search': { keywords: 'search find look magnify' },
-        'info': { keywords: 'info information details about' },
-        'help': { keywords: 'help question support query' },
-        'check_circle': { keywords: 'check circle done ok complete' },
-        'cancel': { keywords: 'cancel close exit x' },
-        'star': { keywords: 'star favorite rate rating' },
-        'thumb_up': { keywords: 'thumb up like approve' },
-        'thumb_down': { keywords: 'thumb down dislike disapprove' },
-        'visibility': { keywords: 'visibility eye view show' },
-        'edit': { keywords: 'edit pencil write change' },
-        'delete': { keywords: 'delete trash can remove bin' },
-        'add': { keywords: 'add plus new create' },
-        'remove': { keywords: 'remove minus subtract' },
-        'videocam_off': { keywords: 'no camera video record forbidden prohibited' },
-    },
-    'Food & Drink': {
-        'local_bar': { keywords: 'bar drink alcohol liquor cocktail' },
-        'local_cafe': { keywords: 'cafe coffee tea cup drink' },
-        'local_dining': { keywords: 'dining food restaurant knife fork' },
-        'bakery_dining': { keywords: 'bakery bread croissant food pastry' },
-        'icecream': { keywords: 'ice cream dessert food sweet' },
-        'wine_bar': { keywords: 'wine bar drink glass alcohol' },
-        'ramen_dining': { keywords: 'ramen noodles food soup' },
-        'liquor': { keywords: 'liquor drink bottle alcohol' },
-    },
-    'Nature & Travel': {
-        'flight': { keywords: 'flight airplane plane travel airport' },
-        'directions_car': { keywords: 'car vehicle travel drive' },
-        'sailing': { keywords: 'sailing boat ship travel water' },
-        'landscape': { keywords: 'landscape mountains nature photo' },
-        'park': { keywords: 'park tree nature outdoors' },
-        'forest': { keywords: 'forest trees woods nature' },
-        'local_florist': { keywords: 'florist flower plant nature' },
-        'beach_access': { keywords: 'beach umbrella sand travel' },
-        'luggage': { keywords: 'luggage travel bag suitcase trip' },
-        'hiking': { keywords: 'hiking walking person nature travel' },
-    },
-    'People & Social': {
-        'person': { keywords: 'person user profile account' },
-        'school': { keywords: 'school education cap graduation' },
-        'emoji_events': { keywords: 'emoji events trophy prize award' },
-        'sentiment_satisfied': { keywords: 'sentiment satisfied happy smile face' },
-        'mood': { keywords: 'mood happy smile face' },
-        'public': { keywords: 'public world globe network' },
-        'share': { keywords: 'share social connection' },
-    },
-    'Objects & Hardware': {
-        'computer': { keywords: 'computer desktop monitor screen' },
-        'smartphone': { keywords: 'smartphone phone mobile device' },
-        'headphones': { keywords: 'headphones music audio sound' },
-        'watch': { keywords: 'watch clock time' },
-        'chair': { keywords: 'chair furniture seat' },
-        'lightbulb': { keywords: 'lightbulb idea light' },
-    }
+    'Favorites': { 'calendar_month': { keywords: 'calendar date schedule event month year favorite' }, 'event': { keywords: 'event calendar schedule date favorite' }, 'restaurant': { keywords: 'restaurant food dining eat meal dinner favorite' }, 'local_dining': { keywords: 'dining food restaurant knife fork dinner favorite' }, 'videocam_off': { keywords: 'no camera video record forbidden prohibited favorite' }, },
+    'Events & Time': { 'calendar_month': { keywords: 'calendar date schedule event month year' }, 'schedule': { keywords: 'clock time hour minute schedule' }, 'event': { keywords: 'event calendar schedule date' }, 'event_available': { keywords: 'event available check calendar' }, 'event_busy': { keywords: 'event busy calendar schedule' }, 'alarm': { keywords: 'alarm clock time notification' }, 'update': { keywords: 'update time history recent' }, 'history': { keywords: 'history time recent past' }, },
+    'Wedding & Celebration': { 'favorite': { keywords: 'heart love wedding romance like' }, 'card_giftcard': { keywords: 'gift present box birthday wedding' }, 'cake': { keywords: 'cake birthday party food celebration wedding' }, 'music_note': { keywords: 'music sound party dance wedding' }, 'auto_awesome': { keywords: 'sparkles stars magic decoration wedding glitter' }, 'celebration': { keywords: 'party celebration cheers confetti' }, 'diamond': { keywords: 'diamond ring jewelry wedding engagement rich' }, 'church': { keywords: 'church wedding religion ceremony building' }, 'nightlife': { keywords: 'nightlife party dance club music' }, 'restaurant': { keywords: 'restaurant food dining eat meal' }, 'styler': { keywords: 'dress fashion clothing attire style wedding formal' }, },
+    'Invitation Details': { 'location_on': { keywords: 'map pin location address place marker' }, 'groups': { keywords: 'users guests people family friends wedding team' }, 'mail': { keywords: 'envelope mail message email contact' }, 'call': { keywords: 'phone call contact telephone' }, 'link': { keywords: 'link url website share connection' }, 'home': { keywords: 'home house address residence' }, 'location_city': { keywords: 'city building location address place' }, 'alternate_email': { keywords: 'email at sign contact' }, },
+    'General & UI': { 'home': { keywords: 'home house main page' }, 'settings': { keywords: 'settings cog options preferences' }, 'search': { keywords: 'search find look magnify' }, 'info': { keywords: 'info information details about' }, 'help': { keywords: 'help question support query' }, 'check_circle': { keywords: 'check circle done ok complete' }, 'cancel': { keywords: 'cancel close exit x' }, 'star': { keywords: 'star favorite rate rating' }, 'thumb_up': { keywords: 'thumb up like approve' }, 'thumb_down': { keywords: 'thumb down dislike disapprove' }, 'visibility': { keywords: 'visibility eye view show' }, 'edit': { keywords: 'edit pencil write change' }, 'delete': { keywords: 'delete trash can remove bin' }, 'add': { keywords: 'add plus new create' }, 'remove': { keywords: 'remove minus subtract' }, 'videocam_off': { keywords: 'no camera video record forbidden prohibited' }, },
+    'Food & Drink': { 'local_bar': { keywords: 'bar drink alcohol liquor cocktail' }, 'local_cafe': { keywords: 'cafe coffee tea cup drink' }, 'local_dining': { keywords: 'dining food restaurant knife fork' }, 'bakery_dining': { keywords: 'bakery bread croissant food pastry' }, 'icecream': { keywords: 'ice cream dessert food sweet' }, 'wine_bar': { keywords: 'wine bar drink glass alcohol' }, 'ramen_dining': { keywords: 'ramen noodles food soup' }, 'liquor': { keywords: 'liquor drink bottle alcohol' }, },
+    'Nature & Travel': { 'flight': { keywords: 'flight airplane plane travel airport' }, 'directions_car': { keywords: 'car vehicle travel drive' }, 'sailing': { keywords: 'sailing boat ship travel water' }, 'landscape': { keywords: 'landscape mountains nature photo' }, 'park': { keywords: 'park tree nature outdoors' }, 'forest': { keywords: 'forest trees woods nature' }, 'local_florist': { keywords: 'florist flower plant nature' }, 'beach_access': { keywords: 'beach umbrella sand travel' }, 'luggage': { keywords: 'luggage travel bag suitcase trip' }, 'hiking': { keywords: 'hiking walking person nature travel' }, },
+    'People & Social': { 'person': { keywords: 'person user profile account' }, 'school': { keywords: 'school education cap graduation' }, 'emoji_events': { keywords: 'emoji events trophy prize award' }, 'sentiment_satisfied': { keywords: 'sentiment satisfied happy smile face' }, 'mood': { keywords: 'mood happy smile face' }, 'public': { keywords: 'public world globe network' }, 'share': { keywords: 'share social connection' }, },
+    'Objects & Hardware': { 'computer': { keywords: 'computer desktop monitor screen' }, 'smartphone': { keywords: 'smartphone phone mobile device' }, 'headphones': { keywords: 'headphones music audio sound' }, 'watch': { keywords: 'watch clock time' }, 'chair': { keywords: 'chair furniture seat' }, 'lightbulb': { keywords: 'lightbulb idea light' }, }
 };
 
 let activeTemplate; let selectedElement = null; let isDragging = false; let dragOffsetX, dragOffsetY; let currentIconCategory = Object.keys(iconLibrary)[0];
 
-function renderTemplate() { DOMElements.canvasContainer.innerHTML = ''; DOMElements.canvasContainer.style.backgroundColor = activeTemplate.backgroundColor; DOMElements.canvasContainer.style.border = activeTemplate.border || 'none'; activeTemplate.elements.forEach(el => { const div = document.createElement('div'); div.id = el.id; div.className = 'editable-element'; div.style.left = `${el.x}%`; div.style.top = `${el.y}%`; if (el.type === 'text') { div.textContent = el.content; div.style.color = el.color; div.style.fontFamily = el.fontFamily; div.style.fontSize = `${el.fontSize}px`; div.style.fontWeight = el.fontWeight; div.style.fontStyle = el.fontStyle; div.style.textAlign = el.textAlign; div.style.letterSpacing = el.letterSpacing || 'normal'; div.style.lineHeight = el.lineHeight || 'normal'; } else if (el.type === 'icon') { const span = document.createElement('span'); span.className = 'material-symbols-outlined'; span.textContent = el.iconName; div.appendChild(span); div.style.width = `${el.size}px`; div.style.height = `${el.size}px`; div.style.fontSize = `${el.size}px`; div.style.color = el.color; div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center'; } div.style.transform = 'translate(-50%, -50%)'; div.addEventListener('mousedown', (e) => startDrag(e, el.id)); DOMElements.canvasContainer.appendChild(div); }); }
+function renderTemplate() { DOMElements.canvasContainer.innerHTML = ''; DOMElements.canvasContainer.style.backgroundColor = activeTemplate.backgroundColor; DOMElements.canvasContainer.style.border = activeTemplate.border || 'none'; activeTemplate.elements.forEach(el => { const div = document.createElement('div'); div.id = el.id; div.className = 'editable-element'; div.style.left = `${el.x}%`; div.style.top = `${el.y}%`; if (el.type === 'text') { div.textContent = el.content; div.style.color = el.color; div.style.fontFamily = el.fontFamily; div.style.fontSize = `${el.fontSize}px`; div.style.fontWeight = el.fontWeight; div.style.fontStyle = el.fontStyle; div.style.textAlign = el.textAlign; div.style.letterSpacing = el.letterSpacing || 'normal'; div.style.lineHeight = el.lineHeight || 'normal'; div.addEventListener('dblclick', () => { const currentlyEditing = DOMElements.canvasContainer.querySelector('[contenteditable="true"]'); if (currentlyEditing) { currentlyEditing.blur(); } selectElement(el.id); div.contentEditable = 'true'; div.style.cursor = 'text'; div.focus(); window.getSelection().selectAllChildren(div); const onBlur = () => { div.contentEditable = 'false'; div.style.cursor = 'move'; div.removeEventListener('blur', onBlur); div.removeEventListener('input', onInput); }; const onInput = () => { el.content = div.textContent; if (selectedElement && selectedElement.id === el.id) { DOMElements.textContent.value = el.content; } }; div.addEventListener('blur', onBlur); div.addEventListener('input', onInput); }); } else if (el.type === 'icon') { const span = document.createElement('span'); span.className = 'material-symbols-outlined'; span.textContent = el.iconName; div.appendChild(span); div.style.width = `${el.size}px`; div.style.height = `${el.size}px`; div.style.fontSize = `${el.size}px`; div.style.color = el.color; div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center'; } div.style.transform = 'translate(-50%, -50%)'; div.addEventListener('mousedown', (e) => { if (div.contentEditable === 'true') { return; } startDrag(e, el.id); }); DOMElements.canvasContainer.appendChild(div); }); }
 function selectElement(elementId) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = activeTemplate.elements.find(el => el.id === elementId); if (selectedElement) { document.getElementById(selectedElement.id).classList.add('selected'); DOMElements.noElementSelected.classList.add('hidden'); if (selectedElement.type === 'text') { DOMElements.textEditor.classList.remove('hidden'); DOMElements.iconEditor.classList.add('hidden'); updateSidebarForText(); } else if (selectedElement.type === 'icon') { DOMElements.iconEditor.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); updateSidebarForIcon(); } } }
 function updateSidebarForText() { DOMElements.textContent.value = selectedElement.content; DOMElements.fontFamily.value = selectedElement.fontFamily; DOMElements.fontSize.value = selectedElement.fontSize; DOMElements.fontColor.value = selectedElement.color; DOMElements.fontBold.classList.toggle('bg-indigo-500', selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold'); DOMElements.fontItalic.classList.toggle('bg-indigo-500', selectedElement.fontStyle === 'italic'); DOMElements.textAlignContainer.querySelectorAll('button').forEach(btn => { btn.classList.toggle('bg-indigo-500', btn.dataset.align === selectedElement.textAlign); }); }
 function updateSidebarForIcon() { DOMElements.iconSize.value = selectedElement.size; DOMElements.iconColor.value = selectedElement.color; }
-function updateElementFromSidebar() { if (!selectedElement) return; if(selectedElement.type === 'text') { selectedElement.content = DOMElements.textContent.value; selectedElement.fontFamily = DOMElements.fontFamily.value; selectedElement.fontSize = parseInt(DOMElements.fontSize.value, 10); selectedElement.color = DOMElements.fontColor.value; } else if (selectedElement.type === 'icon') { selectedElement.size = parseInt(DOMElements.iconSize.value, 10); selectedElement.color = DOMElements.iconColor.value; } renderTemplate(); document.getElementById(selectedElement.id)?.classList.add('selected'); }
+function updateElementStyle(elementData) { const elementDiv = document.getElementById(elementData.id); if (!elementDiv) return; if (elementData.type === 'text') { if (document.activeElement !== elementDiv) { elementDiv.textContent = elementData.content; } elementDiv.style.color = elementData.color; elementDiv.style.fontFamily = elementData.fontFamily; elementDiv.style.fontSize = `${elementData.fontSize}px`; elementDiv.style.fontWeight = elementData.fontWeight; elementDiv.style.fontStyle = elementData.fontStyle; elementDiv.style.textAlign = elementData.textAlign; } else if (elementData.type === 'icon') { elementDiv.style.width = `${elementData.size}px`; elementDiv.style.height = `${elementData.size}px`; elementDiv.style.fontSize = `${elementData.size}px`; elementDiv.style.color = elementData.color; } }
+function updateElementFromSidebar() { if (!selectedElement) return; if(selectedElement.type === 'text') { selectedElement.content = DOMElements.textContent.value; selectedElement.fontFamily = DOMElements.fontFamily.value; selectedElement.fontSize = parseInt(DOMElements.fontSize.value, 10); selectedElement.color = DOMElements.fontColor.value; } else if (selectedElement.type === 'icon') { selectedElement.size = parseInt(DOMElements.iconSize.value, 10); selectedElement.color = DOMElements.iconColor.value; } updateElementStyle(selectedElement); }
 function startDrag(e, elementId) { e.preventDefault(); selectElement(elementId); isDragging = true; const containerRect = DOMElements.canvasContainer.getBoundingClientRect(); const mouseX = e.clientX - containerRect.left; const mouseY = e.clientY - containerRect.top; const elementX = (selectedElement.x / 100) * containerRect.width; const elementY = (selectedElement.y / 100) * containerRect.height; dragOffsetX = mouseX - elementX; dragOffsetY = mouseY - elementY; document.addEventListener('mousemove', dragMove); document.addEventListener('mouseup', stopDrag); }
 function dragMove(e) { if (!isDragging || !selectedElement) return; e.preventDefault(); const containerRect = DOMElements.canvasContainer.getBoundingClientRect(); const mouseX = e.clientX - containerRect.left; const mouseY = e.clientY - containerRect.top; let newX = mouseX - dragOffsetX; let newY = mouseY - dragOffsetY; newX = Math.max(0, Math.min(newX, containerRect.width)); newY = Math.max(0, Math.min(newY, containerRect.height)); selectedElement.x = (newX / containerRect.width) * 100; selectedElement.y = (newY / containerRect.height) * 100; const el = document.getElementById(selectedElement.id); el.style.left = `${selectedElement.x}%`; el.style.top = `${selectedElement.y}%`; }
 function stopDrag() { isDragging = false; document.removeEventListener('mousemove', dragMove); document.removeEventListener('mouseup', stopDrag); }
-function addNewText() { const newText = { id: 'el' + Date.now(), type: 'text', content: 'نص جديد', x: 50, y: 50, color: '#FFFFFF', fontFamily: "'Cairo', sans-serif", fontSize: 28, fontWeight: 'normal', fontStyle: 'normal', textAlign: 'center' }; activeTemplate.elements.push(newText); renderTemplate(); selectElement(newText.id); }
-function addIconFromLibrary(iconName) { const newIcon = { id: 'el' + Date.now(), type: 'icon', iconName: iconName, x: 50, y: 50, size: 50, color: '#FFFFFF' }; activeTemplate.elements.push(newIcon); renderTemplate(); selectElement(newIcon.id); DOMElements.iconLibraryModal.classList.add('hidden'); }
+function addNewText() { const newText = { id: 'el' + Date.now(), type: 'text', content: 'نص جديد', x: 50, y: 50, color: '#000000', fontFamily: "'Cairo', sans-serif", fontSize: 28, fontWeight: 'normal', fontStyle: 'normal', textAlign: 'center' }; activeTemplate.elements.push(newText); renderTemplate(); selectElement(newText.id); }
+function addIconFromLibrary(iconName) { const newIcon = { id: 'el' + Date.now(), type: 'icon', iconName: iconName, x: 50, y: 50, size: 50, color: '#000000' }; activeTemplate.elements.push(newIcon); renderTemplate(); selectElement(newIcon.id); DOMElements.iconLibraryModal.classList.add('hidden'); }
 async function saveAndContinue() { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); DOMElements.saveButton.disabled = true; DOMElements.spinner.classList.remove('hidden'); DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saving; try { const canvas = await html2canvas(DOMElements.canvasContainer, { useCORS: true, backgroundColor: null }); const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95)); const formData = new FormData(); formData.append('image', blob); const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData }); const result = await response.json(); if (result.success) { localStorage.setItem('generatedCardUrl', result.data.url); alert(translations[currentLang].saveSuccess); window.location.href = 'editor.html'; } else { throw new Error(result.error?.message || 'Unknown upload error'); } } catch(error) { alert(translations[currentLang].saveError + error.message); } finally { DOMElements.saveButton.disabled = false; DOMElements.spinner.classList.add('hidden'); DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saveBtn; } }
-
-function renderIconsForCategory(category) {
-    DOMElements.iconLibraryGrid.innerHTML = '';
-    const icons = iconLibrary[category];
-    for (const name in icons) {
-        const btn = document.createElement('button');
-        btn.className = 'p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center justify-center text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 text-3xl';
-        const span = document.createElement('span');
-        span.className = 'material-symbols-outlined';
-        span.textContent = name;
-        btn.appendChild(span);
-        btn.dataset.iconName = name;
-        btn.setAttribute('title', name);
-        btn.addEventListener('click', () => addIconFromLibrary(name));
-        DOMElements.iconLibraryGrid.appendChild(btn);
-    }
-}
-
-function populateIconLibrary() {
-    DOMElements.iconCategories.innerHTML = '';
-    Object.keys(iconLibrary).forEach(category => {
-        const btn = document.createElement('button');
-        btn.textContent = category;
-        btn.dataset.category = category;
-        btn.className = 'px-3 py-1 text-sm rounded-full transition-colors';
-        if (category === currentIconCategory) {
-            btn.classList.add('bg-indigo-500', 'text-white', 'font-semibold');
-        } else {
-            btn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300');
-        }
-        btn.addEventListener('click', () => {
-            currentIconCategory = category;
-            document.querySelectorAll('#icon-categories button').forEach(b => {
-                b.classList.remove('bg-indigo-500', 'text-white', 'font-semibold');
-                b.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300');
-            });
-            btn.classList.add('bg-indigo-500', 'text-white', 'font-semibold');
-            btn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300');
-            DOMElements.iconSearchInput.value = '';
-            renderIconsForCategory(category);
-        });
-        DOMElements.iconCategories.appendChild(btn);
-    });
-    renderIconsForCategory(currentIconCategory);
-}
-
-function filterIcons() {
-    const searchTerm = DOMElements.iconSearchInput.value.toLowerCase().trim();
-    if (!searchTerm) {
-        renderIconsForCategory(currentIconCategory);
-        return;
-    }
-    
-    // De-select category buttons
-    document.querySelectorAll('#icon-categories button').forEach(b => {
-        b.classList.remove('bg-indigo-500', 'text-white', 'font-semibold');
-        b.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300');
-    });
-
-    DOMElements.iconLibraryGrid.innerHTML = '';
-    for (const category in iconLibrary) {
-        for (const name in iconLibrary[category]) {
-            const iconData = iconLibrary[category][name];
-            const keywords = `${name} ${iconData.keywords}`.toLowerCase();
-            if (keywords.includes(searchTerm)) {
-                const btn = document.createElement('button');
-                btn.className = 'p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center justify-center text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 text-3xl';
-                const span = document.createElement('span');
-                span.className = 'material-symbols-outlined';
-                span.textContent = name;
-                btn.appendChild(span);
-                btn.dataset.iconName = name;
-                btn.setAttribute('title', name);
-                btn.addEventListener('click', () => addIconFromLibrary(name));
-                DOMElements.iconLibraryGrid.appendChild(btn);
-            }
-        }
-    }
-}
-
-DOMElements.textEditor.addEventListener('input', updateElementFromSidebar); DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar); DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement) return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementFromSidebar(); }); DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement) return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementFromSidebar(); }); DOMElements.textAlignContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' && e.target.dataset.align) { if (!selectedElement) return; selectedElement.textAlign = e.target.dataset.align; updateSidebarForText(); updateElementFromSidebar(); } }); DOMElements.canvasContainer.addEventListener('mousedown', (e) => { if (e.target === DOMElements.canvasContainer) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); } });
+function renderIconsForCategory(category) { DOMElements.iconLibraryGrid.innerHTML = ''; const icons = iconLibrary[category]; for (const name in icons) { const btn = document.createElement('button'); btn.className = 'p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center justify-center text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 text-3xl'; const span = document.createElement('span'); span.className = 'material-symbols-outlined'; span.textContent = name; btn.appendChild(span); btn.dataset.iconName = name; btn.setAttribute('title', name); btn.addEventListener('click', () => addIconFromLibrary(name)); DOMElements.iconLibraryGrid.appendChild(btn); } }
+function populateIconLibrary() { DOMElements.iconCategories.innerHTML = ''; Object.keys(iconLibrary).forEach(category => { const btn = document.createElement('button'); btn.textContent = category; btn.dataset.category = category; btn.className = 'px-3 py-1 text-sm rounded-full transition-colors'; if (category === currentIconCategory) { btn.classList.add('bg-indigo-500', 'text-white', 'font-semibold'); } else { btn.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300'); } btn.addEventListener('click', () => { currentIconCategory = category; document.querySelectorAll('#icon-categories button').forEach(b => { b.classList.remove('bg-indigo-500', 'text-white', 'font-semibold'); b.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300'); }); btn.classList.add('bg-indigo-500', 'text-white', 'font-semibold'); btn.classList.remove('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300'); DOMElements.iconSearchInput.value = ''; renderIconsForCategory(category); }); DOMElements.iconCategories.appendChild(btn); }); renderIconsForCategory(currentIconCategory); }
+function filterIcons() { const searchTerm = DOMElements.iconSearchInput.value.toLowerCase().trim(); if (!searchTerm) { renderIconsForCategory(currentIconCategory); return; } document.querySelectorAll('#icon-categories button').forEach(b => { b.classList.remove('bg-indigo-500', 'text-white', 'font-semibold'); b.classList.add('bg-slate-700', 'hover:bg-slate-600', 'text-gray-300'); }); DOMElements.iconLibraryGrid.innerHTML = ''; for (const category in iconLibrary) { for (const name in iconLibrary[category]) { const iconData = iconLibrary[category][name]; const keywords = `${name} ${iconData.keywords}`.toLowerCase(); if (keywords.includes(searchTerm)) { const btn = document.createElement('button'); btn.className = 'p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center justify-center text-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 text-3xl'; const span = document.createElement('span'); span.className = 'material-symbols-outlined'; span.textContent = name; btn.appendChild(span); btn.dataset.iconName = name; btn.setAttribute('title', name); btn.addEventListener('click', () => addIconFromLibrary(name)); DOMElements.iconLibraryGrid.appendChild(btn); } } } }
+function resizeCanvas() { if (!DOMElements.main || !DOMElements.canvasContainer) return; const mainRect = DOMElements.main.getBoundingClientRect(); const canvasWidth = 500; const canvasHeight = 667; const availableWidth = mainRect.width * 0.95; const availableHeight = mainRect.height * 0.95; const scale = Math.min(availableWidth / canvasWidth, availableHeight / canvasHeight); DOMElements.canvasContainer.style.transform = `scale(${Math.min(scale, 1)})`; }
+DOMElements.textEditor.addEventListener('input', updateElementFromSidebar); DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar); DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.textAlignContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' && e.target.dataset.align) { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.textAlign = e.target.dataset.align; updateSidebarForText(); updateElementStyle(selectedElement); } }); DOMElements.canvasContainer.addEventListener('mousedown', (e) => { if (e.target === DOMElements.canvasContainer) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); } });
 DOMElements.addTextBtn.addEventListener('click', addNewText);
 DOMElements.addIconBtn.addEventListener('click', () => DOMElements.iconLibraryModal.classList.remove('hidden'));
 DOMElements.closeModalBtn.addEventListener('click', () => DOMElements.iconLibraryModal.classList.add('hidden'));
 DOMElements.iconSearchInput.addEventListener('input', filterIcons);
 DOMElements.saveButton.addEventListener('click', saveAndContinue);
+window.addEventListener('resize', resizeCanvas);
 const urlParams = new URLSearchParams(window.location.search); const templateId = urlParams.get('template') || 'modern'; activeTemplate = JSON.parse(JSON.stringify(templates[templateId]));
-populateIconLibrary(); renderTemplate();
+populateIconLibrary(); renderTemplate(); resizeCanvas();
 </script>
 
 </body>
