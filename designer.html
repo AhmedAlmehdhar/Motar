@@ -270,6 +270,9 @@ async function saveAndContinue() {
     DOMElements.saveButton.disabled = true;
     DOMElements.spinner.classList.remove('hidden');
     DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saving;
+
+    const originalTransform = DOMElements.canvasContainer.style.transform;
+
     try {
         // Preload the background image to ensure it's loaded before canvas capture
         await new Promise((resolve, reject) => {
@@ -288,13 +291,16 @@ async function saveAndContinue() {
         // Wait for all fonts to be loaded and ready
         await document.fonts.ready;
 
-        // A small delay to ensure rendering is complete
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Remove transform for capture and wait for repaint
+        DOMElements.canvasContainer.style.transform = '';
+        await new Promise(resolve => requestAnimationFrame(resolve));
 
         const canvas = await html2canvas(DOMElements.canvasContainer, {
             useCORS: true,
             backgroundColor: null,
-            scale: 2 // Render at 2x resolution to improve quality
+            scale: 2, // Render at 2x resolution to improve quality
+            width: 500, // Explicitly set base width
+            height: 667, // Explicitly set base height
         });
         
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
@@ -315,6 +321,8 @@ async function saveAndContinue() {
     } catch (error) {
         alert(translations[currentLang].saveError + error.message);
     } finally {
+        // Restore transform and button state
+        DOMElements.canvasContainer.style.transform = originalTransform;
         DOMElements.saveButton.disabled = false;
         DOMElements.spinner.classList.add('hidden');
         DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saveBtn;
