@@ -1,0 +1,346 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Designer</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Dancing+Script:wght@400;700&family=Roboto:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --font-main: 'Plus Jakarta Sans', sans-serif; }
+  html[lang="ar"] { --font-main: 'Cairo', sans-serif; }
+  body {
+    font-family: var(--font-main);
+    background-color: #0f172a;
+  }
+  #canvas-container {
+      width: 500px;
+      height: 667px;
+      transform-origin: top left;
+  }
+  .editable-text {
+      position: absolute;
+      padding: 5px;
+      cursor: pointer;
+      border: 2px dashed transparent;
+      transition: border-color 0.2s ease;
+      white-space: pre-wrap;
+      transform-origin: center center;
+  }
+  .editable-text:hover {
+      border-color: rgba(139, 92, 246, 0.5);
+  }
+  .editable-text.selected {
+      border-color: #8B5CF6;
+      border-style: solid;
+  }
+</style>
+</head>
+<body class="text-gray-200 bg-slate-900 flex flex-col h-screen overflow-hidden">
+
+<header class="bg-slate-800 border-b border-white/10 z-20">
+  <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+    <h1 class="text-lg font-bold text-gray-100" data-lang-key="headerTitle">Card Designer</h1>
+    <div class="flex items-center gap-4">
+        <a href="templates.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToTemplates">&larr; Back to Templates</a>
+        <button id="save-design-button" class="font-bold text-sm bg-green-600 hover:bg-green-500 text-white rounded-md px-4 py-2 transition-colors flex items-center gap-2">
+            <span data-lang-key="saveBtn">Save & Continue</span>
+            <div id="btn-spinner" class="hidden h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent"></div>
+        </button>
+    </div>
+  </div>
+</header>
+
+<div class="flex-1 flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-80 bg-slate-800 p-4 overflow-y-auto space-y-6 flex-shrink-0">
+        <div id="no-element-selected" class="text-center text-gray-400 p-4 border border-dashed border-slate-600 rounded-lg">
+            <p data-lang-key="selectElement">Select an element on the card to edit its properties.</p>
+        </div>
+        <div id="element-editor" class="hidden space-y-4">
+            <div>
+                <label for="text-content" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="textContent">Text Content</label>
+                <textarea id="text-content" rows="3" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200"></textarea>
+            </div>
+            <div>
+                <label for="font-family" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="fontFamily">Font Family</label>
+                <select id="font-family" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200">
+                    <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                    <option value="'Amiri', serif">Amiri</option>
+                    <option value="'Dancing Script', cursive">Dancing Script</option>
+                    <option value="'Cairo', sans-serif">Cairo</option>
+                </select>
+            </div>
+             <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="font-size" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="fontSize">Size</label>
+                    <input type="number" id="font-size" min="8" max="200" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200">
+                </div>
+                <div>
+                    <label for="font-color" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="fontColor">Color</label>
+                    <input type="color" id="font-color" class="w-full h-10 p-1 bg-slate-700 border border-slate-600 rounded-lg">
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="font-bold" class="px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 w-full font-bold">B</button>
+                <button id="font-italic" class="px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 w-full italic">I</button>
+            </div>
+             <div>
+                <label for="font-align" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="textAlign">Alignment</label>
+                <div id="font-align" class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-md">
+                    <button data-align="left" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600">L</button>
+                    <button data-align="center" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600">C</button>
+                    <button data-align="right" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600">R</button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Canvas Area -->
+    <main class="flex-1 bg-slate-900 flex items-center justify-center p-4 overflow-auto">
+        <div id="canvas-container" class="relative bg-white shadow-2xl">
+            <!-- Elements will be rendered here by JS -->
+        </div>
+    </main>
+</div>
+
+<script type="module">
+const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
+
+const DOMElements = {
+    canvasContainer: document.getElementById('canvas-container'),
+    sidebar: document.getElementById('sidebar'),
+    noElementSelected: document.getElementById('no-element-selected'),
+    elementEditor: document.getElementById('element-editor'),
+    textContent: document.getElementById('text-content'),
+    fontFamily: document.getElementById('font-family'),
+    fontSize: document.getElementById('font-size'),
+    fontColor: document.getElementById('font-color'),
+    fontBold: document.getElementById('font-bold'),
+    fontItalic: document.getElementById('font-italic'),
+    textAlignContainer: document.getElementById('font-align'),
+    saveButton: document.getElementById('save-design-button'),
+    spinner: document.getElementById('btn-spinner'),
+};
+
+const translations = {
+    en: { headerTitle: "Card Designer", backToTemplates: "← Back to Templates", saveBtn: "Save & Continue", saving: "Saving...", selectElement: "Select an element on the card to edit its properties.", textContent: "Text Content", fontFamily: "Font Family", fontSize: "Size", fontColor: "Color", textAlign: "Alignment", saveSuccess: "Design saved! Redirecting...", saveError: "Could not save design: "},
+    ar: { headerTitle: "مصمم البطاقات", backToTemplates: "→ العودة للقوالب", saveBtn: "حفظ ومتابعة", saving: "جاري الحفظ...", selectElement: "اختر عنصرًا على البطاقة لتعديل خصائصه.", textContent: "محتوى النص", fontFamily: "نوع الخط", fontSize: "الحجم", fontColor: "اللون", textAlign: "المحاذاة", saveSuccess: "تم حفظ التصميم! جارٍ إعادة التوجيه...", saveError: "لم يتم حفظ التصميم: " }
+};
+
+let currentLang = localStorage.getItem('language') || 'en';
+document.documentElement.lang = currentLang;
+document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+document.querySelectorAll('[data-lang-key]').forEach(el => {
+    const key = el.getAttribute('data-lang-key');
+    if (translations[currentLang][key]) el.textContent = translations[currentLang][key];
+});
+document.title = translations[currentLang].headerTitle;
+
+
+const templates = {
+    modern: {
+        backgroundColor: '#0d1a2f',
+        elements: [
+            { id: 'el1', type: 'text', content: 'SAVE THE DATE', x: 50, y: 25, color: '#a5b4fc', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 300, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.2em' },
+            { id: 'el2', type: 'text', content: 'S & M', x: 50, y: 40, color: '#ffffff', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 96, fontWeight: 800, fontStyle: 'normal', textAlign: 'center' },
+            { id: 'el3', type: 'text', content: '08 . 24 . 2024', x: 50, y: 55, color: '#ffffff', fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 600, fontStyle: 'normal', textAlign: 'center' }
+        ]
+    },
+    floral: {
+        backgroundColor: '#FBF6F0',
+        elements: [
+            { id: 'el1', type: 'text', content: 'You are invited to celebrate\nthe wedding of', x: 50, y: 20, color: '#B999A1', fontFamily: "'Dancing Script', cursive", fontSize: 40, fontWeight: 400, fontStyle: 'normal', textAlign: 'center' },
+            { id: 'el2', type: 'text', content: 'Aisha & Omar', x: 50, y: 50, color: '#8a7f80', fontFamily: "'Amiri', serif", fontSize: 80, fontWeight: 700, fontStyle: 'normal', textAlign: 'center' },
+            { id: 'el3', type: 'text', content: 'SATURDAY, 24 AUGUST 2024\nAT 7:00 PM\nTHE GRAND HALL', x: 50, y: 75, color: '#5D5D5D', fontFamily: "'Roboto', sans-serif", fontSize: 18, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', lineHeight: '1.6' }
+        ]
+    },
+    classic: {
+        backgroundColor: '#F5EFE6',
+        border: '16px solid #E8DFD3',
+        elements: [
+            { id: 'el1', type: 'text', content: 'TOGETHER WITH THEIR FAMILIES', x: 50, y: 20, color: '#6A5A4F', fontFamily: "'Amiri', serif", fontSize: 20, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.2em' },
+            { id: 'el2', type: 'text', content: 'Fatima\n&\nYoussef', x: 50, y: 50, color: '#6A5A4F', fontFamily: "'Dancing Script', cursive", fontSize: 80, fontWeight: 700, fontStyle: 'normal', textAlign: 'center', lineHeight: '1.2' },
+            { id: 'el3', type: 'text', content: 'request the honor of your presence\nat their wedding celebration', x: 50, y: 80, color: '#6A5A4F', fontFamily: "'Amiri', serif", fontSize: 18, fontWeight: 400, fontStyle: 'normal', textAlign: 'center', letterSpacing: '0.1em' }
+        ]
+    }
+};
+
+let activeTemplate;
+let selectedElement = null;
+
+function renderTemplate() {
+    DOMElements.canvasContainer.innerHTML = '';
+    DOMElements.canvasContainer.style.backgroundColor = activeTemplate.backgroundColor;
+    DOMElements.canvasContainer.style.border = activeTemplate.border || 'none';
+
+    activeTemplate.elements.forEach(el => {
+        const div = document.createElement('div');
+        div.id = el.id;
+        div.className = 'editable-text';
+        div.textContent = el.content;
+        
+        // Apply styles
+        div.style.left = `${el.x}%`;
+        div.style.top = `${el.y}%`;
+        div.style.color = el.color;
+        div.style.fontFamily = el.fontFamily;
+        div.style.fontSize = `${el.fontSize}px`;
+        div.style.fontWeight = el.fontWeight;
+        div.style.fontStyle = el.fontStyle;
+        div.style.textAlign = el.textAlign;
+        div.style.letterSpacing = el.letterSpacing || 'normal';
+        div.style.lineHeight = el.lineHeight || 'normal';
+
+        // Set transform for centering
+        div.style.transform = 'translate(-50%, -50%)';
+
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectElement(el.id);
+        });
+
+        DOMElements.canvasContainer.appendChild(div);
+    });
+}
+
+function selectElement(elementId) {
+    if (selectedElement) {
+        document.getElementById(selectedElement.id)?.classList.remove('selected');
+    }
+
+    selectedElement = activeTemplate.elements.find(el => el.id === elementId);
+    
+    if (selectedElement) {
+        document.getElementById(selectedElement.id).classList.add('selected');
+        DOMElements.noElementSelected.classList.add('hidden');
+        DOMElements.elementEditor.classList.remove('hidden');
+        updateSidebar();
+    }
+}
+
+function updateSidebar() {
+    if (!selectedElement) return;
+    DOMElements.textContent.value = selectedElement.content;
+    DOMElements.fontFamily.value = selectedElement.fontFamily;
+    DOMElements.fontSize.value = selectedElement.fontSize;
+    DOMElements.fontColor.value = selectedElement.color;
+    // Update bold/italic/align buttons state
+    DOMElements.fontBold.classList.toggle('bg-indigo-500', selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold');
+    DOMElements.fontItalic.classList.toggle('bg-indigo-500', selectedElement.fontStyle === 'italic');
+    DOMElements.textAlignContainer.querySelectorAll('button').forEach(btn => {
+        btn.classList.toggle('bg-indigo-500', btn.dataset.align === selectedElement.textAlign);
+    });
+}
+
+function updateElementFromSidebar() {
+    if (!selectedElement) return;
+    
+    const propertyMap = {
+        'text-content': 'content',
+        'font-family': 'fontFamily',
+        'font-size': 'fontSize',
+        'font-color': 'color',
+    };
+
+    for (const [id, prop] of Object.entries(propertyMap)) {
+        const input = DOMElements[id.replace(/-/g, '')];
+        if (input.type === 'number') {
+            selectedElement[prop] = parseInt(input.value, 10);
+        } else {
+            selectedElement[prop] = input.value;
+        }
+    }
+    
+    renderTemplate();
+    document.getElementById(selectedElement.id)?.classList.add('selected');
+}
+
+async function saveAndContinue() {
+    // Deselect element to remove border before capturing
+    if (selectedElement) {
+        document.getElementById(selectedElement.id).classList.remove('selected');
+        selectedElement = null;
+    }
+    
+    DOMElements.saveButton.disabled = true;
+    DOMElements.spinner.classList.remove('hidden');
+    DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saving;
+
+    try {
+        const canvas = await html2canvas(DOMElements.canvasContainer, { useCORS: true, backgroundColor: null });
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+        
+        const formData = new FormData();
+        formData.append('image', blob);
+        
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+        const result = await response.json();
+
+        if (result.success) {
+            localStorage.setItem('generatedCardUrl', result.data.url);
+            alert(translations[currentLang].saveSuccess);
+            window.location.href = 'editor.html';
+        } else {
+            throw new Error(result.error?.message || 'Unknown upload error');
+        }
+
+    } catch(error) {
+        alert(translations[currentLang].saveError + error.message);
+    } finally {
+        DOMElements.saveButton.disabled = false;
+        DOMElements.spinner.classList.add('hidden');
+        DOMElements.saveButton.querySelector('span').textContent = translations[currentLang].saveBtn;
+    }
+}
+
+// Event Listeners
+['input', 'change'].forEach(evt => {
+    DOMElements.elementEditor.addEventListener(evt, updateElementFromSidebar);
+});
+
+DOMElements.fontBold.addEventListener('click', () => {
+    if (!selectedElement) return;
+    selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700;
+    updateSidebar();
+    updateElementFromSidebar();
+});
+DOMElements.fontItalic.addEventListener('click', () => {
+    if (!selectedElement) return;
+    selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic';
+    updateSidebar();
+    updateElementFromSidebar();
+});
+DOMElements.textAlignContainer.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' && e.target.dataset.align) {
+        if (!selectedElement) return;
+        selectedElement.textAlign = e.target.dataset.align;
+        updateSidebar();
+        updateElementFromSidebar();
+    }
+});
+DOMElements.canvasContainer.addEventListener('click', () => {
+     if (selectedElement) {
+        document.getElementById(selectedElement.id)?.classList.remove('selected');
+    }
+    selectedElement = null;
+    DOMElements.noElementSelected.classList.remove('hidden');
+    DOMElements.elementEditor.classList.add('hidden');
+});
+DOMElements.saveButton.addEventListener('click', saveAndContinue);
+
+// Initialization
+const urlParams = new URLSearchParams(window.location.search);
+const templateId = urlParams.get('template') || 'modern';
+activeTemplate = JSON.parse(JSON.stringify(templates[templateId])); // Deep copy to allow edits
+
+renderTemplate();
+</script>
+
+</body>
+</html>
