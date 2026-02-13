@@ -191,10 +191,9 @@
         }
     };
     const langSwitcher = document.getElementById('lang-switcher');
-    let currentLang = localStorage.getItem('language') || 'en';
+    
     const setLanguage = (lang) => {
         localStorage.setItem('language', lang);
-        currentLang = lang;
         document.documentElement.lang = lang;
         document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
         langSwitcher.textContent = lang === 'ar' ? 'EN' : 'AR';
@@ -205,7 +204,10 @@
             }
         });
     };
-    langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
+    langSwitcher.addEventListener('click', () => {
+        const currentLang = localStorage.getItem('language') || 'en';
+        setLanguage(currentLang === 'en' ? 'ar' : 'en');
+    });
     
     // --- APP LOGIC START ---
 
@@ -297,7 +299,10 @@
         
         DOMElements.includeNameToggle.addEventListener('change', updateOptionalElementsVisibility);
         DOMElements.includeLocationQrToggle.addEventListener('change', updateOptionalElementsVisibility);
-        DOMElements.locationUrlInput.addEventListener('input', () => updateLocationQrCode(DOMElements.locationUrlInput.value));
+        DOMElements.locationUrlInput.addEventListener('input', () => {
+            const currentLang = localStorage.getItem('language') || 'en';
+            updateLocationQrCode(DOMElements.locationUrlInput.value, currentLang);
+        });
     }
 
     function showSection(section) {
@@ -372,6 +377,7 @@
     }
     
     async function handleContinueToEditor() {
+        const currentLang = localStorage.getItem('language') || 'en';
         if (!selectedCardImageUrl && !selectedFile) {
             showNotification(translations[currentLang].selectImageFirst, 'yellow');
             return;
@@ -430,6 +436,7 @@
     }
 
     function createCustomizationControls() {
+        const currentLang = localStorage.getItem('language') || 'en';
         const nameGroup = DOMElements.nameCustomizationGroup;
         const guestQrGroup = DOMElements.guestQrCustomizationGroup;
         const locationQrGroup = DOMElements.locationQrCustomizationGroup;
@@ -507,7 +514,7 @@
         createInput('fontColor', 'color', 'name-color', settings.name.style.color, nameGroup, (e) => { settings.name.style.color = e.target.value; applyNameStyle(); });
         createInput('fontFamily', 'select', 'name-font', settings.name.style.fontFamily, nameGroup, (e) => { settings.name.style.fontFamily = e.target.value; applyNameStyle(); }, { choices: FONT_OPTIONS });
         createInput('fontSize', 'range', 'name-size', settings.name.style.fontSize, nameGroup, (e) => { settings.name.style.fontSize = e.target.value; applyNameStyle(); }, { min: 12, max: 120, step: 1 });
-        createInput('rotation', 'range', 'name-rotation', settings.name.style.transform.match(/-?\\d+/)[0], nameGroup, (e) => { settings.name.style.transform = `rotate(${e.target.value}deg)`; applyNameStyle(); }, { min: -45, max: 45, step: 1 });
+        createInput('rotation', 'range', 'name-rotation', (settings.name.style.transform.match(/-?\\d+/) || ['0'])[0], nameGroup, (e) => { settings.name.style.transform = `rotate(${e.target.value}deg)`; applyNameStyle(); }, { min: -45, max: 45, step: 1 });
         createInput('bold', 'checkbox', 'name-bold', settings.name.style.fontWeight === 'bold', nameGroup, (e) => { settings.name.style.fontWeight = e.target.checked ? 'bold' : 'normal'; applyNameStyle(); });
         createInput('italic', 'checkbox', 'name-italic', settings.name.style.fontStyle === 'italic', nameGroup, (e) => { settings.name.style.fontStyle = e.target.checked ? 'italic' : 'normal'; applyNameStyle(); });
 
@@ -523,6 +530,7 @@
     }
 
     function applyAllSettings() {
+        const currentLang = localStorage.getItem('language') || 'en';
         applyNameStyle();
         applyQrStyle('guestQr');
         applyQrStyle('locationQr');
@@ -531,7 +539,7 @@
         DOMElements.includeLocationQrToggle.checked = settings.includeLocationQr;
         DOMElements.locationUrlInput.value = settings.locationUrl;
         updateOptionalElementsVisibility();
-        updateLocationQrCode(settings.locationUrl);
+        updateLocationQrCode(settings.locationUrl, currentLang);
     }
     
     function updateOptionalElementsVisibility() {
@@ -627,6 +635,7 @@
     }
 
     function saveAndContinue() {
+        const currentLang = localStorage.getItem('language') || 'en';
         designs[currentSide] = JSON.parse(JSON.stringify(settings));
         localStorage.setItem('invitationDesigns', JSON.stringify(designs));
         showNotification(translations[currentLang].designSaved, 'green');
@@ -646,6 +655,8 @@
     onAuthStateChanged(auth, (user) => { 
         if (user) { 
             document.body.style.display = 'block';
+            const currentLang = localStorage.getItem('language') || 'en';
+            setLanguage(currentLang);
             initializeApp();
         } else { 
             window.location.href = 'login.html'; 
