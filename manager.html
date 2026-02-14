@@ -84,7 +84,6 @@
   </div>
 </main>
 <div id="notification" class="fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
-<audio id="successSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
@@ -213,7 +212,6 @@ addGuestButton.addEventListener('click', async () => {
         showNotification(`${translations[currentLang].creationSuccess}${guestName}!`, 'green');
         guestNameInput.value = '';
         previewCard(''); // Clear preview
-        document.getElementById('successSound').play().catch(e => console.log("Sound play failed:", e));
     } catch (error) { console.error("Failed to create invitation:", error); showNotification(`${translations[currentLang].creationError}${error.message}`, 'red'); } finally { btnText.textContent = translations[currentLang].addGuestBtn; btnSpinner.classList.add('hidden'); addGuestButton.disabled = true; }
 });
 
