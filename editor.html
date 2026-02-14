@@ -70,25 +70,36 @@
 <main class="container mx-auto p-4 md:p-8 flex justify-center">
   <div class="w-full max-w-7xl">
     <div id="uploader-section" class="glass-card p-6 rounded-2xl">
-      <h2 class="text-xl font-semibold text-gray-100 mb-2" data-lang-key="uploadTitle">1. Upload Invitation Design</h2>
-      <p class="text-sm text-gray-400 mb-6" data-lang-key="uploadDesc">Drag & drop your image file or click to select. This will be the background for your card.</p>
-      <div id="image-drop-area" class="relative flex flex-col items-center justify-center w-full h-64 rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
-          <div class="flex flex-col items-center justify-center pt-5 pb-6">
-              <svg class="w-10 h-10 mb-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
-              <p class="mb-2 text-sm text-gray-400"><span class="font-semibold" data-lang-key="clickToUpload">Click to upload</span><span data-lang-key="orDragDrop"> or drag and drop</span></p>
-              <p class="text-xs text-gray-500">PNG, JPG or GIF</p>
-          </div>
-          <input type="file" id="imageUploader" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+      <div id="uploader-interface">
+        <h2 class="text-xl font-semibold text-gray-100 mb-2" data-lang-key="uploadTitle">1. Upload Invitation Design</h2>
+        <p class="text-sm text-gray-400 mb-6" data-lang-key="uploadDesc">Drag & drop your image file or click to select. This will be the background for your card.</p>
+        <div id="image-drop-area" class="relative flex flex-col items-center justify-center w-full h-64 rounded-lg cursor-pointer bg-white/5 hover:bg-white/10 transition-colors">
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg class="w-10 h-10 mb-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
+                <p class="mb-2 text-sm text-gray-400"><span class="font-semibold" data-lang-key="clickToUpload">Click to upload</span><span data-lang-key="orDragDrop"> or drag and drop</span></p>
+                <p class="text-xs text-gray-500">PNG, JPG or GIF</p>
+            </div>
+            <input type="file" id="imageUploader" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+        </div>
+        <p class="text-center mt-4 text-gray-400 text-sm">
+              <span data-lang-key="orUseTemplate">Don't have a design?</span>
+              <a href="templates.html" class="font-semibold text-indigo-400 hover:text-indigo-300" data-lang-key="chooseTemplateLink">
+                  Choose one of our templates
+              </a>
+          </p>
+        <img id="imagePreview" class="mt-4 rounded-md hidden border-2 border-white/10 w-full" alt="Image Preview"/>
+        <button id="uploadButton" class="mt-6 w-full btn-primary" data-lang-key="uploadBtn" disabled>Upload & Continue to Editor</button>
+        <div id="uploadSpinner" class="hidden mt-4 text-center"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-400" role="status"></div><p class="text-sm text-gray-400 mt-2" data-lang-key="uploading">Uploading to secure storage...</p></div>
       </div>
-       <p class="text-center mt-4 text-gray-400 text-sm">
-            <span data-lang-key="orUseTemplate">Don't have a design?</span>
-            <a href="templates.html" class="font-semibold text-indigo-400 hover:text-indigo-300" data-lang-key="chooseTemplateLink">
-                Choose one of our templates
-            </a>
-        </p>
-      <img id="imagePreview" class="mt-4 rounded-md hidden border-2 border-white/10 w-full" alt="Image Preview"/>
-      <button id="uploadButton" class="mt-6 w-full btn-primary" data-lang-key="uploadBtn" disabled>Upload & Continue to Editor</button>
-      <div id="uploadSpinner" class="hidden mt-4 text-center"><div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-400" role="status"></div><p class="text-sm text-gray-400 mt-2" data-lang-key="uploading">Uploading to secure storage...</p></div>
+      <div id="active-card-section" class="hidden">
+        <h2 class="text-xl font-semibold text-gray-100 mb-4" data-lang-key="activeCardTitle">Your Active Design</h2>
+        <img id="activeCardPreview" class="rounded-lg border-2 border-white/10 w-full" alt="Active Card Preview"/>
+        <p class="text-sm text-gray-400 mt-4" data-lang-key="activeCardDesc">You can continue editing your saved design or start over with a new one.</p>
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button id="edit-card-button" class="w-full btn-primary" data-lang-key="editCardBtn">Edit Design</button>
+            <button id="remove-card-button" class="w-full font-bold py-3 px-6 rounded-lg text-red-300 bg-red-900/50 hover:bg-red-800/50 border border-red-500/30 transition-colors" data-lang-key="removeCardBtn">Remove & Start Over</button>
+        </div>
+    </div>
     </div>
 
     <div id="editor-section" class="hidden">
@@ -190,7 +201,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
-    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+    import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
     import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
 
     const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
@@ -214,8 +225,8 @@
     });
     
     const translations = {
-        en: { headerTitle: "Step 1: Design Your Card", backToHub: "← Back to Hub", uploadTitle: "1. Upload Invitation Design", uploadDesc: "Drag & drop your image file or click to select. This will be the background for your card.", clickToUpload: "Click to upload", orDragDrop: " or drag and drop", orUseTemplate: "Don't have a design?", chooseTemplateLink: "Choose one of our templates", uploadBtn: "Upload & Continue to Editor", uploading: "Uploading to secure storage...", editorTitle: "2. Position & Style Guest Details", editorDesc: "Drag the placeholders to position them. Use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", selectImageFirst: "Please select an image first", uploadSuccess: "Upload successful! Now, design your card.", uploadFailed: "Image upload failed: ", designSaved: "Design saved! Redirecting...", designSaveError: "Error saving design: ", logout: "Logout", templateLoaded: "Template loaded! Now position your elements.", designLoaded: "Saved design loaded.", eyedropperFail: "Could not start color picker.", eyedropperInstruction: "Click anywhere on the design to pick a color." },
-        ar: { headerTitle: "الخطوة ١: تصميم بطاقتك", backToHub: "→ العودة للمركز", uploadTitle: "١. رفع تصميم الدعوة", uploadDesc: "اسحب وأفلت ملف الصورة أو انقر للاختيار. ستكون هذه هي خلفية بطاقتك.", clickToUpload: "انقر للرفع", orDragDrop: " أو اسحب وأفلت", orUseTemplate: "ليس لديك تصميم؟", chooseTemplateLink: "اختر أحد قوالبنا", uploadBtn: "رفع ومتابعة إلى المحرر", uploading: "جاري الرفع إلى التخزين الآمن...", editorTitle: "٢. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "اسحب العناصر لتحديد أماكنها. استخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", selectImageFirst: "الرجاء اختيار صورة أولاً", uploadSuccess: "تم الرفع بنجاح! الآن، قم بتصميم بطاقتك.", uploadFailed: "فشل رفع الصورة: ", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", designSaveError: "خطأ في حفظ التصميم: ", logout: "تسجيل الخروج", templateLoaded: "تم تحميل القالب! الآن حدد أماكن العناصر.", designLoaded: "تم تحميل التصميم المحفوظ.", eyedropperFail: "تعذر بدء منتقي الألوان.", eyedropperInstruction: "انقر في أي مكان على التصميم لاختيار لون." }
+        en: { headerTitle: "Step 1: Design Your Card", backToHub: "← Back to Hub", uploadTitle: "1. Upload Invitation Design", uploadDesc: "Drag & drop your image file or click to select. This will be the background for your card.", clickToUpload: "Click to upload", orDragDrop: " or drag and drop", orUseTemplate: "Don't have a design?", chooseTemplateLink: "Choose one of our templates", uploadBtn: "Upload & Continue to Editor", uploading: "Uploading to secure storage...", editorTitle: "2. Position & Style Guest Details", editorDesc: "Drag the placeholders to position them. Use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", selectImageFirst: "Please select an image first", uploadSuccess: "Upload successful! Now, design your card.", uploadFailed: "Image upload failed: ", designSaved: "Design saved! Redirecting...", designSaveError: "Error saving design: ", logout: "Logout", templateLoaded: "Template loaded! Now position your elements.", designLoaded: "Saved design loaded.", eyedropperFail: "Could not start color picker.", eyedropperInstruction: "Click anywhere on the design to pick a color.", activeCardTitle: "Your Active Design", activeCardDesc: "You can continue editing your saved design or start over with a new one.", editCardBtn: "Edit Design", removeCardBtn: "Remove & Start Over", designRemoved: "Design removed. You can now upload a new one." },
+        ar: { headerTitle: "الخطوة ١: تصميم بطاقتك", backToHub: "→ العودة للمركز", uploadTitle: "١. رفع تصميم الدعوة", uploadDesc: "اسحب وأفلت ملف الصورة أو انقر للاختيار. ستكون هذه هي خلفية بطاقتك.", clickToUpload: "انقر للرفع", orDragDrop: " أو اسحب وأفلت", orUseTemplate: "ليس لديك تصميم؟", chooseTemplateLink: "اختر أحد قوالبنا", uploadBtn: "رفع ومتابعة إلى المحرر", uploading: "جاري الرفع إلى التخزين الآمن...", editorTitle: "٢. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "اسحب العناصر لتحديد أماكنها. استخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", selectImageFirst: "الرجاء اختيار صورة أولاً", uploadSuccess: "تم الرفع بنجاح! الآن، قم بتصميم بطاقتك.", uploadFailed: "فشل رفع الصورة: ", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", designSaveError: "خطأ في حفظ التصميم: ", logout: "تسجيل الخروج", templateLoaded: "تم تحميل القالب! الآن حدد أماكن العناصر.", designLoaded: "تم تحميل التصميم المحفوظ.", eyedropperFail: "تعذر بدء منتقي الألوان.", eyedropperInstruction: "انقر في أي مكان على التصميم لاختيار لون.", activeCardTitle: "تصميمك الحالي", activeCardDesc: "يمكنك متابعة تعديل تصميمك المحفوظ أو البدء من جديد.", editCardBtn: "تعديل التصميم", removeCardBtn: "إزالة والبدء من جديد", designRemoved: "تمت إزالة التصميم. يمكنك الآن رفع تصميم جديد." }
     };
     const langSwitcher = document.getElementById('lang-switcher');
     let currentLang = localStorage.getItem('language') || 'en';
@@ -223,10 +234,11 @@
     langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
     
     const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
-    const DOMElements = { uploaderSection: document.getElementById('uploader-section'), editorSection: document.getElementById('editor-section'), imageUploader: document.getElementById('imageUploader'), imagePreview: document.getElementById('imagePreview'), uploadButton: document.getElementById('uploadButton'), uploadSpinner: document.getElementById('uploadSpinner'), imageDropArea: document.getElementById('image-drop-area'), editorImagePreview: document.getElementById('editor-image-preview'), positioningArea: document.getElementById('positioning-area'), namePlaceholder: document.getElementById('name-placeholder'), qrPlaceholder: document.getElementById('qr-placeholder'), qrPlaceholderImg: document.getElementById('qr-placeholder-img'), savePositionsButton: document.getElementById('save-positions-button'), notification: document.getElementById('notification'), eyedropperOverlay: document.getElementById('eyedropper-overlay'), magnifier: document.getElementById('magnifier'), eyedropperInstruction: document.getElementById('eyedropper-instruction'), sizeControls: document.getElementById('size-controls'), decreaseSizeBtn: document.getElementById('decrease-size-btn'), increaseSizeBtn: document.getElementById('increase-size-btn'), currentSizeLabel: document.getElementById('current-size-label') };
+    const DOMElements = { uploaderSection: document.getElementById('uploader-section'), editorSection: document.getElementById('editor-section'), imageUploader: document.getElementById('imageUploader'), imagePreview: document.getElementById('imagePreview'), uploadButton: document.getElementById('uploadButton'), uploadSpinner: document.getElementById('uploadSpinner'), imageDropArea: document.getElementById('image-drop-area'), editorImagePreview: document.getElementById('editor-image-preview'), positioningArea: document.getElementById('positioning-area'), namePlaceholder: document.getElementById('name-placeholder'), qrPlaceholder: document.getElementById('qr-placeholder'), qrPlaceholderImg: document.getElementById('qr-placeholder-img'), savePositionsButton: document.getElementById('save-positions-button'), notification: document.getElementById('notification'), eyedropperOverlay: document.getElementById('eyedropper-overlay'), magnifier: document.getElementById('magnifier'), eyedropperInstruction: document.getElementById('eyedropper-instruction'), sizeControls: document.getElementById('size-controls'), decreaseSizeBtn: document.getElementById('decrease-size-btn'), increaseSizeBtn: document.getElementById('increase-size-btn'), currentSizeLabel: document.getElementById('current-size-label'), uploaderInterface: document.getElementById('uploader-interface'), activeCardSection: document.getElementById('active-card-section'), activeCardPreview: document.getElementById('activeCardPreview'), editCardButton: document.getElementById('edit-card-button'), removeCardButton: document.getElementById('remove-card-button') };
     const controls = { color: document.getElementById('font-color-picker'), colorDisplay: document.getElementById('font-color-display'), colorEyedropper: document.getElementById('font-color-eyedropper'), family: document.getElementById('font-family-select'), size: document.getElementById('font-size-slider'), rotation: document.getElementById('font-rotation-slider'), bold: document.getElementById('font-bold-toggle'), italic: document.getElementById('font-italic-toggle'), shadow: document.getElementById('shadow-toggle'), shadowControls: document.getElementById('shadow-controls'), shadowColor: document.getElementById('shadow-color-picker'), shadowColorDisplay: document.getElementById('shadow-color-display'), shadowColorEyedropper: document.getElementById('shadow-color-eyedropper'), shadowBlur: document.getElementById('shadow-blur-slider'), shadowX: document.getElementById('shadow-offset-x-slider'), shadowY: document.getElementById('shadow-offset-y-slider'), stroke: document.getElementById('stroke-toggle'), strokeControls: document.getElementById('stroke-controls'), strokeColor: document.getElementById('stroke-color-picker'), strokeColorDisplay: document.getElementById('stroke-color-display'), strokeColorEyedropper: document.getElementById('stroke-color-eyedropper'), strokeWidth: document.getElementById('stroke-width-slider'), qrSize: document.getElementById('qr-size-slider'), qrColorDark: document.getElementById('qr-color-dark-picker'), qrColorDarkDisplay: document.getElementById('qr-color-dark-display'), qrColorDarkEyedropper: document.getElementById('qr-color-dark-eyedropper'), qrColorLight: document.getElementById('qr-color-light-picker'), qrColorLightDisplay: document.getElementById('qr-color-light-display'), qrColorLightEyedropper: document.getElementById('qr-color-light-eyedropper'), qrLogo: document.getElementById('qr-logo-uploader'), };
     let selectedFile = null, cardImageUrl = '', qrLogoUrl = '', selectedPlaceholder = null;
-    const settings = { name: { x: 20, y: 20, color: '#FFFFFF', family: "'Roboto', sans-serif", size: 40, rotation: 0, bold: false, italic: false, shadow: { enabled: false, color: '#000000', blur: 0, x: 0, y: 0 }, stroke: { enabled: false, color: '#000000', width: 1 } }, qr: { x: 20, y: 80, size: 100, colorDark: '#000000', colorLight: '#FFFFFF', logoUrl: '' } };
+    const defaultSettings = { name: { x: 20, y: 20, color: '#FFFFFF', family: "'Roboto', sans-serif", size: 40, rotation: 0, bold: false, italic: false, shadow: { enabled: false, color: '#000000', blur: 0, x: 0, y: 0 }, stroke: { enabled: false, color: '#000000', width: 1 } }, qr: { x: 20, y: 80, size: 100, colorDark: '#000000', colorLight: '#FFFFFF', logoUrl: '' } };
+    let settings = JSON.parse(JSON.stringify(defaultSettings));
 
     const showNotification = (messageKey, type = 'green', isKey = true) => { const message = isKey ? translations[currentLang][messageKey] : messageKey; const colors = { green: 'bg-emerald-500/90 border border-emerald-400/50', red: 'bg-rose-500/90 border border-rose-400/50', yellow: 'bg-amber-400/90 border border-amber-300/50' }; DOMElements.notification.className = `fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`; DOMElements.notification.textContent = message; DOMElements.notification.style.transform = 'translateX(0)'; setTimeout(() => DOMElements.notification.style.transform = 'translateX(120%)', 3000); };
     
@@ -237,7 +249,32 @@
     const updatePlaceholders = async () => { const s = settings.name; const np = DOMElements.namePlaceholder; np.style.color = s.color; np.style.fontFamily = s.family; np.style.fontSize = `${s.size}px`; np.style.fontWeight = s.bold ? 'bold' : 'normal'; np.style.fontStyle = s.italic ? 'italic' : 'normal'; np.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) rotate(${s.rotation}deg)`; np.style.textShadow = s.shadow.enabled ? `${s.shadow.x}px ${s.shadow.y}px ${s.shadow.blur}px ${s.shadow.color}` : 'none'; np.style.webkitTextStroke = s.stroke.enabled ? `${s.stroke.width}px ${s.stroke.color}` : 'unset'; const q = settings.qr; const qp = DOMElements.qrPlaceholder; qp.style.width = `${q.size}px`; qp.style.height = `${q.size}px`; qp.style.transform = `translate3d(${q.x}px, ${q.y}px, 0)`; const qrDataUrl = await QRCode.toDataURL('PREVIEW', { width: 400, margin: 1, errorCorrectionLevel: 'H', color: { dark: q.colorDark, light: q.colorLight } }); DOMElements.qrPlaceholderImg.src = qrDataUrl; };
     function makeDraggable(element, settingObj) { let active = false, initialX, initialY; const dragStart = (e) => { if (e.target === element || element.contains(e.target)) { toggleSizeControls(element); active = true; element.style.zIndex = 10; initialX = e.type === 'touchstart' ? e.touches[0].clientX - settingObj.x : e.clientX - settingObj.x; initialY = e.type === 'touchstart' ? e.touches[0].clientY - settingObj.y : e.clientY - settingObj.y; } }; const dragEnd = () => { active = false; element.style.zIndex = 1; }; const drag = (e) => { if (active) { e.preventDefault(); const currentX = e.type === 'touchmove' ? e.touches[0].clientX - initialX : e.clientX - initialX; const currentY = e.type === 'touchmove' ? e.touches[0].clientY - initialY : e.clientY - initialY; const parentRect = DOMElements.positioningArea.getBoundingClientRect(); const elemRect = element.getBoundingClientRect(); settingObj.x = Math.max(0, Math.min(currentX, parentRect.width - elemRect.width)); settingObj.y = Math.max(0, Math.min(currentY, parentRect.height - elemRect.height)); updatePlaceholders().then(() => { if (element === selectedPlaceholder) updateSizeControlsPosition(); }); } }; ['touchstart', 'mousedown'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragStart, false)); ['touchend', 'mouseup', 'mouseleave'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragEnd, false)); ['touchmove', 'mousemove'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, drag, false)); }
     const uploadAndSetUrl = async (file, onComplete) => { const formData = new FormData(); formData.append('image', file); try { const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData }); const result = await response.json(); if (result.success) { onComplete(result.data.url); } else { throw new Error(result.error?.message || 'Unknown error'); } } catch (error) { showNotification(translations[currentLang].uploadFailed + error.message, 'red', false); } };
-    const setupEventListeners = () => { ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, evt => { evt.preventDefault(); evt.stopPropagation(); }, false)); ['dragenter', 'dragover'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.add('dragover'), false)); ['dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.remove('dragover'), false)); DOMElements.imageDropArea.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]), false); DOMElements.imageUploader.addEventListener('change', e => handleFile(e.target.files[0])); DOMElements.uploadButton.addEventListener('click', async () => { if (!selectedFile) { showNotification('selectImageFirst', 'yellow'); return; } DOMElements.uploadButton.disabled = true; DOMElements.uploadSpinner.classList.remove('hidden'); await uploadAndSetUrl(selectedFile, url => { cardImageUrl = url; showNotification('uploadSuccess', 'green'); DOMElements.editorImagePreview.src = cardImageUrl; DOMElements.uploaderSection.classList.add('hidden'); DOMElements.editorSection.classList.remove('hidden'); DOMElements.uploadSpinner.classList.add('hidden'); }); }); for (const key in controls) { const el = controls[key]; if (el && (el.type === 'checkbox' || el.type === 'range' || el.tagName === 'SELECT' || el.type === 'hidden')) el.addEventListener('input', updateSettings); } DOMElements.savePositionsButton.addEventListener('click', saveAndRedirect); controls.colorEyedropper.addEventListener('click', () => startEyedropper(controls.color)); controls.shadowColorEyedropper.addEventListener('click', () => startEyedropper(controls.shadowColor)); controls.strokeColorEyedropper.addEventListener('click', () => startEyedropper(controls.strokeColor)); controls.qrColorDarkEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorDark)); controls.qrColorLightEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorLight)); controls.qrLogo.addEventListener('change', e => {if (e.target.files[0]) uploadAndSetUrl(e.target.files[0], url => { settings.qr.logoUrl = url; updatePlaceholders(); })}); DOMElements.positioningArea.addEventListener('mousedown', (e) => { if (e.target === DOMElements.positioningArea) toggleSizeControls(null); }); DOMElements.sizeControls.addEventListener('mousedown', e => e.stopPropagation()); DOMElements.increaseSizeBtn.addEventListener('click', () => changeSize(1)); DOMElements.decreaseSizeBtn.addEventListener('click', () => changeSize(-1)); };
+    
+    async function removeAndResetDesign() {
+        if (currentUser) {
+            const dbRef = ref(database, 'cardTemplates/' + currentUser.uid);
+            try {
+                await remove(dbRef);
+                cardImageUrl = '';
+                selectedFile = null;
+                settings = JSON.parse(JSON.stringify(defaultSettings));
+                
+                DOMElements.activeCardSection.classList.add('hidden');
+                DOMElements.uploaderInterface.classList.remove('hidden');
+                DOMElements.imagePreview.classList.add('hidden');
+                DOMElements.imagePreview.src = '';
+                DOMElements.uploadButton.disabled = true;
+                
+                initializeControls();
+                updatePlaceholders();
+                showNotification('designRemoved', 'yellow');
+            } catch (error) {
+                showNotification(translations[currentLang].designSaveError + error.message, 'red', false);
+            }
+        }
+    }
+
+    const setupEventListeners = () => { ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, evt => { evt.preventDefault(); evt.stopPropagation(); }, false)); ['dragenter', 'dragover'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.add('dragover'), false)); ['dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.remove('dragover'), false)); DOMElements.imageDropArea.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]), false); DOMElements.imageUploader.addEventListener('change', e => handleFile(e.target.files[0])); DOMElements.uploadButton.addEventListener('click', async () => { if (!selectedFile) { showNotification('selectImageFirst', 'yellow'); return; } DOMElements.uploadButton.disabled = true; DOMElements.uploadSpinner.classList.remove('hidden'); await uploadAndSetUrl(selectedFile, url => { cardImageUrl = url; showNotification('uploadSuccess', 'green'); DOMElements.editorImagePreview.src = cardImageUrl; DOMElements.uploaderSection.classList.add('hidden'); DOMElements.editorSection.classList.remove('hidden'); DOMElements.uploadSpinner.classList.add('hidden'); }); }); for (const key in controls) { const el = controls[key]; if (el && (el.type === 'checkbox' || el.type === 'range' || el.tagName === 'SELECT' || el.type === 'hidden')) el.addEventListener('input', updateSettings); } DOMElements.savePositionsButton.addEventListener('click', saveAndRedirect); controls.colorEyedropper.addEventListener('click', () => startEyedropper(controls.color)); controls.shadowColorEyedropper.addEventListener('click', () => startEyedropper(controls.shadowColor)); controls.strokeColorEyedropper.addEventListener('click', () => startEyedropper(controls.strokeColor)); controls.qrColorDarkEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorDark)); controls.qrColorLightEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorLight)); controls.qrLogo.addEventListener('change', e => {if (e.target.files[0]) uploadAndSetUrl(e.target.files[0], url => { settings.qr.logoUrl = url; updatePlaceholders(); })}); DOMElements.positioningArea.addEventListener('mousedown', (e) => { if (e.target === DOMElements.positioningArea) toggleSizeControls(null); }); DOMElements.sizeControls.addEventListener('mousedown', e => e.stopPropagation()); DOMElements.increaseSizeBtn.addEventListener('click', () => changeSize(1)); DOMElements.decreaseSizeBtn.addEventListener('click', () => changeSize(-1)); DOMElements.editCardButton.addEventListener('click', () => { DOMElements.uploaderSection.classList.add('hidden'); DOMElements.editorSection.classList.remove('hidden'); }); DOMElements.removeCardButton.addEventListener('click', removeAndResetDesign); };
     function updateSettings(e) { const s = settings.name; const q = settings.qr; switch (e.target.id) { case 'font-color-picker': s.color = e.target.value; controls.colorDisplay.style.backgroundColor = s.color; break; case 'font-family-select': s.family = e.target.value; break; case 'font-size-slider': s.size = e.target.value; break; case 'font-rotation-slider': s.rotation = e.target.value; break; case 'font-bold-toggle': s.bold = e.target.checked; break; case 'font-italic-toggle': s.italic = e.target.checked; break; case 'shadow-toggle': s.shadow.enabled = e.target.checked; controls.shadowControls.classList.toggle('hidden'); break; case 'shadow-color-picker': s.shadow.color = e.target.value; controls.shadowColorDisplay.style.backgroundColor = s.shadow.color; break; case 'shadow-blur-slider': s.shadow.blur = e.target.value; break; case 'shadow-offset-x-slider': s.shadow.x = e.target.value; break; case 'shadow-offset-y-slider': s.shadow.y = e.target.value; break; case 'stroke-toggle': s.stroke.enabled = e.target.checked; controls.strokeControls.classList.toggle('hidden'); break; case 'stroke-color-picker': s.stroke.color = e.target.value; controls.strokeColorDisplay.style.backgroundColor = s.stroke.color; break; case 'stroke-width-slider': s.stroke.width = e.target.value; break; case 'qr-size-slider': q.size = e.target.value; break; case 'qr-color-dark-picker': q.colorDark = e.target.value; controls.qrColorDarkDisplay.style.backgroundColor = q.colorDark; break; case 'qr-color-light-picker': q.colorLight = e.target.value; controls.qrColorLightDisplay.style.backgroundColor = q.colorLight; break; } updatePlaceholders().then(() => { if(selectedPlaceholder) updateSizeControlsPosition(); }); }
     function initializeControls() { controls.color.value = settings.name.color; controls.colorDisplay.style.backgroundColor = settings.name.color; controls.family.value = settings.name.family; controls.size.value = settings.name.size; controls.rotation.value = settings.name.rotation; controls.bold.checked = settings.name.bold; controls.italic.checked = settings.name.italic; controls.shadow.checked = settings.name.shadow.enabled; controls.shadowColor.value = settings.name.shadow.color; controls.shadowColorDisplay.style.backgroundColor = settings.name.shadow.color; controls.shadowBlur.value = settings.name.shadow.blur; controls.shadowX.value = settings.name.shadow.x; controls.shadowY.value = settings.name.shadow.y; controls.stroke.checked = settings.name.stroke.enabled; controls.strokeColor.value = settings.name.stroke.color; controls.strokeColorDisplay.style.backgroundColor = settings.name.stroke.color; controls.strokeWidth.value = settings.name.stroke.width; controls.qrSize.value = settings.qr.size; controls.qrColorDark.value = settings.qr.colorDark; controls.qrColorDarkDisplay.style.backgroundColor = settings.qr.colorDark; controls.qrColorLight.value = settings.qr.colorLight; controls.qrColorLightDisplay.style.backgroundColor = settings.qr.colorLight; }
     const handleFile = (file) => { if (!file || !file.type.startsWith('image/')) return; selectedFile = file; const reader = new FileReader(); reader.onload = (event) => DOMElements.imagePreview.src = event.target.result; reader.readAsDataURL(selectedFile); DOMElements.imagePreview.classList.remove('hidden'); DOMElements.uploadButton.disabled = false; };
@@ -275,6 +312,7 @@
     };
 
     async function loadInitialDesign() {
+        let loadedFromTemplate = false;
         const generatedCardUrl = localStorage.getItem('generatedCardUrl');
         if (generatedCardUrl) {
             cardImageUrl = generatedCardUrl;
@@ -283,16 +321,19 @@
             DOMElements.editorSection.classList.remove('hidden');
             localStorage.removeItem('generatedCardUrl');
             showNotification('templateLoaded', 'green');
+            loadedFromTemplate = true;
         } else if (currentUser) {
             const dbRef = ref(database, 'cardTemplates/' + currentUser.uid);
             const snapshot = await get(dbRef);
             if (snapshot.exists()) {
                 const savedTemplate = snapshot.val();
                 cardImageUrl = savedTemplate.imageUrl;
-                DOMElements.editorImagePreview.src = cardImageUrl;
-                DOMElements.uploaderSection.classList.add('hidden');
-                DOMElements.editorSection.classList.remove('hidden');
 
+                DOMElements.uploaderInterface.classList.add('hidden');
+                DOMElements.activeCardSection.classList.remove('hidden');
+                DOMElements.activeCardPreview.src = cardImageUrl;
+                DOMElements.editorImagePreview.src = cardImageUrl;
+                
                 const img = DOMElements.editorImagePreview;
                 await new Promise(resolve => { img.complete ? resolve() : img.onload = resolve; });
 
@@ -324,6 +365,10 @@
                 });
                 showNotification('designLoaded', 'green');
             }
+        }
+        if (!loadedFromTemplate) {
+          initializeControls();
+          updatePlaceholders();
         }
     }
     
@@ -386,11 +431,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         setLanguage(currentLang);
-        initializeControls();
         setupEventListeners();
-        makeDraggable(DOMElements.namePlaceholder, settings.name);
-        makeDraggable(DOMElements.qrPlaceholder, settings.qr);
-        updatePlaceholders();
     });
 </script>
 </body>
