@@ -258,8 +258,8 @@ const DOMElements = {
 };
 
 const translations = {
-    en: { headerTitle: "Card Designer", backToTemplates: "← Back to Templates", saveBtn: "Save & Continue", saving: "Saving...", selectElement: "Select an element to edit its properties.", textContent: "Text Content", fontFamily: "Font", fontSize: "Size", fontColor: "Color", textAlign: "Alignment", saveSuccess: "Design saved! Redirecting...", saveError: "Could not save design: ", addElements: "Add Elements", addText: "Add Text", addIcon: "Add Icon", iconSize: "Size", iconColor: "Color", imageWidth: "Width", iconLibraryTitle: "Icon Library", searchPlaceholder: "Search icons (e.g., cake, map)" },
-    ar: { headerTitle: "مصمم البطاقات", backToTemplates: "→ العودة للقوالب", saveBtn: "حفظ ومتابعة", saving: "جاري الحفظ...", selectElement: "اختر عنصرًا لتعديل خصائصه.", textContent: "محتوى النص", fontFamily: "الخط", fontSize: "الحجم", fontColor: "اللون", textAlign: "المحاذاة", saveSuccess: "تم حفظ التصميم! جارٍ إعادة التوجيه...", saveError: "لم يتم حفظ التصميم: ", addElements: "إضافة عناصر", addText: "إضافة نص", addIcon: "إضافة أيقونة", iconSize: "الحجم", iconColor: "اللون", imageWidth: "العرض", iconLibraryTitle: "مكتبة الأيقونات", searchPlaceholder: "ابحث عن أيقونات (مثال: كيك, خريطة)" }
+    en: { headerTitle: "Card Designer", backToTemplates: "← Back to Templates", saveBtn: "Save & Continue", saving: "Saving...", selectElement: "Select an element to edit its properties.", textContent: "Text Content", fontFamily: "Font", fontSize: "Size", fontColor: "Color", textAlign: "Alignment", saveSuccess: "Design saved! Redirecting...", saveError: "Could not save design: ", addElements: "Add Elements", addText: "Add Text", addIcon: "Add Icon", iconSize: "Size", iconColor: "Color", imageWidth: "Width", iconLibraryTitle: "Icon Library", searchPlaceholder: "Search icons (e.g., cake, map)", eyedropperFail: "Could not start color picker." },
+    ar: { headerTitle: "مصمم البطاقات", backToTemplates: "→ العودة للقوالب", saveBtn: "حفظ ومتابعة", saving: "جاري الحفظ...", selectElement: "اختر عنصرًا لتعديل خصائصه.", textContent: "محتوى النص", fontFamily: "الخط", fontSize: "الحجم", fontColor: "اللون", textAlign: "المحاذاة", saveSuccess: "تم حفظ التصميم! جارٍ إعادة التوجيه...", saveError: "لم يتم حفظ التصميم: ", addElements: "إضافة عناصر", addText: "إضافة نص", addIcon: "إضافة أيقونة", iconSize: "الحجم", iconColor: "اللون", imageWidth: "العرض", iconLibraryTitle: "مكتبة الأيقونات", searchPlaceholder: "ابحث عن أيقونات (مثال: كيك, خريطة)", eyedropperFail: "تعذر بدء منتقي الألوان." }
 };
 
 let currentLang = localStorage.getItem('language') || 'en';
@@ -360,19 +360,44 @@ function resizeCanvas() { if (!DOMElements.main || !DOMElements.canvasContainer)
 let eyeDropperCanvas = null;
 let eyeDropperCtx = null;
 let activeColorInput = null;
+let isEyedropperActive = false;
 
 async function startEyedropper(targetInput) {
+    if (isEyedropperActive) return;
+    isEyedropperActive = true;
     activeColorInput = targetInput;
     DOMElements.eyedropperOverlay.classList.remove('hidden');
-    
-    const canvas = await html2canvas(DOMElements.canvasContainer, { useCORS: true, backgroundColor: null });
-    eyeDropperCanvas = canvas;
-    eyeDropperCtx = canvas.getContext('2d');
 
-    DOMElements.eyedropperOverlay.addEventListener('mousemove', moveMagnifier);
-    DOMElements.eyedropperOverlay.addEventListener('touchmove', moveMagnifier, { passive: false });
-    DOMElements.eyedropperOverlay.addEventListener('click', pickColor);
-    DOMElements.eyedropperOverlay.addEventListener('touchend', pickColor);
+    setTimeout(async () => {
+        try {
+            // Pre-load the background image to prevent canvas taint issues
+            await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                const bgUrl = activeTemplate.backgroundImage;
+                if (!bgUrl) {
+                    resolve();
+                    return;
+                }
+                img.onload = resolve;
+                img.onerror = reject;
+                img.src = bgUrl;
+            });
+
+            const canvas = await html2canvas(DOMElements.canvasContainer, { useCORS: true, backgroundColor: null });
+            eyeDropperCanvas = canvas;
+            eyeDropperCtx = canvas.getContext('2d');
+
+            DOMElements.eyedropperOverlay.addEventListener('mousemove', moveMagnifier);
+            DOMElements.eyedropperOverlay.addEventListener('touchmove', moveMagnifier, { passive: false });
+            DOMElements.eyedropperOverlay.addEventListener('click', pickColor);
+            DOMElements.eyedropperOverlay.addEventListener('touchend', pickColor);
+        } catch (error) {
+            console.error("Eyedropper failed:", error);
+            showNotification('eyedropperFail', 'red');
+            stopEyedropper();
+        }
+    }, 50);
 }
 
 function moveMagnifier(e) {
@@ -429,6 +454,7 @@ function stopEyedropper() {
     eyeDropperCanvas = null;
     eyeDropperCtx = null;
     activeColorInput = null;
+    isEyedropperActive = false;
 }
 
 DOMElements.fontEyedropper.addEventListener('click', () => startEyedropper(DOMElements.fontColor));
