@@ -58,7 +58,7 @@
 </head>
 <body class="text-gray-200 bg-slate-900 flex flex-col h-screen overflow-hidden">
 
-<header class="bg-slate-800 border-b border-white/10 z-20">
+<header class="bg-slate-800 border-b border-white/10 z-20 flex-shrink-0">
   <div class="container mx-auto px-4 py-3 flex justify-between items-center">
     <h1 class="text-lg font-bold text-gray-100" data-lang-key="headerTitle">Card Designer</h1>
     <div class="flex items-center gap-4">
@@ -72,83 +72,77 @@
   </div>
 </header>
 
-<div class="flex-1 flex overflow-hidden">
-    <!-- Sidebar -->
-    <aside id="sidebar" class="w-80 bg-slate-800 p-4 overflow-y-auto space-y-6 flex-shrink-0">
-        <!-- ADD ELEMENTS SECTION -->
-        <div class="space-y-3">
-            <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400" data-lang-key="addElements">Add Elements</h3>
-            <button id="add-text-btn" class="w-full text-left p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center gap-3">
-                <span class="material-symbols-outlined w-5 h-5">title</span>
-                <span data-lang-key="addText">Add Text</span>
-            </button>
-            <button id="add-icon-btn" class="w-full text-left p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center gap-3">
-                <span class="material-symbols-outlined w-5 h-5">add_reaction</span>
-                <span data-lang-key="addIcon">Add Icon</span>
-            </button>
-        </div>
-        <hr class="border-slate-700">
+<div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Toolbar -->
+    <aside id="sidebar" class="bg-slate-800 p-2 border-b border-white/10 flex-shrink-0">
+        <div class="w-full flex flex-wrap items-center gap-x-4 gap-y-2">
+            <!-- ADD ELEMENTS SECTION -->
+            <div class="flex items-center gap-2 border-r border-slate-700 pr-4">
+                <button id="add-text-btn" title="Add Text" class="p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center gap-2">
+                    <span class="material-symbols-outlined">title</span>
+                    <span class="hidden sm:inline" data-lang-key="addText">Add Text</span>
+                </button>
+                <button id="add-icon-btn" title="Add Icon" class="p-2 bg-slate-700 hover:bg-slate-600 rounded-md flex items-center gap-2">
+                    <span class="material-symbols-outlined">add_reaction</span>
+                     <span class="hidden sm:inline" data-lang-key="addIcon">Add Icon</span>
+                </button>
+            </div>
 
-        <!-- EDITOR SECTION -->
-        <div id="no-element-selected" class="text-center text-gray-400 p-4 border border-dashed border-slate-600 rounded-lg">
-            <p data-lang-key="selectElement">Select an element on the card to edit its properties.</p>
-        </div>
-        <!-- TEXT EDITOR -->
-        <div id="text-editor" class="hidden space-y-4">
-            <div>
-                <label for="font-family" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="fontFamily">Font Family</label>
-                <select id="font-family" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200">
-                    <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
-                    <option value="'Roboto', sans-serif">Roboto</option>
-                    <option value="'Amiri', serif">Amiri</option>
-                    <option value="'Dancing Script', cursive">Dancing Script</option>
-                    <option value="'Cairo', sans-serif">Cairo</option>
-                </select>
-            </div>
-             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="font-size" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="fontSize">Size</label>
-                    <input type="number" id="font-size" min="8" max="200" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200">
+            <!-- EDITOR SECTION -->
+            <div class="flex-1 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div id="no-element-selected" class="text-gray-400 text-sm">
+                    <p data-lang-key="selectElement">Select an element on the card to edit its properties.</p>
                 </div>
-                <div>
-                    <label for="font-color" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="fontColor">Color</label>
-                    <input type="color" id="font-color" class="w-full h-10 p-1 bg-slate-700 border border-slate-600 rounded-lg">
+                <!-- TEXT EDITOR -->
+                <div id="text-editor" class="hidden flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div class="flex items-center gap-2">
+                        <label for="font-family" class="text-sm text-gray-400" data-lang-key="fontFamily">Font</label>
+                        <select id="font-family" class="w-32 p-1 bg-slate-700 border border-slate-600 rounded-md text-gray-200 text-sm">
+                            <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+                            <option value="'Roboto', sans-serif">Roboto</option>
+                            <option value="'Amiri', serif">Amiri</option>
+                            <option value="'Dancing Script', cursive">Dancing Script</option>
+                            <option value="'Cairo', sans-serif">Cairo</option>
+                        </select>
+                    </div>
+                     <div class="flex items-center gap-2">
+                        <label for="font-size" class="text-sm text-gray-400" data-lang-key="fontSize">Size</label>
+                        <input type="number" id="font-size" min="8" max="200" class="w-20 p-1 bg-slate-700 border border-slate-600 rounded-md text-gray-200 text-sm">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="font-color" class="text-sm text-gray-400" data-lang-key="fontColor">Color</label>
+                        <input type="color" id="font-color" class="w-8 h-8 p-0.5 bg-slate-700 border border-slate-600 rounded-md cursor-pointer">
+                    </div>
+                    <div class="flex items-center gap-1 bg-slate-900 p-0.5 rounded-md">
+                        <button id="font-bold" title="Bold" class="px-2 py-1 rounded-md bg-slate-700 hover:bg-slate-600 font-bold">B</button>
+                        <button id="font-italic" title="Italic" class="px-2 py-1 rounded-md bg-slate-700 hover:bg-slate-600 italic">I</button>
+                    </div>
+                     <div id="font-align" class="flex items-center gap-1 bg-slate-900 p-0.5 rounded-md">
+                        <button data-align="left" title="Align Left" class="p-1 rounded-md bg-slate-700 hover:bg-slate-600"><span class="material-symbols-outlined text-base">format_align_left</span></button>
+                        <button data-align="center" title="Align Center" class="p-1 rounded-md bg-slate-700 hover:bg-slate-600"><span class="material-symbols-outlined text-base">format_align_center</span></button>
+                        <button data-align="right" title="Align Right" class="p-1 rounded-md bg-slate-700 hover:bg-slate-600"><span class="material-symbols-outlined text-base">format_align_right</span></button>
+                    </div>
                 </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <button id="font-bold" class="px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 w-full font-bold">B</button>
-                <button id="font-italic" class="px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 w-full italic">I</button>
-            </div>
-             <div>
-                <label for="font-align" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="textAlign">Alignment</label>
-                <div id="font-align" class="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-md">
-                    <button data-align="left" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600">L</button>
-                    <button data-align="center" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600">C</button>
-                    <button data-align="right" class="p-2 rounded-md bg-slate-700 hover:bg-slate-600">R</button>
+                <!-- ICON EDITOR -->
+                <div id="icon-editor" class="hidden flex flex-wrap items-center gap-x-4 gap-y-2">
+                     <div class="flex items-center gap-2">
+                        <label for="icon-size" class="text-sm text-gray-400" data-lang-key="iconSize">Size</label>
+                        <input type="number" id="icon-size" min="10" max="300" class="w-20 p-1 bg-slate-700 border border-slate-600 rounded-md text-gray-200 text-sm">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="icon-color" class="text-sm text-gray-400" data-lang-key="iconColor">Color</label>
+                        <input type="color" id="icon-color" class="w-8 h-8 p-0.5 bg-slate-700 border border-slate-600 rounded-md cursor-pointer">
+                    </div>
                 </div>
-            </div>
-        </div>
-        <!-- ICON EDITOR -->
-        <div id="icon-editor" class="hidden space-y-4">
-             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="icon-size" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="iconSize">Size</label>
-                    <input type="number" id="icon-size" min="10" max="300" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200">
+                <!-- IMAGE EDITOR -->
+                <div id="image-editor" class="hidden flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div class="flex items-center gap-2">
+                        <label for="image-width" class="text-sm text-gray-400" data-lang-key="imageWidth">Width</label>
+                        <input type="number" id="image-width" min="10" max="1000" class="w-20 p-1 bg-slate-700 border border-slate-600 rounded-md text-gray-200 text-sm">
+                    </div>
                 </div>
-                <div>
-                    <label for="icon-color" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="iconColor">Color</label>
-                    <input type="color" id="icon-color" class="w-full h-10 p-1 bg-slate-700 border border-slate-600 rounded-lg">
-                </div>
-            </div>
-        </div>
-        <!-- IMAGE EDITOR -->
-        <div id="image-editor" class="hidden space-y-4">
-            <div>
-                <label for="image-width" class="block text-sm font-medium text-gray-300 mb-1" data-lang-key="imageWidth">Width</label>
-                <input type="number" id="image-width" min="10" max="1000" class="w-full p-2 bg-slate-700 border border-slate-600 rounded-lg text-gray-200">
             </div>
         </div>
-
     </aside>
 
     <!-- Main Canvas Area -->
@@ -212,8 +206,8 @@ const DOMElements = {
 };
 
 const translations = {
-    en: { headerTitle: "Card Designer", backToTemplates: "← Back to Templates", saveBtn: "Save & Continue", saving: "Saving...", selectElement: "Select an element on the card to edit its properties.", textContent: "Text Content", fontFamily: "Font Family", fontSize: "Size", fontColor: "Color", textAlign: "Alignment", saveSuccess: "Design saved! Redirecting...", saveError: "Could not save design: ", addElements: "Add Elements", addText: "Add Text", addIcon: "Add Icon", iconSize: "Size", iconColor: "Color", imageWidth: "Width", iconLibraryTitle: "Icon Library", searchPlaceholder: "Search icons (e.g., cake, map)" },
-    ar: { headerTitle: "مصمم البطاقات", backToTemplates: "→ العودة للقوالب", saveBtn: "حفظ ومتابعة", saving: "جاري الحفظ...", selectElement: "اختر عنصرًا على البطاقة لتعديل خصائصه.", textContent: "محتوى النص", fontFamily: "نوع الخط", fontSize: "الحجم", fontColor: "اللون", textAlign: "المحاذاة", saveSuccess: "تم حفظ التصميم! جارٍ إعادة التوجيه...", saveError: "لم يتم حفظ التصميم: ", addElements: "إضافة عناصر", addText: "إضافة نص", addIcon: "إضافة أيقونة", iconSize: "الحجم", iconColor: "اللون", imageWidth: "العرض", iconLibraryTitle: "مكتبة الأيقونات", searchPlaceholder: "ابحث عن أيقونات (مثال: كيك, خريطة)" }
+    en: { headerTitle: "Card Designer", backToTemplates: "← Back to Templates", saveBtn: "Save & Continue", saving: "Saving...", selectElement: "Select an element to edit its properties.", textContent: "Text Content", fontFamily: "Font", fontSize: "Size", fontColor: "Color", textAlign: "Alignment", saveSuccess: "Design saved! Redirecting...", saveError: "Could not save design: ", addElements: "Add Elements", addText: "Add Text", addIcon: "Add Icon", iconSize: "Size", iconColor: "Color", imageWidth: "Width", iconLibraryTitle: "Icon Library", searchPlaceholder: "Search icons (e.g., cake, map)" },
+    ar: { headerTitle: "مصمم البطاقات", backToTemplates: "→ العودة للقوالب", saveBtn: "حفظ ومتابعة", saving: "جاري الحفظ...", selectElement: "اختر عنصرًا لتعديل خصائصه.", textContent: "محتوى النص", fontFamily: "الخط", fontSize: "الحجم", fontColor: "اللون", textAlign: "المحاذاة", saveSuccess: "تم حفظ التصميم! جارٍ إعادة التوجيه...", saveError: "لم يتم حفظ التصميم: ", addElements: "إضافة عناصر", addText: "إضافة نص", addIcon: "إضافة أيقونة", iconSize: "الحجم", iconColor: "اللون", imageWidth: "العرض", iconLibraryTitle: "مكتبة الأيقونات", searchPlaceholder: "ابحث عن أيقونات (مثال: كيك, خريطة)" }
 };
 
 let currentLang = localStorage.getItem('language') || 'en';
@@ -364,7 +358,7 @@ function filterIcons() { const searchTerm = DOMElements.iconSearchInput.value.to
 function resizeCanvas() { if (!DOMElements.main || !DOMElements.canvasContainer) return; const mainRect = DOMElements.main.getBoundingClientRect(); const canvasWidth = 500; const canvasHeight = 667; const availableWidth = mainRect.width * 0.95; const availableHeight = mainRect.height * 0.95; const scale = Math.min(availableWidth / canvasWidth, availableHeight / canvasHeight); DOMElements.canvasContainer.style.transform = `scale(${Math.min(scale, 1)})`; }
 DOMElements.textEditor.addEventListener('input', updateElementFromSidebar); DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar); 
 DOMElements.imageEditor.addEventListener('input', () => { if (!selectedElement || selectedElement.type !== 'image') return; const newWidth = parseInt(DOMElements.imageWidth.value, 10); if (isNaN(newWidth) || newWidth <= 0) return; const aspectRatio = selectedElement.originalWidth / selectedElement.originalHeight; const newHeight = newWidth / aspectRatio; selectedElement.width = newWidth; selectedElement.height = newHeight; updateElementStyle(selectedElement); });
-DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.textAlignContainer.addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON' && e.target.dataset.align) { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.textAlign = e.target.dataset.align; updateSidebarForText(); updateElementStyle(selectedElement); } }); DOMElements.canvasContainer.addEventListener('mousedown', (e) => { if (e.target === DOMElements.canvasContainer) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); } });
+DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.textAlignContainer.addEventListener('click', (e) => { const button = e.target.closest('button'); if (button && button.dataset.align) { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.textAlign = button.dataset.align; updateSidebarForText(); updateElementStyle(selectedElement); } }); DOMElements.canvasContainer.addEventListener('mousedown', (e) => { if (e.target === DOMElements.canvasContainer) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); } });
 DOMElements.addTextBtn.addEventListener('click', () => addNewText());
 DOMElements.addIconBtn.addEventListener('click', () => DOMElements.iconLibraryModal.classList.remove('hidden'));
 DOMElements.closeModalBtn.addEventListener('click', () => DOMElements.iconLibraryModal.classList.add('hidden'));
