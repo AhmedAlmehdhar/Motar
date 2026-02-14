@@ -87,17 +87,22 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-import { getDatabase, ref as databaseRef, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+import { getDatabase, ref as databaseRef, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
 
 const firebaseConfig = { apiKey: "AIzaSyCuZVUBIA0oDQuPzRUQbMJCJZK32zmVaVQ", authDomain: "final-draft-8f39d.firebaseapp.com", databaseURL: "https://final-draft-8f39d-default-rtdb.firebaseio.com", projectId: "final-draft-8f39d", storageBucket: "final-draft-8f39d.appspot.com", messagingSenderId: "994437210054", appId: "1:994437210054:web:628c741b81ccf741175cc7" };
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const database = getDatabase(app);
+let currentUser = null;
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        currentUser = user;
         document.body.style.display = 'block';
+        initializePage();
+        setLanguage(currentLang);
     } else {
         window.location.href = 'login.html';
     }
@@ -115,7 +120,6 @@ let currentLang = localStorage.getItem('language') || 'en';
 const setLanguage = (lang) => { localStorage.setItem('language', lang); currentLang = lang; document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.getElementById('lang-switcher').textContent = lang === 'ar' ? 'EN' : 'AR'; document.querySelectorAll('[data-lang-key]').forEach(el => { const key = el.getAttribute('data-lang-key'); if (translations[lang][key]) { if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = translations[lang][key]; else el.textContent = translations[lang][key]; } }); document.title = translations[lang].headerTitle; readData(); };
 document.getElementById('lang-switcher').addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
 
-const database = getDatabase(app);
 const addGuestButton = document.getElementById('addGuestButton');
 const guestNameInput = document.getElementById('guestNameInput');
 const templatePreviewContainer = document.getElementById('template-preview-container');
@@ -197,9 +201,27 @@ async function previewCard(name) {
     previewCtx.drawImage(tempCanvas, 0, 0, previewCanvas.width, previewCanvas.height);
 }
 
-function initializePage() { try { const savedTemplate = localStorage.getItem('cardTemplate'); if (savedTemplate) { cardTemplate = JSON.parse(savedTemplate); templatePreviewContainer.innerHTML = `<div class="flex items-center gap-4"><img src="${cardTemplate.imageUrl}" class="w-20 h-auto rounded-md border border-white/10" alt="Template Preview"><p class="text-sm text-gray-300">${translations[currentLang].designLoaded}</p></div>`; guestNameInput.disabled = false; } else { throw new Error('No template found'); } } catch (e) { templatePreviewContainer.innerHTML = `<p class="text-sm text-red-400 text-center">${translations[currentLang].noDesign} <a href="editor.html" class="font-bold underline hover:text-red-300">${translations[currentLang].createDesignLink}</a> ${translations[currentLang].noDesignSuffix}</p>`; guestNameInput.disabled = true; addGuestButton.disabled = true; } setLanguage(currentLang); }
+async function initializePage() {
+    try {
+        if (!currentUser) throw new Error("User not logged in");
+        const dbRef = ref(database, 'cardTemplates/' + currentUser.uid);
+        const snapshot = await get(dbRef);
+
+        if (snapshot.exists()) {
+            cardTemplate = snapshot.val();
+            templatePreviewContainer.innerHTML = `<div class="flex items-center gap-4"><img src="${cardTemplate.imageUrl}" class="w-20 h-auto rounded-md border border-white/10" alt="Template Preview"><p class="text-sm text-gray-300">${translations[currentLang].designLoaded}</p></div>`;
+            guestNameInput.disabled = false;
+        } else {
+            throw new Error('No template found');
+        }
+    } catch (e) {
+        templatePreviewContainer.innerHTML = `<p class="text-sm text-red-400 text-center">${translations[currentLang].noDesign} <a href="editor.html" class="font-bold underline hover:text-red-300">${translations[currentLang].createDesignLink}</a> ${translations[currentLang].noDesignSuffix}</p>`;
+        guestNameInput.disabled = true;
+        addGuestButton.disabled = true;
+    }
+}
 guestNameInput.addEventListener('input', () => previewCard(guestNameInput.value));
-document.addEventListener('DOMContentLoaded', initializePage);
+document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
 
 addGuestButton.addEventListener('click', async () => {
     const guestName = guestNameInput.value.trim();
