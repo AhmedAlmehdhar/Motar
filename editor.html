@@ -191,7 +191,7 @@
     </div>
   </div>
 </main>
-<div id="notification" class="fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
+<div id="notification" class="fixed top-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform transition-transform duration-500 ease-in-out"></div>
 <div id="eyedropper-overlay" class="hidden"><div id="magnifier"></div></div>
 <div id="eyedropper-instruction" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[101] hidden items-center gap-3 rounded-lg bg-slate-900/70 px-4 py-3 text-white shadow-lg backdrop-blur-sm transition-all duration-300 border border-slate-700">
     <span class="material-symbols-outlined">ads_click</span>
@@ -256,7 +256,30 @@
     };
     let settings = JSON.parse(JSON.stringify(defaultSettings));
 
-    const showNotification = (messageKey, type = 'green', isKey = true) => { const message = isKey ? translations[currentLang][messageKey] : messageKey; const colors = { green: 'bg-emerald-500/90 border border-emerald-400/50', red: 'bg-rose-500/90 border border-rose-400/50', yellow: 'bg-amber-400/90 border border-amber-300/50' }; DOMElements.notification.className = `fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`; DOMElements.notification.textContent = message; DOMElements.notification.style.transform = 'translateX(0)'; setTimeout(() => DOMElements.notification.style.transform = 'translateX(120%)', 3000); };
+    const showNotification = (messageKey, type = 'green', isKey = true) => {
+        const message = isKey ? translations[currentLang][messageKey] : messageKey;
+        const colors = { green: 'bg-emerald-500/90 border border-emerald-400/50', red: 'bg-rose-500/90 border border-rose-400/50', yellow: 'bg-amber-400/90 border border-amber-300/50' };
+        const notification = DOMElements.notification;
+        
+        notification.className = `fixed top-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'}`;
+        notification.textContent = message;
+        
+        const isRTL = document.documentElement.dir === 'rtl';
+        const hiddenTransform = isRTL ? 'translateX(-120%)' : 'translateX(120%)';
+        
+        notification.classList.remove('left-5', 'right-5');
+        notification.classList.add(isRTL ? 'left-5' : 'right-5');
+        
+        notification.style.transform = hiddenTransform;
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        
+        setTimeout(() => {
+            notification.style.transform = hiddenTransform;
+        }, 3000);
+    };
     
     function makeDraggable(element, settingObj) { let active = false, initialX, initialY; const dragStart = (e) => { if (e.target === element || element.contains(e.target)) { toggleSizeControls(element); active = true; element.style.zIndex = 10; initialX = e.type === 'touchstart' ? e.touches[0].clientX - settingObj.x : e.clientX - settingObj.x; initialY = e.type === 'touchstart' ? e.touches[0].clientY - settingObj.y : e.clientY - settingObj.y; } }; const dragEnd = () => { active = false; element.style.zIndex = 1; }; const drag = (e) => { if (active) { e.preventDefault(); const currentX = e.type === 'touchmove' ? e.touches[0].clientX - initialX : e.clientX - initialX; const currentY = e.type === 'touchmove' ? e.touches[0].clientY - initialY : e.clientY - initialY; const parentRect = DOMElements.positioningArea.getBoundingClientRect(); const elemRect = element.getBoundingClientRect(); settingObj.x = Math.max(0, Math.min(currentX, parentRect.width - elemRect.width)); settingObj.y = Math.max(0, Math.min(currentY, parentRect.height - elemRect.height)); updatePlaceholders().then(() => { if (element === selectedPlaceholder) updateSizeControlsPosition(); }); } }; ['touchstart', 'mousedown'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragStart, false)); ['touchend', 'mouseup', 'mouseleave'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragEnd, false)); ['touchmove', 'mousemove'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, drag, false)); }
 
