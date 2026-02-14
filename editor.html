@@ -227,14 +227,25 @@
     async function startEyedropper(targetInput) {
         activeColorInput = targetInput;
         DOMElements.eyedropperOverlay.classList.remove('hidden');
-        DOMElements.positioningArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const canvas = await html2canvas(DOMElements.positioningArea, { useCORS: true, backgroundColor: null });
-        eyeDropperCanvas = canvas;
-        eyeDropperCtx = canvas.getContext('2d');
-        DOMElements.eyedropperOverlay.addEventListener('mousemove', moveMagnifier);
-        DOMElements.eyedropperOverlay.addEventListener('touchmove', moveMagnifier, { passive: false });
-        DOMElements.eyedropperOverlay.addEventListener('click', pickColor);
-        DOMElements.eyedropperOverlay.addEventListener('touchend', pickColor);
+        // Use non-smooth scrolling to avoid issues with html2canvas timing
+        DOMElements.positioningArea.scrollIntoView({ block: 'center' });
+
+        // Use a timeout to ensure scrolling has finished before taking screenshot
+        setTimeout(async () => {
+            try {
+                const canvas = await html2canvas(DOMElements.positioningArea, { useCORS: true, backgroundColor: null });
+                eyeDropperCanvas = canvas;
+                eyeDropperCtx = canvas.getContext('2d');
+                DOMElements.eyedropperOverlay.addEventListener('mousemove', moveMagnifier);
+                DOMElements.eyedropperOverlay.addEventListener('touchmove', moveMagnifier, { passive: false });
+                DOMElements.eyedropperOverlay.addEventListener('click', pickColor);
+                DOMElements.eyedropperOverlay.addEventListener('touchend', pickColor);
+            } catch (error) {
+                console.error("Eyedropper failed:", error);
+                showNotification("Could not start color picker.", 'red', false);
+                stopEyedropper();
+            }
+        }, 50); // 50ms should be enough for repaint after scroll
     }
     function moveMagnifier(e) { e.preventDefault(); const isTouchEvent = e.type.startsWith('touch'); const moveX = isTouchEvent ? e.touches[0].clientX : e.clientX; const moveY = isTouchEvent ? e.touches[0].clientY : e.clientY; DOMElements.magnifier.style.left = `${moveX}px`; DOMElements.magnifier.style.top = `${moveY}px`; const canvasRect = DOMElements.positioningArea.getBoundingClientRect(); const scale = eyeDropperCanvas.width / canvasRect.width; const x = (moveX - canvasRect.left) * scale; const y = (moveY - canvasRect.top) * scale; const zoomLevel = 3; DOMElements.magnifier.style.backgroundImage = `url(${eyeDropperCanvas.toDataURL()})`; DOMElements.magnifier.style.backgroundSize = `${eyeDropperCanvas.width * zoomLevel}px ${eyeDropperCanvas.height * zoomLevel}px`; DOMElements.magnifier.style.backgroundPosition = `-${x * zoomLevel - 50}px -${y * zoomLevel - 50}px`; }
     function pickColor(e) { const isTouchEvent = e.type.startsWith('touch'); const endX = isTouchEvent ? e.changedTouches[0].clientX : e.clientX; const endY = isTouchEvent ? e.changedTouches[0].clientY : e.clientY; const canvasRect = DOMElements.positioningArea.getBoundingClientRect(); const scale = eyeDropperCanvas.width / canvasRect.width; const x = Math.round((endX - canvasRect.left) * scale); const y = Math.round((endY - canvasRect.top) * scale); if (x >= 0 && y >= 0 && x < eyeDropperCanvas.width && y < eyeDropperCanvas.height) { const pixel = eyeDropperCtx.getImageData(x, y, 1, 1).data; const hex = `#${("000000" + ((pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16)).slice(-6)}`; activeColorInput.value = hex; activeColorInput.dispatchEvent(new Event('input', { bubbles: true })); } stopEyedropper(); }
