@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Step 1: Design Card</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Dancing+Script:wght@700&family=Roboto:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
@@ -224,17 +225,15 @@
     const saveAndRedirect = () => { const areaRect = DOMElements.positioningArea.getBoundingClientRect(); const nameRect = DOMElements.namePlaceholder.getBoundingClientRect(); const qrRect = DOMElements.qrPlaceholder.getBoundingClientRect(); const cardTemplate = { imageUrl: cardImageUrl, nameSettings: { ...settings.name, x: (nameRect.left - areaRect.left + nameRect.width / 2) / areaRect.width, y: (nameRect.top - areaRect.top + nameRect.height / 2) / areaRect.height, fontSize: settings.name.size / areaRect.height }, qrSettings: { ...settings.qr, x: (qrRect.left - areaRect.left + qrRect.width / 2) / areaRect.width, y: (qrRect.top - areaRect.top + qrRect.height / 2) / areaRect.height, size: settings.qr.size / areaRect.width, } }; localStorage.setItem('cardTemplate', JSON.stringify(cardTemplate)); showNotification('designSaved', 'green'); setTimeout(() => window.location.href = 'manager.html', 1500); };
     
     let eyeDropperCanvas = null, eyeDropperCtx = null, activeColorInput = null, isEyedropperActive = false;
+    
     async function startEyedropper(targetInput) {
         if (isEyedropperActive) return;
         isEyedropperActive = true;
         activeColorInput = targetInput;
-        DOMElements.eyedropperOverlay.classList.remove('hidden');
-        // Use non-smooth scrolling to avoid issues with html2canvas timing
-        DOMElements.positioningArea.scrollIntoView({ block: 'center', behavior: 'instant' });
 
-        // Use a timeout to ensure scrolling has finished before taking screenshot
-        setTimeout(async () => {
+        const takeScreenshot = async () => {
             try {
+                DOMElements.eyedropperOverlay.classList.remove('hidden');
                 const canvas = await html2canvas(DOMElements.positioningArea, { useCORS: true, backgroundColor: null });
                 eyeDropperCanvas = canvas;
                 eyeDropperCtx = canvas.getContext('2d');
@@ -247,8 +246,25 @@
                 showNotification('eyedropperFail', 'red');
                 stopEyedropper();
             }
-        }, 50); // 50ms should be enough for repaint after scroll
+        };
+
+        DOMElements.positioningArea.scrollIntoView({ block: 'center', behavior: 'instant' });
+        const image = DOMElements.editorImagePreview;
+
+        requestAnimationFrame(() => {
+            if (image.complete && image.naturalHeight !== 0) {
+                takeScreenshot();
+            } else {
+                image.onload = takeScreenshot;
+                image.onerror = () => {
+                    console.error("Image failed to load for eyedropper.");
+                    showNotification('eyedropperFail', 'red');
+                    stopEyedropper();
+                };
+            }
+        });
     }
+
     function moveMagnifier(e) { e.preventDefault(); const isTouchEvent = e.type.startsWith('touch'); const moveX = isTouchEvent ? e.touches[0].clientX : e.clientX; const moveY = isTouchEvent ? e.touches[0].clientY : e.clientY; DOMElements.magnifier.style.left = `${moveX}px`; DOMElements.magnifier.style.top = `${moveY}px`; const canvasRect = DOMElements.positioningArea.getBoundingClientRect(); const scale = eyeDropperCanvas.width / canvasRect.width; const x = (moveX - canvasRect.left) * scale; const y = (moveY - canvasRect.top) * scale; const zoomLevel = 3; DOMElements.magnifier.style.backgroundImage = `url(${eyeDropperCanvas.toDataURL()})`; DOMElements.magnifier.style.backgroundSize = `${eyeDropperCanvas.width * zoomLevel}px ${eyeDropperCanvas.height * zoomLevel}px`; DOMElements.magnifier.style.backgroundPosition = `-${x * zoomLevel - 50}px -${y * zoomLevel - 50}px`; }
     function pickColor(e) { const isTouchEvent = e.type.startsWith('touch'); const endX = isTouchEvent ? e.changedTouches[0].clientX : e.clientX; const endY = isTouchEvent ? e.changedTouches[0].clientY : e.clientY; const canvasRect = DOMElements.positioningArea.getBoundingClientRect(); const scale = eyeDropperCanvas.width / canvasRect.width; const x = Math.round((endX - canvasRect.left) * scale); const y = Math.round((endY - canvasRect.top) * scale); if (x >= 0 && y >= 0 && x < eyeDropperCanvas.width && y < eyeDropperCanvas.height) { const pixel = eyeDropperCtx.getImageData(x, y, 1, 1).data; const hex = `#${("000000" + ((pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16)).slice(-6)}`; activeColorInput.value = hex; activeColorInput.dispatchEvent(new Event('input', { bubbles: true })); } stopEyedropper(); }
     function stopEyedropper() {
