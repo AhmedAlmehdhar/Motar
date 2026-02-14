@@ -10,6 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
   <style>
     :root { 
+      --color-primary: #D6A3B0;
+      --color-primary-hover: #C08A99;
+      --color-primary-disabled: #EACCD2;
+      --color-primary-dark-text: #B2838F;
       --font-ar: 'Amiri', serif;
       --font-en: 'Plus Jakarta Sans', sans-serif;
     }
@@ -37,7 +41,7 @@
     }
     h1 {
       margin-bottom: 25px;
-      color: #B999A1;
+      color: var(--color-primary-dark-text);
       font-weight: 700;
       font-size: 2.5em;
     }
@@ -69,17 +73,17 @@
       border-radius: 10px;
       cursor: pointer;
       color: white;
-      background-color: #C0A0A8;
+      background-color: var(--color-primary);
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(192, 160, 168, 0.3);
+      box-shadow: 0 4px 15px rgba(214, 163, 176, 0.3);
     }
     .question button:hover:not(:disabled) {
-      background-color: #A98990;
+      background-color: var(--color-primary-hover);
       transform: translateY(-3px);
-      box-shadow: 0 7px 20px rgba(192, 160, 168, 0.4);
+      box-shadow: 0 7px 20px rgba(214, 163, 176, 0.4);
     }
     .question button:disabled {
-      background-color: #D9C8CC;
+      background-color: var(--color-primary-disabled);
       cursor: not-allowed;
       opacity: 0.7;
       box-shadow: none;
@@ -96,8 +100,8 @@
     }
     #spinner {
       width: 20px; height: 20px;
-      border: 3px solid #D9C8CC;
-      border-top-color: #C0A0A8;
+      border: 3px solid var(--color-primary-disabled);
+      border-top-color: var(--color-primary);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -120,7 +124,7 @@
         padding: 8px 12px;
         font-size: 1em;
         font-weight: bold;
-        color: #B999A1;
+        color: var(--color-primary-dark-text);
         cursor: pointer;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
@@ -250,7 +254,7 @@
       img.onerror = () => { throw new Error(getTranslatedText("loadError")); };
       img.src = imgUrl;
 
-      function showNotification(message, color = "#A98990") {
+      function showNotification(message, color = "var(--color-primary-dark-text)") {
         notif.textContent = message;
         notif.style.color = color;
       }
