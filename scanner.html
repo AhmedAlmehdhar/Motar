@@ -89,7 +89,14 @@
   </div>
 </main>
 
-<div id="notification" class="fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
+<div id="scan-result-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+  <div id="scan-result-card" class="flex flex-col items-center justify-center p-8 rounded-2xl w-full max-w-sm text-white text-center">
+    <div id="scan-result-icon" class="mb-6">
+      <!-- SVG icon will be injected here -->
+    </div>
+    <p id="scan-result-message" class="text-2xl font-bold"></p>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script type="module">
@@ -297,18 +304,41 @@ function handleScan(qrCodeData) {
     }, { onlyOnce: true });
 }
 
+const ICONS = {
+    green: `<svg class="w-24 h-24 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+    red: `<svg class="w-24 h-24 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
+    yellow: `<svg class="w-24 h-24 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>`,
+};
+
 function showNotification(messageKey, type = 'green') {
-    const notification = document.getElementById('notification');
+    const modal = document.getElementById('scan-result-modal');
+    const card = document.getElementById('scan-result-card');
+    const iconContainer = document.getElementById('scan-result-icon');
+    const messageEl = document.getElementById('scan-result-message');
+    
     const message = translations[currentLang][messageKey];
-    const colors = { green: 'bg-emerald-500/90 border border-emerald-400/50', red: 'bg-rose-500/90 border border-rose-400/50', yellow: 'bg-amber-400/90 border border-amber-300/50' };
-    notification.className = `fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`;
-    notification.textContent = message;
-    notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(0)';
+    const colors = {
+        green: 'bg-green-500/90',
+        red: 'bg-rose-500/90',
+        yellow: 'bg-amber-500/90',
+    };
+
+    card.className = `flex flex-col items-center justify-center p-8 rounded-2xl w-full max-w-sm text-white text-center ${colors[type] || 'bg-gray-500/90'}`;
+    iconContainer.innerHTML = ICONS[type] || '';
+    messageEl.textContent = message;
+
+    modal.classList.remove('hidden');
     setTimeout(() => {
-        notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)';
-    }, 3000);
+      modal.classList.remove('opacity-0');
+    }, 10);
+
+    setTimeout(() => {
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }, 2500);
 }
 </script>
 </body>
 </html>
-```
