@@ -335,7 +335,24 @@
         const generatedCardUrl = localStorage.getItem('generatedCardUrl');
         if (generatedCardUrl && currentUser && side) {
             localStorage.removeItem('generatedCardUrl');
-            const newCardTemplate = { imageUrl: generatedCardUrl, nameSettings: defaultSettings.name, qrSettings: defaultSettings.qr };
+            
+            const newCardTemplate = {
+                imageUrl: generatedCardUrl,
+                nameSettings: {
+                    ...defaultSettings.name,
+                    x: 0.5,
+                    y: 0.25,
+                    fontSize: 0.06,
+                },
+                qrSettings: {
+                    ...defaultSettings.qr,
+                    x: 0.5,
+                    y: 0.75,
+                    size: 0.26,
+                }
+            };
+            delete newCardTemplate.nameSettings.size; 
+
             await set(ref(database, `cardTemplates/${currentUser.uid}/${side}`), newCardTemplate);
             showNotification('templateLoaded', 'green');
         }
@@ -452,3 +469,4 @@
 </script>
 </body>
 </html>
+```
