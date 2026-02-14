@@ -41,7 +41,7 @@
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
     <h1 class="text-xl font-bold text-gray-100" data-lang-key="headerTitle">Choose a Template</h1>
     <div class="flex items-center gap-4">
-        <a href="index.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToHub">&larr; Back to Hub</a>
+        <a id="back-link" href="editor.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToHub">&larr; Back to Editor</a>
         <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors">AR</button>
     </div>
   </div>
@@ -156,8 +156,8 @@
 
 <script type="module">
 const translations = {
-    en: { headerTitle: "Choose a Template", backToHub: "← Back to Hub", mainTitle: "Select a Starting Point", subtitle: "Each template is fully customizable in the next step. Click on a design to start editing.", template1Title: "Arabic Garden", template2Title: "Elegant Floral", template3Title: "Classic Elegance", template4Title: "Watercolor Bloom", template5Title: "Gilded Art Deco", template6Title: "Boho Chic" },
-    ar: { headerTitle: "اختر قالبًا", backToHub: "→ العودة للمركز", mainTitle: "اختر نقطة البداية", subtitle: "كل قالب قابل للتخصيص بالكامل في الخطوة التالية. انقر على التصميم لبدء التعديل.", template1Title: "حديقة عربية", template2Title: "زهري أنيق", template3Title: "أناقة كلاسيكية", template4Title: "ألوان مائية", template5Title: "آرت ديكو ذهبي", template6Title: "بوهيمي أنيق" }
+    en: { headerTitle: "Choose a Template", backToHub: "← Back to Editor", mainTitle: "Select a Starting Point", subtitle: "Each template is fully customizable in the next step. Click on a design to start editing.", template1Title: "Arabic Garden", template2Title: "Elegant Floral", template3Title: "Classic Elegance", template4Title: "Watercolor Bloom", template5Title: "Gilded Art Deco", template6Title: "Boho Chic" },
+    ar: { headerTitle: "اختر قالبًا", backToHub: "→ العودة للمحرر", mainTitle: "اختر نقطة البداية", subtitle: "كل قالب قابل للتخصيص بالكامل في الخطوة التالية. انقر على التصميم لبدء التعديل.", template1Title: "حديقة عربية", template2Title: "زهري أنيق", template3Title: "أناقة كلاسيكية", template4Title: "ألوان مائية", template5Title: "آرت ديكو ذهبي", template6Title: "بوهيمي أنيق" }
 };
 
 const langSwitcher = document.getElementById('lang-switcher');
@@ -179,7 +179,19 @@ const setLanguage = (lang) => {
 };
 
 langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
-document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const side = urlParams.get('side');
+
+    if (side) {
+        document.getElementById('back-link').href = `editor.html?side=${side}`;
+        document.querySelectorAll('a[href^="designer.html"]').forEach(link => {
+            link.href += `&side=${side}`;
+        });
+    }
+
+    setLanguage(currentLang)
+});
 </script>
 
 </body>
