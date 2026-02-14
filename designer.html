@@ -141,11 +141,12 @@
                         <input type="number" id="font-size" min="8" max="200" class="w-20 p-1 bg-slate-700 border border-slate-600 rounded-md text-gray-200 text-sm">
                     </div>
                     <div class="flex items-center gap-2">
-                        <label for="font-color" class="text-sm text-gray-400" data-lang-key="fontColor">Color</label>
+                        <label class="text-sm text-gray-400" data-lang-key="fontColor">Color</label>
                         <div class="flex items-center bg-slate-700 border border-slate-600 rounded-md p-0.5">
-                            <input type="color" id="font-color" class="w-7 h-7 bg-transparent border-none cursor-pointer">
+                            <div id="font-color-display" class="w-7 h-7 rounded-sm border border-slate-500"></div>
                             <button id="font-eyedropper" class="p-1 hover:bg-slate-600 rounded-md"><span class="material-symbols-outlined text-base">colorize</span></button>
                         </div>
+                        <input type="hidden" id="font-color">
                     </div>
                     <div class="flex items-center gap-1 bg-slate-900 p-0.5 rounded-md">
                         <button id="font-bold" title="Bold" class="px-2 py-1 rounded-md bg-slate-700 hover:bg-slate-600 font-bold">B</button>
@@ -164,11 +165,12 @@
                         <input type="number" id="icon-size" min="10" max="300" class="w-20 p-1 bg-slate-700 border border-slate-600 rounded-md text-gray-200 text-sm">
                     </div>
                     <div class="flex items-center gap-2">
-                        <label for="icon-color" class="text-sm text-gray-400" data-lang-key="iconColor">Color</label>
+                        <label class="text-sm text-gray-400" data-lang-key="iconColor">Color</label>
                          <div class="flex items-center bg-slate-700 border border-slate-600 rounded-md p-0.5">
-                            <input type="color" id="icon-color" class="w-7 h-7 bg-transparent border-none cursor-pointer">
+                            <div id="icon-color-display" class="w-7 h-7 rounded-sm border border-slate-500"></div>
                             <button id="icon-eyedropper" class="p-1 hover:bg-slate-600 rounded-md"><span class="material-symbols-outlined text-base">colorize</span></button>
                         </div>
+                        <input type="hidden" id="icon-color">
                     </div>
                 </div>
                 <!-- IMAGE EDITOR -->
@@ -229,12 +231,14 @@ const DOMElements = {
     fontFamily: document.getElementById('font-family'),
     fontSize: document.getElementById('font-size'),
     fontColor: document.getElementById('font-color'),
+    fontColorDisplay: document.getElementById('font-color-display'),
     fontEyedropper: document.getElementById('font-eyedropper'),
     fontBold: document.getElementById('font-bold'),
     fontItalic: document.getElementById('font-italic'),
     textAlignContainer: document.getElementById('font-align'),
     iconSize: document.getElementById('icon-size'),
     iconColor: document.getElementById('icon-color'),
+    iconColorDisplay: document.getElementById('icon-color-display'),
     iconEyedropper: document.getElementById('icon-eyedropper'),
     imageWidth: document.getElementById('image-width'),
     addTextBtn: document.getElementById('add-text-btn'),
@@ -305,11 +309,11 @@ function renderTemplate() {
     DOMElements.canvasContainer.style.border = 'none';
     activeTemplate.elements.forEach(el => { const div = document.createElement('div'); div.id = el.id; div.className = 'editable-element'; div.style.left = `${el.x}%`; div.style.top = `${el.y}%`; if (el.type === 'text') { div.textContent = el.content; div.style.color = el.color; div.style.fontFamily = el.fontFamily; div.style.fontSize = `${el.fontSize}px`; div.style.fontWeight = el.fontWeight; div.style.fontStyle = el.fontStyle; div.style.textAlign = el.textAlign; div.style.letterSpacing = el.letterSpacing || 'normal'; div.style.lineHeight = el.lineHeight || 'normal'; const arabicRegex = /[\u0600-\u06FF]/; if (arabicRegex.test(el.content)) { div.dir = 'rtl'; } div.addEventListener('dblclick', () => { const currentlyEditing = DOMElements.canvasContainer.querySelector('[contenteditable="true"]'); if (currentlyEditing) { currentlyEditing.blur(); } selectElement(el.id); div.contentEditable = 'true'; div.style.cursor = 'text'; div.focus(); window.getSelection().selectAllChildren(div); const onBlur = () => { div.contentEditable = 'false'; div.style.cursor = 'move'; div.removeEventListener('blur', onBlur); div.removeEventListener('input', onInput); }; const onInput = () => { el.content = div.textContent; }; div.addEventListener('blur', onBlur); div.addEventListener('input', onInput); }); } else if (el.type === 'icon') { const span = document.createElement('span'); span.className = 'material-symbols-outlined'; span.textContent = el.iconName; div.appendChild(span); div.style.width = `${el.size}px`; div.style.height = `${el.size}px`; div.style.fontSize = `${el.size}px`; div.style.color = el.color; div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center'; } else if (el.type === 'image') { const img = document.createElement('img'); img.src = el.src; img.crossOrigin = "anonymous"; img.className = 'w-full h-full object-contain pointer-events-none'; div.appendChild(img); div.style.width = `${el.width}px`; div.style.height = `${el.height}px`; div.style.padding = '0'; } div.style.transform = 'translate(-50%, -50%)'; const startDragHandler = (e) => { if (div.contentEditable === 'true') { return; } startDrag(e, el.id); }; div.addEventListener('mousedown', startDragHandler); div.addEventListener('touchstart', startDragHandler, { passive: false }); DOMElements.canvasContainer.appendChild(div); }); }
 function selectElement(elementId) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = activeTemplate.elements.find(el => el.id === elementId); if (selectedElement) { document.getElementById(selectedElement.id).classList.add('selected'); DOMElements.noElementSelected.classList.add('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); if (selectedElement.type === 'text') { DOMElements.textEditor.classList.remove('hidden'); updateSidebarForText(); } else if (selectedElement.type === 'icon') { DOMElements.iconEditor.classList.remove('hidden'); updateSidebarForIcon(); } else if (selectedElement.type === 'image') { DOMElements.imageEditor.classList.remove('hidden'); updateSidebarForImage(); } } }
-function updateSidebarForText() { DOMElements.fontFamily.value = selectedElement.fontFamily; DOMElements.fontSize.value = selectedElement.fontSize; DOMElements.fontColor.value = selectedElement.color; DOMElements.fontBold.classList.toggle('bg-indigo-500', selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold'); DOMElements.fontItalic.classList.toggle('bg-indigo-500', selectedElement.fontStyle === 'italic'); DOMElements.textAlignContainer.querySelectorAll('button').forEach(btn => { btn.classList.toggle('bg-indigo-500', btn.dataset.align === selectedElement.textAlign); }); }
-function updateSidebarForIcon() { DOMElements.iconSize.value = selectedElement.size; DOMElements.iconColor.value = selectedElement.color; }
+function updateSidebarForText() { DOMElements.fontFamily.value = selectedElement.fontFamily; DOMElements.fontSize.value = selectedElement.fontSize; DOMElements.fontColor.value = selectedElement.color; DOMElements.fontColorDisplay.style.backgroundColor = selectedElement.color; DOMElements.fontBold.classList.toggle('bg-indigo-500', selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold'); DOMElements.fontItalic.classList.toggle('bg-indigo-500', selectedElement.fontStyle === 'italic'); DOMElements.textAlignContainer.querySelectorAll('button').forEach(btn => { btn.classList.toggle('bg-indigo-500', btn.dataset.align === selectedElement.textAlign); }); }
+function updateSidebarForIcon() { DOMElements.iconSize.value = selectedElement.size; DOMElements.iconColor.value = selectedElement.color; DOMElements.iconColorDisplay.style.backgroundColor = selectedElement.color; }
 function updateSidebarForImage() { DOMElements.imageWidth.value = selectedElement.width; }
 function updateElementStyle(elementData) { const elementDiv = document.getElementById(elementData.id); if (!elementDiv) return; if (elementData.type === 'text') { if (document.activeElement !== elementDiv) { elementDiv.textContent = elementData.content; } elementDiv.style.color = elementData.color; elementDiv.style.fontFamily = elementData.fontFamily; elementDiv.style.fontSize = `${elementData.fontSize}px`; elementDiv.style.fontWeight = elementData.fontWeight; elementDiv.style.fontStyle = elementData.fontStyle; elementDiv.style.textAlign = elementData.textAlign; } else if (elementData.type === 'icon') { elementDiv.style.width = `${elementData.size}px`; elementDiv.style.height = `${elementData.size}px`; elementDiv.style.fontSize = `${elementData.size}px`; elementDiv.style.color = elementData.color; } else if (elementData.type === 'image') { elementDiv.style.width = `${elementData.width}px`; elementDiv.style.height = `${elementData.height}px`; } }
-function updateElementFromSidebar() { if (!selectedElement) return; if(selectedElement.type === 'text') { selectedElement.fontFamily = DOMElements.fontFamily.value; selectedElement.fontSize = parseInt(DOMElements.fontSize.value, 10); selectedElement.color = DOMElements.fontColor.value; } else if (selectedElement.type === 'icon') { selectedElement.size = parseInt(DOMElements.iconSize.value, 10); selectedElement.color = DOMElements.iconColor.value; } updateElementStyle(selectedElement); }
+function updateElementFromSidebar(e) { if (!selectedElement) return; if(selectedElement.type === 'text') { selectedElement.fontFamily = DOMElements.fontFamily.value; selectedElement.fontSize = parseInt(DOMElements.fontSize.value, 10); selectedElement.color = DOMElements.fontColor.value; } else if (selectedElement.type === 'icon') { selectedElement.size = parseInt(DOMElements.iconSize.value, 10); selectedElement.color = DOMElements.iconColor.value; } updateElementStyle(selectedElement); }
 function startDrag(e, elementId) { e.preventDefault(); selectElement(elementId); isDragging = true; const containerRect = DOMElements.canvasContainer.getBoundingClientRect(); const isTouchEvent = e.type.startsWith('touch'); const startX = isTouchEvent ? e.touches[0].clientX : e.clientX; const startY = isTouchEvent ? e.touches[0].clientY : e.clientY; const mouseX = startX - containerRect.left; const mouseY = startY - containerRect.top; const elementX = (selectedElement.x / 100) * containerRect.width; const elementY = (selectedElement.y / 100) * containerRect.height; dragOffsetX = mouseX - elementX; dragOffsetY = mouseY - elementY; document.addEventListener('mousemove', dragMove); document.addEventListener('touchmove', dragMove, { passive: false }); document.addEventListener('mouseup', stopDrag); document.addEventListener('touchend', stopDrag); }
 function dragMove(e) { if (!isDragging || !selectedElement) return; e.preventDefault(); const isTouchEvent = e.type.startsWith('touch'); const moveX = isTouchEvent ? e.touches[0].clientX : e.clientX; const moveY = isTouchEvent ? e.touches[0].clientY : e.clientY; const containerRect = DOMElements.canvasContainer.getBoundingClientRect(); const mouseX = moveX - containerRect.left; const mouseY = moveY - containerRect.top; let newX = mouseX - dragOffsetX; let newY = mouseY - dragOffsetY; newX = Math.max(0, Math.min(newX, containerRect.width)); newY = Math.max(0, Math.min(newY, containerRect.height)); selectedElement.x = (newX / containerRect.width) * 100; selectedElement.y = (newY / containerRect.height) * 100; const el = document.getElementById(selectedElement.id); el.style.left = `${selectedElement.x}%`; el.style.top = `${selectedElement.y}%`; }
 function stopDrag() { isDragging = false; document.removeEventListener('mousemove', dragMove); document.removeEventListener('touchmove', dragMove); document.removeEventListener('mouseup', stopDrag); document.removeEventListener('touchend', stopDrag); }
@@ -334,7 +338,6 @@ async function startEyedropper(targetInput) {
     activeColorInput = targetInput;
     DOMElements.eyedropperOverlay.classList.remove('hidden');
     
-    // Create a canvas copy of the designer area
     const canvas = await html2canvas(DOMElements.canvasContainer, { useCORS: true, backgroundColor: null });
     eyeDropperCanvas = canvas;
     eyeDropperCtx = canvas.getContext('2d');
@@ -354,7 +357,6 @@ function moveMagnifier(e) {
     DOMElements.magnifier.style.left = `${moveX}px`;
     DOMElements.magnifier.style.top = `${moveY}px`;
     
-    // Position background inside magnifier for zoom effect
     const canvasRect = DOMElements.canvasContainer.getBoundingClientRect();
     const scale = eyeDropperCanvas.width / canvasRect.width;
     const x = (moveX - canvasRect.left) * scale;
@@ -380,6 +382,11 @@ function pickColor(e) {
         const pixel = eyeDropperCtx.getImageData(x, y, 1, 1).data;
         const hex = `#${("000000" + ((pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16)).slice(-6)}`;
         activeColorInput.value = hex;
+        if(activeColorInput.id === 'font-color') {
+            DOMElements.fontColorDisplay.style.backgroundColor = hex;
+        } else if (activeColorInput.id === 'icon-color') {
+            DOMElements.iconColorDisplay.style.backgroundColor = hex;
+        }
         activeColorInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
     
@@ -401,7 +408,8 @@ DOMElements.fontEyedropper.addEventListener('click', () => startEyedropper(DOMEl
 DOMElements.iconEyedropper.addEventListener('click', () => startEyedropper(DOMElements.iconColor));
 
 
-DOMElements.textEditor.addEventListener('input', updateElementFromSidebar); DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar); 
+DOMElements.textEditor.addEventListener('input', updateElementFromSidebar);
+DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar);
 DOMElements.imageEditor.addEventListener('input', () => { if (!selectedElement || selectedElement.type !== 'image') return; const newWidth = parseInt(DOMElements.imageWidth.value, 10); if (isNaN(newWidth) || newWidth <= 0) return; const aspectRatio = selectedElement.originalWidth / selectedElement.originalHeight; const newHeight = newWidth / aspectRatio; selectedElement.width = newWidth; selectedElement.height = newHeight; updateElementStyle(selectedElement); });
 DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.textAlignContainer.addEventListener('click', (e) => { const button = e.target.closest('button'); if (button && button.dataset.align) { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.textAlign = button.dataset.align; updateSidebarForText(); updateElementStyle(selectedElement); } }); DOMElements.canvasContainer.addEventListener('mousedown', (e) => { if (e.target === DOMElements.canvasContainer) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); } });
 DOMElements.addTextBtn.addEventListener('click', () => addNewText());
