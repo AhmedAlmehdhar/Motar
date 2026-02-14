@@ -93,7 +93,7 @@
   <div class="container mx-auto px-4 py-3 flex justify-between items-center">
     <h1 class="text-lg font-bold text-gray-100" data-lang-key="headerTitle">Card Designer</h1>
     <div class="flex items-center gap-4">
-        <a href="templates.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToTemplates">&larr; Back to Templates</a>
+        <a id="back-link" href="templates.html" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" data-lang-key="backToTemplates">&larr; Back to Templates</a>
         <button id="lang-switcher" class="font-bold text-sm border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 transition-colors">AR</button>
         <button id="save-design-button" class="font-bold text-sm bg-green-600 hover:bg-green-500 text-white rounded-md px-4 py-2 transition-colors flex items-center gap-2">
             <span data-lang-key="saveBtn">Save & Continue</span>
@@ -269,6 +269,7 @@ const DOMElements = {
     decreaseSizeBtn: document.getElementById('decrease-size-btn'),
     increaseSizeBtn: document.getElementById('increase-size-btn'),
     currentSizeLabel: document.getElementById('current-size-label'),
+    backLink: document.getElementById('back-link'),
 };
 
 const translations = {
@@ -289,14 +290,20 @@ const showNotification = (messageKey, type = 'green', isKey = true) => {
     if (document.documentElement.dir === 'rtl') {
         notification.classList.add('left-5');
         notification.classList.remove('right-5');
-        notification.style.transform = 'translateX(0)';
+        notification.style.transform = 'translateX(120%)';
         setTimeout(() => {
-            notification.style.transform = 'translateX(-120%)';
+            notification.style.transform = 'translateX(0)';
+        }, 10);
+        setTimeout(() => {
+            notification.style.transform = 'translateX(120%)';
         }, 3000);
     } else {
         notification.classList.add('right-5');
         notification.classList.remove('left-5');
-        notification.style.transform = 'translateX(0)';
+        notification.style.transform = 'translateX(120%)';
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 10);
         setTimeout(() => {
             notification.style.transform = 'translateX(120%)';
         }, 3000);
@@ -422,7 +429,11 @@ async function saveAndContinue() {
         if (result.success) {
             localStorage.setItem('generatedCardUrl', result.data.url);
             showNotification('saveSuccess');
-            setTimeout(() => { window.location.href = 'editor.html'; }, 1500);
+            const urlParams = new URLSearchParams(window.location.search);
+            const side = urlParams.get('side');
+            setTimeout(() => {
+                window.location.href = `editor.html?side=${side || 'groom'}`;
+            }, 1500);
         } else {
             throw new Error(result.error?.message || 'Unknown upload error');
         }
@@ -558,8 +569,17 @@ window.addEventListener('resize', resizeCanvas);
 DOMElements.increaseSizeBtn.addEventListener('click', (e) => { e.stopPropagation(); changeSize(1); });
 DOMElements.decreaseSizeBtn.addEventListener('click', (e) => { e.stopPropagation(); changeSize(-1); });
 DOMElements.sizeControls.addEventListener('mousedown', e => e.stopPropagation());
-const urlParams = new URLSearchParams(window.location.search); const templateId = urlParams.get('template') || 'modern'; activeTemplate = JSON.parse(JSON.stringify(templates[templateId]));
-populateIconLibrary(); renderTemplate(); resizeCanvas();
+
+const urlParams = new URLSearchParams(window.location.search);
+const templateId = urlParams.get('template') || 'modern';
+const side = urlParams.get('side');
+if (side) {
+    DOMElements.backLink.href = `templates.html?side=${side}`;
+}
+activeTemplate = JSON.parse(JSON.stringify(templates[templateId]));
+populateIconLibrary();
+renderTemplate();
+resizeCanvas();
 setLanguage(currentLang);
 </script>
 
