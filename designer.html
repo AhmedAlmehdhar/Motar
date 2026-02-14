@@ -188,6 +188,11 @@
     <main class="flex-1 bg-slate-900 flex items-center justify-center p-4 overflow-auto">
         <div id="canvas-container" class="relative bg-white shadow-2xl">
             <!-- Elements will be rendered here by JS -->
+            <div id="size-controls" class="hidden absolute z-30 bg-slate-900/70 backdrop-blur-sm rounded-md shadow-lg p-1 flex items-center gap-1">
+                <button id="decrease-size-btn" class="w-7 h-7 bg-slate-700 hover:bg-slate-600 rounded text-lg font-bold">-</button>
+                <span id="current-size-label" class="text-xs font-mono w-10 text-center"></span>
+                <button id="increase-size-btn" class="w-7 h-7 bg-slate-700 hover:bg-slate-600 rounded text-lg font-bold">+</button>
+            </div>
         </div>
     </main>
 </div>
@@ -260,6 +265,10 @@ const DOMElements = {
     magnifier: document.getElementById('magnifier'),
     notification: document.getElementById('notification'),
     eyedropperInstruction: document.getElementById('eyedropper-instruction'),
+    sizeControls: document.getElementById('size-controls'),
+    decreaseSizeBtn: document.getElementById('decrease-size-btn'),
+    increaseSizeBtn: document.getElementById('increase-size-btn'),
+    currentSizeLabel: document.getElementById('current-size-label'),
 };
 
 const translations = {
@@ -334,20 +343,25 @@ const iconLibrary = {
 
 let activeTemplate; let selectedElement = null; let isDragging = false; let dragOffsetX, dragOffsetY; let currentIconCategory = Object.keys(iconLibrary)[0];
 
+function showSizeControlsFor(elementDOM) { if (!selectedElement) return; DOMElements.sizeControls.classList.remove('hidden'); updateSizeControlsPositionFor(elementDOM); }
+function hideSizeControls() { DOMElements.sizeControls.classList.add('hidden'); }
+function updateSizeControlsPositionFor(elementDOM) { if (!elementDOM) return; const elRect = elementDOM.getBoundingClientRect(); const canvasRect = DOMElements.canvasContainer.getBoundingClientRect(); let top = elRect.top - canvasRect.top - DOMElements.sizeControls.offsetHeight - 5; if (top < 5) { top = elRect.bottom - canvasRect.top + 5; } DOMElements.sizeControls.style.left = `${elRect.left - canvasRect.left + (elRect.width / 2) - (DOMElements.sizeControls.offsetWidth / 2)}px`; DOMElements.sizeControls.style.top = `${top}px`; let size; if (selectedElement.type === 'text') size = selectedElement.fontSize; else if (selectedElement.type === 'icon') size = selectedElement.size; else if (selectedElement.type === 'image') size = selectedElement.width; DOMElements.currentSizeLabel.textContent = Math.round(size); }
+function changeSize(delta) { if (!selectedElement) return; let step = 2; if (selectedElement.type === 'text') { let newSize = parseInt(selectedElement.fontSize) + (delta * step); newSize = Math.max(8, Math.min(200, newSize)); selectedElement.fontSize = newSize; DOMElements.fontSize.value = newSize; } else if (selectedElement.type === 'icon') { step = 5; let newSize = parseInt(selectedElement.size) + (delta * step); newSize = Math.max(10, Math.min(300, newSize)); selectedElement.size = newSize; DOMElements.iconSize.value = newSize; } else if (selectedElement.type === 'image') { step = 10; const newWidth = parseInt(selectedElement.width) + (delta * step); const aspectRatio = selectedElement.originalWidth / selectedElement.originalHeight; selectedElement.width = Math.max(10, Math.min(1000, newWidth)); selectedElement.height = selectedElement.width / aspectRatio; DOMElements.imageWidth.value = selectedElement.width; } updateElementStyle(selectedElement); const elementDOM = document.getElementById(selectedElement.id); setTimeout(() => updateSizeControlsPositionFor(elementDOM), 0); }
+
 function renderTemplate() { 
     DOMElements.canvasContainer.innerHTML = '';
     DOMElements.canvasContainer.style.backgroundColor = 'transparent';
     DOMElements.canvasContainer.style.backgroundImage = `url(${activeTemplate.backgroundImage})`;
     DOMElements.canvasContainer.style.border = 'none';
     activeTemplate.elements.forEach(el => { const div = document.createElement('div'); div.id = el.id; div.className = 'editable-element'; div.style.left = `${el.x}%`; div.style.top = `${el.y}%`; if (el.type === 'text') { div.textContent = el.content; div.style.color = el.color; div.style.fontFamily = el.fontFamily; div.style.fontSize = `${el.fontSize}px`; div.style.fontWeight = el.fontWeight; div.style.fontStyle = el.fontStyle; div.style.textAlign = el.textAlign; div.style.letterSpacing = el.letterSpacing || 'normal'; div.style.lineHeight = el.lineHeight || 'normal'; const arabicRegex = /[\u0600-\u06FF]/; if (arabicRegex.test(el.content)) { div.dir = 'rtl'; } div.addEventListener('dblclick', () => { const currentlyEditing = DOMElements.canvasContainer.querySelector('[contenteditable="true"]'); if (currentlyEditing) { currentlyEditing.blur(); } selectElement(el.id); div.contentEditable = 'true'; div.style.cursor = 'text'; div.focus(); window.getSelection().selectAllChildren(div); const onBlur = () => { div.contentEditable = 'false'; div.style.cursor = 'move'; div.removeEventListener('blur', onBlur); div.removeEventListener('input', onInput); }; const onInput = () => { el.content = div.textContent; }; div.addEventListener('blur', onBlur); div.addEventListener('input', onInput); }); } else if (el.type === 'icon') { const span = document.createElement('span'); span.className = 'material-symbols-outlined'; span.textContent = el.iconName; div.appendChild(span); div.style.width = `${el.size}px`; div.style.height = `${el.size}px`; div.style.fontSize = `${el.size}px`; div.style.color = el.color; div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center'; } else if (el.type === 'image') { const img = document.createElement('img'); img.src = el.src; img.crossOrigin = "anonymous"; img.className = 'w-full h-full object-contain pointer-events-none'; div.appendChild(img); div.style.width = `${el.width}px`; div.style.height = `${el.height}px`; div.style.padding = '0'; } div.style.transform = 'translate(-50%, -50%)'; const startDragHandler = (e) => { if (div.contentEditable === 'true') { return; } startDrag(e, el.id); }; div.addEventListener('mousedown', startDragHandler); div.addEventListener('touchstart', startDragHandler, { passive: false }); DOMElements.canvasContainer.appendChild(div); }); }
-function selectElement(elementId) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = activeTemplate.elements.find(el => el.id === elementId); if (selectedElement) { document.getElementById(selectedElement.id).classList.add('selected'); DOMElements.noElementSelected.classList.add('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); if (selectedElement.type === 'text') { DOMElements.textEditor.classList.remove('hidden'); updateSidebarForText(); } else if (selectedElement.type === 'icon') { DOMElements.iconEditor.classList.remove('hidden'); updateSidebarForIcon(); } else if (selectedElement.type === 'image') { DOMElements.imageEditor.classList.remove('hidden'); updateSidebarForImage(); } } }
+function selectElement(elementId) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = activeTemplate.elements.find(el => el.id === elementId); if (selectedElement) { const elementDOM = document.getElementById(selectedElement.id); elementDOM.classList.add('selected'); showSizeControlsFor(elementDOM); DOMElements.noElementSelected.classList.add('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); if (selectedElement.type === 'text') { DOMElements.textEditor.classList.remove('hidden'); updateSidebarForText(); } else if (selectedElement.type === 'icon') { DOMElements.iconEditor.classList.remove('hidden'); updateSidebarForIcon(); } else if (selectedElement.type === 'image') { DOMElements.imageEditor.classList.remove('hidden'); updateSidebarForImage(); } } }
 function updateSidebarForText() { DOMElements.fontFamily.value = selectedElement.fontFamily; DOMElements.fontSize.value = selectedElement.fontSize; DOMElements.fontColor.value = selectedElement.color; DOMElements.fontColorDisplay.style.backgroundColor = selectedElement.color; DOMElements.fontBold.classList.toggle('bg-indigo-500', selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold'); DOMElements.fontItalic.classList.toggle('bg-indigo-500', selectedElement.fontStyle === 'italic'); DOMElements.textAlignContainer.querySelectorAll('button').forEach(btn => { btn.classList.toggle('bg-indigo-500', btn.dataset.align === selectedElement.textAlign); }); }
 function updateSidebarForIcon() { DOMElements.iconSize.value = selectedElement.size; DOMElements.iconColor.value = selectedElement.color; DOMElements.iconColorDisplay.style.backgroundColor = selectedElement.color; }
 function updateSidebarForImage() { DOMElements.imageWidth.value = selectedElement.width; }
 function updateElementStyle(elementData) { const elementDiv = document.getElementById(elementData.id); if (!elementDiv) return; if (elementData.type === 'text') { if (document.activeElement !== elementDiv) { elementDiv.textContent = elementData.content; } elementDiv.style.color = elementData.color; elementDiv.style.fontFamily = elementData.fontFamily; elementDiv.style.fontSize = `${elementData.fontSize}px`; elementDiv.style.fontWeight = elementData.fontWeight; elementDiv.style.fontStyle = elementData.fontStyle; elementDiv.style.textAlign = elementData.textAlign; } else if (elementData.type === 'icon') { elementDiv.style.width = `${elementData.size}px`; elementDiv.style.height = `${elementData.size}px`; elementDiv.style.fontSize = `${elementData.size}px`; elementDiv.style.color = elementData.color; } else if (elementData.type === 'image') { elementDiv.style.width = `${elementData.width}px`; elementDiv.style.height = `${elementData.height}px`; } }
 function updateElementFromSidebar(e) { if (!selectedElement) return; if(selectedElement.type === 'text') { selectedElement.fontFamily = DOMElements.fontFamily.value; selectedElement.fontSize = parseInt(DOMElements.fontSize.value, 10); selectedElement.color = DOMElements.fontColor.value; } else if (selectedElement.type === 'icon') { selectedElement.size = parseInt(DOMElements.iconSize.value, 10); selectedElement.color = DOMElements.iconColor.value; } updateElementStyle(selectedElement); }
 function startDrag(e, elementId) { e.preventDefault(); selectElement(elementId); isDragging = true; const containerRect = DOMElements.canvasContainer.getBoundingClientRect(); const isTouchEvent = e.type.startsWith('touch'); const startX = isTouchEvent ? e.touches[0].clientX : e.clientX; const startY = isTouchEvent ? e.touches[0].clientY : e.clientY; const mouseX = startX - containerRect.left; const mouseY = startY - containerRect.top; const elementX = (selectedElement.x / 100) * containerRect.width; const elementY = (selectedElement.y / 100) * containerRect.height; dragOffsetX = mouseX - elementX; dragOffsetY = mouseY - elementY; document.addEventListener('mousemove', dragMove); document.addEventListener('touchmove', dragMove, { passive: false }); document.addEventListener('mouseup', stopDrag); document.addEventListener('touchend', stopDrag); }
-function dragMove(e) { if (!isDragging || !selectedElement) return; e.preventDefault(); const isTouchEvent = e.type.startsWith('touch'); const moveX = isTouchEvent ? e.touches[0].clientX : e.clientX; const moveY = isTouchEvent ? e.touches[0].clientY : e.clientY; const containerRect = DOMElements.canvasContainer.getBoundingClientRect(); const mouseX = moveX - containerRect.left; const mouseY = moveY - containerRect.top; let newX = mouseX - dragOffsetX; let newY = mouseY - dragOffsetY; newX = Math.max(0, Math.min(newX, containerRect.width)); newY = Math.max(0, Math.min(newY, containerRect.height)); selectedElement.x = (newX / containerRect.width) * 100; selectedElement.y = (newY / containerRect.height) * 100; const el = document.getElementById(selectedElement.id); el.style.left = `${selectedElement.x}%`; el.style.top = `${selectedElement.y}%`; }
+function dragMove(e) { if (!isDragging || !selectedElement) return; e.preventDefault(); const isTouchEvent = e.type.startsWith('touch'); const moveX = isTouchEvent ? e.touches[0].clientX : e.clientX; const moveY = isTouchEvent ? e.touches[0].clientY : e.clientY; const containerRect = DOMElements.canvasContainer.getBoundingClientRect(); const mouseX = moveX - containerRect.left; const mouseY = moveY - containerRect.top; let newX = mouseX - dragOffsetX; let newY = mouseY - dragOffsetY; newX = Math.max(0, Math.min(newX, containerRect.width)); newY = Math.max(0, Math.min(newY, containerRect.height)); selectedElement.x = (newX / containerRect.width) * 100; selectedElement.y = (newY / containerRect.height) * 100; const el = document.getElementById(selectedElement.id); el.style.left = `${selectedElement.x}%`; el.style.top = `${selectedElement.y}%`; updateSizeControlsPositionFor(el); }
 function stopDrag() { isDragging = false; document.removeEventListener('mousemove', dragMove); document.removeEventListener('touchmove', dragMove); document.removeEventListener('mouseup', stopDrag); document.removeEventListener('touchend', stopDrag); }
 function addNewText(content = 'New Text') { const newText = { id: 'el' + Date.now(), type: 'text', content, x: 50, y: 50, color: '#dddddd', fontFamily: "'Cairo', sans-serif", fontSize: 28, fontWeight: 'normal', fontStyle: 'normal', textAlign: 'center' }; activeTemplate.elements.push(newText); renderTemplate(); selectElement(newText.id); }
 function addIconFromLibrary(iconName) { const newIcon = { id: 'el' + Date.now(), type: 'icon', iconName: iconName, x: 50, y: 50, size: 50, color: '#dddddd' }; activeTemplate.elements.push(newIcon); renderTemplate(); selectElement(newIcon.id); DOMElements.iconLibraryModal.classList.add('hidden'); }
@@ -450,24 +464,18 @@ async function startEyedropper(targetInput) {
 
     setTimeout(async () => {
         try {
-            // Pre-load the background image to prevent canvas taint issues
             await new Promise((resolve, reject) => {
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
                 const bgUrl = activeTemplate.backgroundImage;
-                if (!bgUrl) {
-                    resolve();
-                    return;
-                }
+                if (!bgUrl) { resolve(); return; }
                 img.onload = resolve;
                 img.onerror = reject;
                 img.src = bgUrl;
             });
-
             const canvas = await html2canvas(DOMElements.canvasContainer, { useCORS: true, backgroundColor: null });
             eyeDropperCanvas = canvas;
             eyeDropperCtx = canvas.getContext('2d');
-
             DOMElements.eyedropperOverlay.addEventListener('mousemove', moveMagnifier);
             DOMElements.eyedropperOverlay.addEventListener('touchmove', moveMagnifier, { passive: false });
             DOMElements.eyedropperOverlay.addEventListener('click', pickColor);
@@ -485,15 +493,12 @@ function moveMagnifier(e) {
     const isTouchEvent = e.type.startsWith('touch');
     const moveX = isTouchEvent ? e.touches[0].clientX : e.clientX;
     const moveY = isTouchEvent ? e.touches[0].clientY : e.clientY;
-
     DOMElements.magnifier.style.left = `${moveX}px`;
     DOMElements.magnifier.style.top = `${moveY}px`;
-    
     const canvasRect = DOMElements.canvasContainer.getBoundingClientRect();
     const scale = eyeDropperCanvas.width / canvasRect.width;
     const x = (moveX - canvasRect.left) * scale;
     const y = (moveY - canvasRect.top) * scale;
-    
     const zoomLevel = 3;
     DOMElements.magnifier.style.backgroundImage = `url(${eyeDropperCanvas.toDataURL()})`;
     DOMElements.magnifier.style.backgroundSize = `${eyeDropperCanvas.width * zoomLevel}px ${eyeDropperCanvas.height * zoomLevel}px`;
@@ -504,12 +509,10 @@ function pickColor(e) {
     const isTouchEvent = e.type.startsWith('touch');
     const endX = isTouchEvent ? e.changedTouches[0].clientX : e.clientX;
     const endY = isTouchEvent ? e.changedTouches[0].clientY : e.clientY;
-
     const canvasRect = DOMElements.canvasContainer.getBoundingClientRect();
     const scale = eyeDropperCanvas.width / canvasRect.width;
     const x = Math.round((endX - canvasRect.left) * scale);
     const y = Math.round((endY - canvasRect.top) * scale);
-    
     if (x >= 0 && y >= 0 && x < eyeDropperCanvas.width && y < eyeDropperCanvas.height) {
         const pixel = eyeDropperCtx.getImageData(x, y, 1, 1).data;
         const hex = `#${("000000" + ((pixel[0] << 16) | (pixel[1] << 8) | pixel[2]).toString(16)).slice(-6)}`;
@@ -521,7 +524,6 @@ function pickColor(e) {
         }
         activeColorInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    
     stopEyedropper();
 }
 
@@ -541,11 +543,10 @@ function stopEyedropper() {
 DOMElements.fontEyedropper.addEventListener('click', () => startEyedropper(DOMElements.fontColor));
 DOMElements.iconEyedropper.addEventListener('click', () => startEyedropper(DOMElements.iconColor));
 
-
 DOMElements.textEditor.addEventListener('input', updateElementFromSidebar);
 DOMElements.iconEditor.addEventListener('input', updateElementFromSidebar);
 DOMElements.imageEditor.addEventListener('input', () => { if (!selectedElement || selectedElement.type !== 'image') return; const newWidth = parseInt(DOMElements.imageWidth.value, 10); if (isNaN(newWidth) || newWidth <= 0) return; const aspectRatio = selectedElement.originalWidth / selectedElement.originalHeight; const newHeight = newWidth / aspectRatio; selectedElement.width = newWidth; selectedElement.height = newHeight; updateElementStyle(selectedElement); });
-DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.textAlignContainer.addEventListener('click', (e) => { const button = e.target.closest('button'); if (button && button.dataset.align) { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.textAlign = button.dataset.align; updateSidebarForText(); updateElementStyle(selectedElement); } }); DOMElements.canvasContainer.addEventListener('mousedown', (e) => { if (e.target === DOMElements.canvasContainer) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); } });
+DOMElements.fontBold.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontWeight = (selectedElement.fontWeight === 700 || selectedElement.fontWeight === 'bold') ? 400 : 700; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.fontItalic.addEventListener('click', () => { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.fontStyle = selectedElement.fontStyle === 'italic' ? 'normal' : 'italic'; updateSidebarForText(); updateElementStyle(selectedElement); }); DOMElements.textAlignContainer.addEventListener('click', (e) => { const button = e.target.closest('button'); if (button && button.dataset.align) { if (!selectedElement || selectedElement.type !== 'text') return; selectedElement.textAlign = button.dataset.align; updateSidebarForText(); updateElementStyle(selectedElement); } }); DOMElements.canvasContainer.addEventListener('mousedown', (e) => { if (e.target === DOMElements.canvasContainer) { document.querySelectorAll('.editable-element.selected').forEach(el => el.classList.remove('selected')); selectedElement = null; hideSizeControls(); DOMElements.noElementSelected.classList.remove('hidden'); DOMElements.textEditor.classList.add('hidden'); DOMElements.iconEditor.classList.add('hidden'); DOMElements.imageEditor.classList.add('hidden'); } });
 DOMElements.addTextBtn.addEventListener('click', () => addNewText());
 DOMElements.addIconBtn.addEventListener('click', () => DOMElements.iconLibraryModal.classList.remove('hidden'));
 DOMElements.closeModalBtn.addEventListener('click', () => DOMElements.iconLibraryModal.classList.add('hidden'));
@@ -554,6 +555,9 @@ DOMElements.saveButton.addEventListener('click', saveAndContinue);
 DOMElements.langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
 document.addEventListener('paste', handlePaste);
 window.addEventListener('resize', resizeCanvas);
+DOMElements.increaseSizeBtn.addEventListener('click', (e) => { e.stopPropagation(); changeSize(1); });
+DOMElements.decreaseSizeBtn.addEventListener('click', (e) => { e.stopPropagation(); changeSize(-1); });
+DOMElements.sizeControls.addEventListener('mousedown', e => e.stopPropagation());
 const urlParams = new URLSearchParams(window.location.search); const templateId = urlParams.get('template') || 'modern'; activeTemplate = JSON.parse(JSON.stringify(templates[templateId]));
 populateIconLibrary(); renderTemplate(); resizeCanvas();
 setLanguage(currentLang);
