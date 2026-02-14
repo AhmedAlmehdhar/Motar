@@ -235,7 +235,7 @@
 
       const params = new URLSearchParams(window.location.search);
       const imgUrl = params.get("img");
-      const guestPath = params.get("id");
+      const guestPath = decodeURIComponent(params.get("id") || '');
 
       if (!imgUrl || !guestPath) throw new Error(getTranslatedText("invalidLink"));
       
