@@ -217,7 +217,7 @@
 </div>
 
 <!-- Eyedropper Tools -->
-<div id="notification" class="fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
+<div id="notification" class="fixed top-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform transition-transform duration-500 ease-in-out"></div>
 <div id="eyedropper-overlay" class="hidden">
     <div id="magnifier"></div>
 </div>
@@ -283,31 +283,24 @@ const showNotification = (messageKey, type = 'green', isKey = true) => {
     const message = isKey ? translations[currentLang][messageKey] : messageKey;
     const colors = { green: 'bg-emerald-500/90 border border-emerald-400/50', red: 'bg-rose-500/90 border border-rose-400/50', yellow: 'bg-amber-400/90 border border-amber-300/50' };
     const notification = DOMElements.notification;
-    
+
     notification.className = `fixed top-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'}`;
     notification.textContent = message;
 
-    if (document.documentElement.dir === 'rtl') {
-        notification.classList.add('left-5');
-        notification.classList.remove('right-5');
-        notification.style.transform = 'translateX(120%)';
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        setTimeout(() => {
-            notification.style.transform = 'translateX(120%)';
-        }, 3000);
-    } else {
-        notification.classList.add('right-5');
-        notification.classList.remove('left-5');
-        notification.style.transform = 'translateX(120%)';
-        setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 10);
-        setTimeout(() => {
-            notification.style.transform = 'translateX(120%)';
-        }, 3000);
-    }
+    const isRTL = document.documentElement.dir === 'rtl';
+    const hiddenTransform = isRTL ? 'translateX(-120%)' : 'translateX(120%)';
+
+    notification.classList.remove('left-5', 'right-5');
+    notification.classList.add(isRTL ? 'left-5' : 'right-5');
+    notification.style.transform = hiddenTransform;
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+
+    setTimeout(() => {
+        notification.style.transform = hiddenTransform;
+    }, 3000);
 };
 
 const setLanguage = (lang) => {
