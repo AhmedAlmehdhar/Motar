@@ -103,7 +103,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-import { getDatabase, ref as databaseRef, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+import { getDatabase, ref as databaseRef, onValue, push, set, get, remove } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm';
 
@@ -128,8 +128,8 @@ document.getElementById('logout-button').addEventListener('click', () => {
 });
 
 const translations = {
-    en: { headerTitle: "Step 2: Manage Guests & Invitations", backToHub: "← Back to Hub", createTitle: "Create Invitation", invitationSide: "Invitation For:", groomSide: "Groom's Side", brideSide: "Bride's Side", activeDesign: "Active Card Design:", designLoaded: "Design loaded successfully.", noDesign: "No card design found for this side. Please", createDesignLink: "create a card design", noDesignSuffix: "first.", guestNameLabel: "Guest Name:", guestNamePlaceholder: "Enter guest name...", livePreview: "Live Preview:", addGuestBtn: "Add Guest & Generate Link", generating: "Generating...", guestListTitle: "Guest List", tabAll: "All", tabGroom: "Groom", tabBride: "Bride", loadingGuests: "Loading guest list...", noGuests: "No guests found. Start by generating invitations!", tableHeaderName: "Name", tableHeaderSide: "Side", tableHeaderRSVP: "RSVP", tableHeaderActions: "Actions", rsvpYes: "Yes", rsvpNo: "No", rsvpNA: "N/A", viewCard: "View Card", share: "Share", shareMessage: "You are cordially invited. Please view your personalized invitation here: ", creationSuccess: "Invitation created for ", creationError: "Failed to create invitation: ", missingInfoError: "Cannot generate: missing template or guest name.", logout: "Logout" },
-    ar: { headerTitle: "الخطوة ٢: إدارة الضيوف والدعوات", backToHub: "→ العودة للمركز", createTitle: "إنشاء دعوة", invitationSide: "الدعوة لجانب:", groomSide: "جانب العريس", brideSide: "جانب العروس", activeDesign: "تصميم البطاقة النشط:", designLoaded: "تم تحميل التصميم بنجاح.", noDesign: "لم يتم العثور على تصميم بطاقة لهذا الجانب. الرجاء", createDesignLink: "إنشاء تصميم بطاقة", noDesignSuffix: "أولاً.", guestNameLabel: "اسم الضيف:", guestNamePlaceholder: "أدخل اسم الضيف...", livePreview: "معاينة حية:", addGuestBtn: "إضافة ضيف وإنشاء رابط", generating: "جاري الإنشاء...", guestListTitle: "قائمة الضيوف", tabAll: "الكل", tabGroom: "العريس", tabBride: "العروس", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف. ابدأ بإنشاء بعض الدعوات!", tableHeaderName: "الاسم", tableHeaderSide: "الجانب", tableHeaderRSVP: "تأكيد الحضور", tableHeaderActions: "الإجراءات", rsvpYes: "نعم", rsvpNo: "لا", rsvpNA: "غير محدد", viewCard: "عرض البطاقة", share: "مشاركة", shareMessage: "أنت مدعو بكل سرور. يرجى الاطلاع على دعوتك الشخصية هنا: ", creationSuccess: "تم إنشاء دعوة لـ ", creationError: "فشل إنشاء الدعوة: ", missingInfoError: "لا يمكن الإنشاء: تصميم أو اسم ضيف مفقود.", logout: "تسجيل الخروج" }
+    en: { headerTitle: "Step 2: Manage Guests & Invitations", backToHub: "← Back to Hub", createTitle: "Create Invitation", invitationSide: "Invitation For:", groomSide: "Groom's Side", brideSide: "Bride's Side", activeDesign: "Active Card Design:", designLoaded: "Design loaded successfully.", noDesign: "No card design found for this side. Please", createDesignLink: "create a card design", noDesignSuffix: "first.", guestNameLabel: "Guest Name:", guestNamePlaceholder: "Enter guest name...", livePreview: "Live Preview:", addGuestBtn: "Add Guest & Generate Link", generating: "Generating...", guestListTitle: "Guest List", tabAll: "All", tabGroom: "Groom", tabBride: "Bride", loadingGuests: "Loading guest list...", noGuests: "No guests found. Start by generating invitations!", tableHeaderName: "Name", tableHeaderSide: "Side", tableHeaderRSVP: "RSVP", tableHeaderActions: "Actions", rsvpYes: "Yes", rsvpNo: "No", rsvpNA: "N/A", viewCard: "View", share: "Share", delete: "Delete", deleteConfirm: "Are you sure you want to delete this guest? This action cannot be undone.", deleteSuccess: "Guest deleted successfully.", deleteError: "Error deleting guest: ", shareMessage: "You are cordially invited. Please view your personalized invitation here: ", creationSuccess: "Invitation created for ", creationError: "Failed to create invitation: ", missingInfoError: "Cannot generate: missing template or guest name.", logout: "Logout" },
+    ar: { headerTitle: "الخطوة ٢: إدارة الضيوف والدعوات", backToHub: "→ العودة للمركز", createTitle: "إنشاء دعوة", invitationSide: "الدعوة لجانب:", groomSide: "جانب العريس", brideSide: "جانب العروس", activeDesign: "تصميم البطاقة النشط:", designLoaded: "تم تحميل التصميم بنجاح.", noDesign: "لم يتم العثور على تصميم بطاقة لهذا الجانب. الرجاء", createDesignLink: "إنشاء تصميم بطاقة", noDesignSuffix: "أولاً.", guestNameLabel: "اسم الضيف:", guestNamePlaceholder: "أدخل اسم الضيف...", livePreview: "معاينة حية:", addGuestBtn: "إضافة ضيف وإنشاء رابط", generating: "جاري الإنشاء...", guestListTitle: "قائمة الضيوف", tabAll: "الكل", tabGroom: "العريس", tabBride: "العروس", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف. ابدأ بإنشاء بعض الدعوات!", tableHeaderName: "الاسم", tableHeaderSide: "الجانب", tableHeaderRSVP: "تأكيد الحضور", tableHeaderActions: "الإجراءات", rsvpYes: "نعم", rsvpNo: "لا", rsvpNA: "غير محدد", viewCard: "عرض", share: "مشاركة", delete: "حذف", deleteConfirm: "هل أنت متأكد من رغبتك في حذف هذا الضيف؟ لا يمكن التراجع عن هذا الإجراء.", deleteSuccess: "تم حذف الضيف بنجاح.", deleteError: "خطأ أثناء حذف الضيف: ", shareMessage: "أنت مدعو بكل سرور. يرجى الاطلاع على دعوتك الشخصية هنا: ", creationSuccess: "تم إنشاء دعوة لـ ", creationError: "فشل إنشاء الدعوة: ", missingInfoError: "لا يمكن الإنشاء: تصميم أو اسم ضيف مفقود.", logout: "تسجيل الخروج" }
 };
 let currentLang = localStorage.getItem('language') || 'en';
 const setLanguage = (lang) => { localStorage.setItem('language', lang); currentLang = lang; document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; document.getElementById('lang-switcher').textContent = lang === 'ar' ? 'EN' : 'AR'; document.querySelectorAll('[data-lang-key]').forEach(el => { const key = el.getAttribute('data-lang-key'); if (translations[lang][key]) { if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = translations[lang][key]; else el.textContent = translations[lang][key]; } }); document.title = translations[lang].headerTitle; readData(); };
@@ -290,6 +290,19 @@ async function generateAndUploadCardForGuest(guestName, template) {
     return set(newNodeRef, { 'الإسم': guestName.trim(), 'رقم_عشوائي': randomNumber, 'scanned': false, 'link': inviteLink });
 }
 
+async function deleteGuest(guestId, side) {
+    if (!currentUser) return;
+    if (confirm(translations[currentLang].deleteConfirm)) {
+        const guestRef = databaseRef(database, `guests/${currentUser.uid}/${side}/${guestId}`);
+        try {
+            await remove(guestRef);
+            showNotification(translations[currentLang].deleteSuccess, 'yellow');
+        } catch (error) {
+            showNotification(`${translations[currentLang].deleteError}${error.message}`, 'red', false);
+        }
+    }
+}
+
 function renderGuestList() {
     const outputDiv = document.getElementById('output');
     let guestsToRender = [];
@@ -304,11 +317,11 @@ function renderGuestList() {
         return;
     }
     
-    let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr>
-        <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th>
-        <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderSide}</th>
-        <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderRSVP}</th>
-        <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderActions}</th>
+    let tableHTML = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-white/5"><tr>
+        <th class="py-2 px-2 text-left font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th>
+        <th class="py-2 px-2 text-left font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderSide}</th>
+        <th class="py-2 px-2 text-left font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderRSVP}</th>
+        <th class="py-2 px-2 text-left font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderActions}</th>
     </tr></thead><tbody class="text-gray-300">`;
 
     guestsToRender.sort((a, b) => (a.data['الإسم'] || '').localeCompare(b.data['الإسم'] || '')).forEach(({ key, data, side }) => {
@@ -324,10 +337,14 @@ function renderGuestList() {
         const shareMessage = encodeURIComponent(`${translations[currentLang].shareMessage}${data.link}`);
         const whatsappLink = `https://wa.me/?text=${shareMessage}`;
         tableHTML += `<tr id="row-${key}" class="border-b border-white/10 hover:bg-white/5 transition-colors">
-            <td class="py-4 px-4 font-semibold text-white">${data['الإسم'] || ''}</td>
-            <td class="py-4 px-4 font-semibold ${sideClass}">${sideText}</td>
-            <td class="py-4 px-4 font-bold ${rsvpClass}">${rsvp}</td>
-            <td class="py-4 px-4"><div class="flex items-center gap-x-6">${data.link ? `<a href="${data.link}" target="_blank" class="text-indigo-400 hover:text-indigo-300 text-sm font-semibold transition-colors">${translations[currentLang].viewCard}</a>` : ''}${data.link ? `<a href="${whatsappLink}" target="_blank" class="text-green-400 hover:text-green-300 text-sm font-semibold transition-colors">${translations[currentLang].share}</a>` : ''}</div></td>
+            <td class="py-3 px-2 font-semibold text-white">${data['الإسم'] || ''}</td>
+            <td class="py-3 px-2 font-semibold ${sideClass}">${sideText}</td>
+            <td class="py-3 px-2 font-bold ${rsvpClass}">${rsvp}</td>
+            <td class="py-3 px-2 whitespace-nowrap"><div class="flex items-center gap-x-4">
+                ${data.link ? `<a href="${data.link}" target="_blank" class="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">${translations[currentLang].viewCard}</a>` : ''}
+                ${data.link ? `<a href="${whatsappLink}" target="_blank" class="text-green-400 hover:text-green-300 font-semibold transition-colors">${translations[currentLang].share}</a>` : ''}
+                <button data-guest-id="${key}" data-guest-side="${side}" class="delete-btn text-red-500 hover:text-red-400 font-semibold transition-colors">${translations[currentLang].delete}</button>
+            </div></td>
         </tr>`;
     });
     tableHTML += `</tbody></table></div>`;
@@ -361,6 +378,17 @@ document.getElementById('guest-list-tabs').addEventListener('click', (e) => {
         document.querySelectorAll('.guest-tab').forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
         renderGuestList();
+    }
+});
+
+document.getElementById('output').addEventListener('click', (e) => {
+    const button = e.target.closest('.delete-btn');
+    if (button) {
+        const guestId = button.dataset.guestId;
+        const side = button.dataset.guestSide;
+        if (guestId && side) {
+            deleteGuest(guestId, side);
+        }
     }
 });
 
