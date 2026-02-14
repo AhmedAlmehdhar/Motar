@@ -230,9 +230,9 @@
 
       const params = new URLSearchParams(window.location.search);
       const imgUrl = params.get("img");
-      const cardId = params.get("id");
+      const guestPath = params.get("id"); // This is now the full path like 'guests/UID/groom/GUEST_ID'
 
-      if (!imgUrl) throw new Error(getTranslatedText("invalidLink"));
+      if (!imgUrl || !guestPath) throw new Error(getTranslatedText("invalidLink"));
       
       const ctx = canvas.getContext("2d");
       const img = new Image();
@@ -246,7 +246,7 @@
         loadingDiv.style.display = "none";
         canvas.style.display = "block";
 
-        if (cardId) {
+        if (guestPath) {
             rsvpSection.style.display = "block";
             checkPreviousAnswer();
         }
@@ -260,12 +260,12 @@
       }
 
       async function recordAnswer(answer) {
-        if (!cardId) return;
+        if (!guestPath) return;
         yesBtn.disabled = true;
         noBtn.disabled = true;
         const answerText = answer === 'Yes' ? getTranslatedText('yes') : getTranslatedText('no');
         try {
-          await update(databaseRef(database, cardId), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
+          await update(databaseRef(database, guestPath), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
           showNotification(getTranslatedText("answerRecorded") + answerText);
         } catch (e) {
           showNotification(getTranslatedText("answerError") + e.message, "red");
@@ -274,12 +274,12 @@
       }
       
       async function checkPreviousAnswer() {
-        if (!cardId) return;
+        if (!guestPath) return;
         yesBtn.disabled = true;
         noBtn.disabled = true;
 
         try {
-          const snapshot = await get(databaseRef(database, cardId));
+          const snapshot = await get(databaseRef(database, guestPath));
           const data = snapshot.val();
           if (data && data.حضور) {
             const answerDisplay = data.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
@@ -293,7 +293,7 @@
           showNotification(getTranslatedText("checkAnswerError"), "red");
         }
       }
-      if(cardId) {
+      if(guestPath) {
         yesBtn.addEventListener("click", () => recordAnswer("Yes"));
         noBtn.addEventListener("click", () => recordAnswer("No"));
       }
