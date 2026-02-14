@@ -100,7 +100,7 @@
      </div>
   </div>
 </main>
-<div id="notification" class="fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform translate-x-[120%] transition-transform duration-500 ease-in-out"></div>
+<div id="notification" class="fixed top-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform transition-transform duration-500 ease-in-out"></div>
 
 <div id="delete-confirm-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
   <div class="glass-card p-6 rounded-2xl max-w-sm w-full text-center">
@@ -385,7 +385,7 @@ async function performDelete() {
         await remove(guestRef);
         showNotification(translations[currentLang].deleteSuccess, 'yellow');
     } catch (error) {
-        showNotification(`${translations[currentLang].deleteError}${error.message}`, 'red', false);
+        showNotification(`${translations[currentLang].deleteError}${error.message}`, 'red');
     } finally {
         hideDeleteConfirmModal();
     }
@@ -426,7 +426,27 @@ document.getElementById('output').addEventListener('click', (e) => {
     }
 });
 
-function showNotification(message, type = 'green') { const notification = document.getElementById('notification'); const colors = { green: 'bg-emerald-500/90 border border-emerald-400/50', red: 'bg-rose-500/90 border border-rose-400/50', yellow: 'bg-amber-400/90 border border-amber-300/50' }; notification.className = `fixed top-5 right-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'} transform translate-x-[120%]`; notification.textContent = message; notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(-120%)' : 'translateX(0)'; setTimeout(() => { notification.style.transform = document.documentElement.dir === 'rtl' ? 'translateX(0)' : 'translateX(120%)'; }, 4000); }
+function showNotification(message, type = 'green') {
+    const notification = document.getElementById('notification');
+    const colors = { green: 'bg-emerald-500/90 border border-emerald-400/50', red: 'bg-rose-500/90 border border-rose-400/50', yellow: 'bg-amber-400/90 border border-amber-300/50' };
+    notification.className = `fixed top-5 z-50 text-white py-3 px-6 rounded-lg shadow-xl transform transition-transform duration-500 ease-in-out ${colors[type] || 'bg-gray-500'}`;
+    notification.textContent = message;
+
+    const isRTL = document.documentElement.dir === 'rtl';
+    const hiddenTransform = isRTL ? 'translateX(-120%)' : 'translateX(120%)';
+
+    notification.classList.remove('left-5', 'right-5');
+    notification.classList.add(isRTL ? 'left-5' : 'right-5');
+    notification.style.transform = hiddenTransform;
+
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 10);
+
+    setTimeout(() => {
+        notification.style.transform = hiddenTransform;
+    }, 4000);
+}
 </script>
 </body>
 </html>
