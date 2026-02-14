@@ -52,20 +52,20 @@
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
       margin-bottom: 30px;
     }
-    .question {
+    .card-section {
       margin-top: 20px;
       background: white;
       padding: 25px;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
-    .question p {
+    .card-section p {
       font-size: 1.3em;
       margin-top: 0;
       margin-bottom: 15px;
     }
-    .question button {
-      padding: 14px 32px;
+    .card-section button, .wallet-button {
+      padding: 14px 28px;
       margin: 5px;
       font-size: 1.1em;
       font-family: inherit;
@@ -76,18 +76,27 @@
       background-color: var(--color-primary);
       transition: all 0.3s ease;
       box-shadow: 0 4px 15px rgba(214, 163, 176, 0.3);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
-    .question button:hover:not(:disabled) {
+    .card-section button:hover:not(:disabled), .wallet-button:hover:not(:disabled) {
       background-color: var(--color-primary-hover);
       transform: translateY(-3px);
       box-shadow: 0 7px 20px rgba(214, 163, 176, 0.4);
     }
-    .question button:disabled {
+    .card-section button:disabled, .wallet-button:disabled {
       background-color: var(--color-primary-disabled);
       cursor: not-allowed;
       opacity: 0.7;
       box-shadow: none;
     }
+    .wallet-button img { height: 24px; }
+    .wallet-button.apple { background-color: #000000; }
+    .wallet-button.apple:hover:not(:disabled) { background-color: #333333; }
+    .wallet-button.apple:disabled { background-color: #555555; }
+
     #loading {
       display: flex;
       align-items: center;
@@ -145,14 +154,27 @@
       <span data-lang-key="loading">جاري تحميل الكرت...</span>
     </div>
 
-    <div id="rsvp-section" style="display: none;">
-        <div class="question">
-          <p data-lang-key="question">هل ستتمكن من الحضور؟</p>
-          <button class="yes" disabled data-lang-key="yes">نعم</button>
-          <button class="no" disabled data-lang-key="no">لا</button>
-        </div>
-        <div id="notification"></div>
+    <div id="rsvp-section" class="card-section" style="display: none;">
+      <p data-lang-key="question">هل ستتمكن من الحضور؟</p>
+      <button class="yes" disabled data-lang-key="yes">نعم</button>
+      <button class="no" disabled data-lang-key="no">لا</button>
+      <div id="notification"></div>
     </div>
+    
+    <div id="wallet-section" class="card-section" style="display: none;">
+        <p data-lang-key="addToWallet">Save to your phone</p>
+        <div id="wallet-buttons">
+            <a id="google-wallet-btn" class="wallet-button" href="#" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Wallet_logo.svg/2560px-Google_Wallet_logo.svg.png" alt="Google Wallet">
+                <span data-lang-key="googleWallet">Add to Google Wallet</span>
+            </a>
+            <button id="apple-wallet-btn" class="wallet-button apple">
+                <img src="https://developer.apple.com/wallet/images/add-to-apple-wallet-logo-white.svg" alt="Apple Wallet">
+                <span data-lang-key="appleWallet">Add to Apple Wallet</span>
+            </button>
+        </div>
+    </div>
+
   </div>
 
   <script type="module">
@@ -174,6 +196,10 @@
             alreadyAnswered: "You have already answered: ",
             answerError: "Error: ",
             checkAnswerError: "Error checking previous answer.",
+            addToWallet: "Save to your phone",
+            googleWallet: "Add to Google Wallet",
+            appleWallet: "Add to Apple Wallet",
+            appleWalletComingSoon: "Apple Wallet support requires a backend and is coming soon!",
         },
         ar: {
             title: "بطاقة الدعوة",
@@ -187,16 +213,25 @@
             alreadyAnswered: "لقد أجبت بالفعل: ",
             answerError: "خطأ: ",
             checkAnswerError: "خطأ في التحقق من الإجابة السابقة.",
+            addToWallet: "احفظها على هاتفك",
+            googleWallet: "إضافة إلى محفظة جوجل",
+            appleWallet: "إضافة إلى محفظة أبل",
+            appleWalletComingSoon: "دعم محفظة أبل يتطلب خادمًا وسيكون متاحًا قريبًا!",
         }
     };
 
     const canvas = document.getElementById("cardCanvas");
     const loadingDiv = document.getElementById("loading");
     const rsvpSection = document.getElementById("rsvp-section");
+    const walletSection = document.getElementById("wallet-section");
     const notif = document.getElementById("notification");
     const yesBtn = document.querySelector(".yes");
     const noBtn = document.querySelector(".no");
     const langSwitcher = document.getElementById('lang-switcher-invite');
+    const googleWalletBtn = document.getElementById('google-wallet-btn');
+    const appleWalletBtn = document.getElementById('apple-wallet-btn');
+    let guestData = null;
+
 
     const setLanguage = (lang) => {
         localStorage.setItem('language', lang);
@@ -223,6 +258,81 @@
     function getTranslatedText(key) {
         return translations[getCurrentLanguage()][key];
     }
+    
+    function base64UrlEncode(str) {
+        return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    function createJwt(header, payload) {
+        const encodedHeader = base64UrlEncode(JSON.stringify(header));
+        const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+        // IMPORTANT: In a real production app, the signature MUST be created on a secure backend server
+        // using your Google Service Account private key. The frontend cannot securely handle this.
+        // This is a placeholder signature.
+        const signature = "FAKE_SIGNATURE_GENERATED_ON_BACKEND";
+        return `${encodedHeader}.${encodedPayload}.${signature}`;
+    }
+
+    function generateGoogleWalletLink() {
+        if (!guestData) return '#';
+        
+        // IMPORTANT: Replace these placeholders with your actual Wallet API credentials
+        const issuerId = "3388000000022316543"; // Your Google Wallet Issuer ID
+        const classId = "EVENT_CLASS_001"; // The ID for your Event Class
+        const eventName = "Wedding of Fatima & Jusuf"; // Should be dynamic
+        const eventDate = "2024-08-24";
+        const eventVenue = "The Grand Ballroom";
+        const objectId = `${issuerId}.${guestData['رقم_عشوائي']}`;
+
+        const eventTicketObject = {
+          'iss': 'your-service-account-email@your-project.iam.gserviceaccount.com', // Your service account email
+          'aud': 'google',
+          'typ': 'savetowallet',
+          'origins': [window.location.origin],
+          'payload': {
+            'eventTicketObjects': [{
+              'id': objectId,
+              'classId': `${issuerId}.${classId}`,
+              'state': 'active',
+              'heroImage': {
+                'sourceUri': { 'uri': 'https://i.ibb.co/nN9hHBK3/arabic-invitation-leaves.png' }, // A banner image for the pass
+                'contentDescription': {
+                  'defaultValue': { 'language': 'en-US', 'value': 'Wedding Invitation' }
+                }
+              },
+              'textModulesData': [
+                { 'header': 'GUEST', 'body': guestData['الإسم'], 'id': 'guestName' },
+                { 'header': 'DATE', 'body': eventDate, 'id': 'date' }
+              ],
+              'linksModuleData': {
+                'uris': [
+                  {
+                    'uri': window.location.href,
+                    'description': 'View Invitation',
+                    'id': 'inviteLink'
+                  }
+                ]
+              },
+              'barcode': {
+                'type': 'QR_CODE',
+                'value': guestData['رقم_عشوائي'],
+                'alternateText': guestData['الإسم']
+              },
+              'eventName': {
+                'defaultValue': { 'language': 'en-US', 'value': eventName }
+              },
+               'venue': {
+                'name': { 'defaultValue': { 'language': 'en-US', 'value': eventVenue } },
+                'address': { 'defaultValue': { 'language': 'en-US', 'value': '123 Celebration Ave, Dubai' } }
+              },
+            }]
+          }
+        };
+
+        const jwt = createJwt({ "alg": "RS256", "typ": "JWT" }, eventTicketObject);
+        return `https://pay.google.com/gp/v/save/${jwt}`;
+    }
+
 
     try {
       const app = initializeApp(firebaseConfig);
@@ -230,7 +340,7 @@
 
       const params = new URLSearchParams(window.location.search);
       const imgUrl = params.get("img");
-      const guestPath = params.get("id"); // This is now the full path like 'guests/UID/groom/GUEST_ID'
+      const guestPath = params.get("id");
 
       if (!imgUrl || !guestPath) throw new Error(getTranslatedText("invalidLink"));
       
@@ -280,13 +390,17 @@
 
         try {
           const snapshot = await get(databaseRef(database, guestPath));
-          const data = snapshot.val();
-          if (data && data.حضور) {
-            const answerDisplay = data.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
+          guestData = snapshot.val();
+          if (guestData && guestData.حضور) {
+            const answerDisplay = guestData.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
             showNotification(getTranslatedText("alreadyAnswered") + answerDisplay);
           } else {
             yesBtn.disabled = false;
             noBtn.disabled = false;
+          }
+          if (guestData) {
+              walletSection.style.display = "block";
+              googleWalletBtn.href = generateGoogleWalletLink();
           }
         } catch (e) {
           console.error(e);
@@ -296,6 +410,9 @@
       if(guestPath) {
         yesBtn.addEventListener("click", () => recordAnswer("Yes"));
         noBtn.addEventListener("click", () => recordAnswer("No"));
+        appleWalletBtn.addEventListener('click', () => {
+          alert(getTranslatedText('appleWalletComingSoon'));
+        });
       }
     } catch (error) {
       loadingDiv.textContent = error.message;
