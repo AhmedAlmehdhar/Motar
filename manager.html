@@ -281,14 +281,26 @@ addGuestButton.addEventListener('click', async () => {
     } catch (error) { console.error("Failed to create invitation:", error); showNotification(`${translations[currentLang].creationError}${error.message}`, 'red'); } finally { btnText.textContent = translations[currentLang].addGuestBtn; btnSpinner.classList.add('hidden'); addGuestButton.disabled = true; }
 });
 
+function generateShortId(length = 7) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 async function generateAndUploadCardForGuest(guestName, template) {
     if(!currentUser) throw new Error("User not logged in.");
+
     const guestListRef = databaseRef(database, `guests/${currentUser.uid}/${currentSide}`);
     const newNodeRef = push(guestListRef);
     const newNodeKey = newNodeRef.key;
     const randomNumber = Math.random().toString(36).substring(2, 10).toUpperCase();
+    
     const canvas = document.createElement('canvas');
     await renderCard(canvas, guestName, template, randomNumber);
+    
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
     const formData = new FormData();
     formData.append('image', blob);
@@ -296,9 +308,25 @@ async function generateAndUploadCardForGuest(guestName, template) {
     const result = await response.json();
     if (!result.success) throw new Error(result.error?.message || 'ImgBB upload failed');
     const personalizedImageUrl = result.data.url;
-    const invitePath = window.location.pathname.replace('manager.html', 'invite.html');
+    
     const fullGuestPath = `guests/${currentUser.uid}/${currentSide}/${newNodeKey}`;
-    const inviteLink = `${window.location.origin}${invitePath}?id=${encodeURIComponent(fullGuestPath)}`;
+
+    let shortId;
+    let isUnique = false;
+    while (!isUnique) {
+        shortId = generateShortId();
+        const shortLinkRef = databaseRef(database, `shortlinks/${shortId}`);
+        const snapshot = await get(shortLinkRef);
+        if (!snapshot.exists()) {
+            isUnique = true;
+        }
+    }
+
+    await set(databaseRef(database, `shortlinks/${shortId}`), fullGuestPath);
+
+    const invitePath = window.location.pathname.replace('manager.html', 'invite.html');
+    const inviteLink = `${window.location.origin}${invitePath}?s=${shortId}`;
+    
     return set(newNodeRef, { 'الإسم': guestName.trim(), 'رقم_عشوائي': randomNumber, 'scanned': false, 'link': inviteLink, 'imageUrl': personalizedImageUrl });
 }
 
