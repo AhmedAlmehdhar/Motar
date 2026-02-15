@@ -64,7 +64,7 @@
       margin-top: 0;
       margin-bottom: 15px;
     }
-    .card-section button {
+    .card-section button, .card-section select {
       padding: 14px 28px;
       margin: 5px;
       font-size: 1.1em;
@@ -81,6 +81,12 @@
       justify-content: center;
       gap: 10px;
     }
+     .card-section select {
+        color: #4a4a4a;
+        background-color: #fff;
+        border: 2px solid var(--color-primary-disabled);
+        padding: 12px 20px;
+     }
     .card-section button:hover:not(:disabled) {
       background-color: var(--color-primary-hover);
       transform: translateY(-3px);
@@ -157,6 +163,12 @@
       <div id="notification"></div>
     </div>
 
+    <div id="companions-section" class="card-section" style="display: none;">
+      <p data-lang-key="companionsQuestion">كم عدد الضيوف الذين سيحضرون معك؟</p>
+      <select id="companions-select"></select>
+      <button id="confirm-attendance-btn" data-lang-key="confirmBtn">تأكيد الحضور</button>
+    </div>
+
   </div>
 
   <script type="module">
@@ -167,42 +179,26 @@
 
     const translations = {
         en: {
-            title: "Invitation Card",
-            loading: "Loading card...",
-            question: "Will you be able to attend?",
-            yes: "Yes",
-            no: "No",
-            invalidLink: "Invalid invitation link. Please make sure the link is correct.",
-            loadError: "Error loading the invitation card.",
-            answerRecorded: "Your answer has been recorded: ",
-            alreadyAnswered: "You have already answered: ",
-            answerError: "Error: ",
-            checkAnswerError: "Error checking previous answer.",
+            title: "Invitation Card", loading: "Loading card...", question: "Will you be able to attend?", yes: "Yes", no: "No", invalidLink: "Invalid invitation link. Please make sure the link is correct.", loadError: "Error loading the invitation card.", answerRecorded: "Your answer has been recorded: ", alreadyAnswered: "You have already answered: ", alreadyAnsweredWithCompanions: "You have already answered: Yes, with {count} companions.", answerError: "Error: ", checkAnswerError: "Error checking previous answer.", companionsQuestion: "How many guests will be joining you?", confirmBtn: "Confirm Attendance",
         },
         ar: {
-            title: "بطاقة الدعوة",
-            loading: "جاري تحميل الكرت...",
-            question: "هل ستتمكن من الحضور؟",
-            yes: "نعم",
-            no: "لا",
-            invalidLink: "رابط الدعوة غير صالح. يرجى التأكد من أن الرابط صحيح.",
-            loadError: "خطأ في تحميل صورة الكرت.",
-            answerRecorded: "تم تسجيل إجابتك: ",
-            alreadyAnswered: "لقد أجبت بالفعل: ",
-            answerError: "خطأ: ",
-            checkAnswerError: "خطأ في التحقق من الإجابة السابقة.",
+            title: "بطاقة الدعوة", loading: "جاري تحميل الكرت...", question: "هل ستتمكن من الحضور؟", yes: "نعم", no: "لا", invalidLink: "رابط الدعوة غير صالح. يرجى التأكد من أن الرابط صحيح.", loadError: "خطأ في تحميل صورة الكرت.", answerRecorded: "تم تسجيل إجابتك: ", alreadyAnswered: "لقد أجبت بالفعل: ", alreadyAnsweredWithCompanions: "لقد أجبت بالفعل: نعم، مع {count} مرافقين.", answerError: "خطأ: ", checkAnswerError: "خطأ في التحقق من الإجابة السابقة.", companionsQuestion: "كم عدد الضيوف الذين سيحضرون معك؟", confirmBtn: "تأكيد الحضور",
         }
     };
 
     const canvas = document.getElementById("cardCanvas");
     const loadingDiv = document.getElementById("loading");
     const rsvpSection = document.getElementById("rsvp-section");
+    const companionsSection = document.getElementById("companions-section");
     const notif = document.getElementById("notification");
     const yesBtn = document.querySelector(".yes");
     const noBtn = document.querySelector(".no");
     const langSwitcher = document.getElementById('lang-switcher-invite');
+    const companionsSelect = document.getElementById('companions-select');
+    const confirmAttendanceBtn = document.getElementById('confirm-attendance-btn');
     
     let guestData = null;
+    let guestPath = '';
 
     const setLanguage = (lang) => {
         localStorage.setItem('language', lang);
@@ -223,14 +219,15 @@
     langSwitcher.addEventListener('click', () => {
         const newLang = getCurrentLanguage() === 'en' ? 'ar' : 'en';
         setLanguage(newLang);
-        // After language change, re-run the check to update the message if an answer was already given
-        if (guestData) {
-            checkPreviousAnswer();
-        }
+        if (guestData) { checkPreviousAnswer(); }
     });
 
-    function getTranslatedText(key) {
-        return translations[getCurrentLanguage()][key];
+    function getTranslatedText(key, replacements = {}) {
+        let text = translations[getCurrentLanguage()][key] || key;
+        for (const placeholder in replacements) {
+            text = text.replace(`{${placeholder}}`, replacements[placeholder]);
+        }
+        return text;
     }
     
     function showNotification(message, color = "var(--color-primary-dark-text)") {
@@ -242,8 +239,6 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         
-        let guestPath = '';
-
         try {
             const params = new URLSearchParams(window.location.search);
             const shortId = params.get("s");
@@ -265,12 +260,7 @@
             img.crossOrigin = "anonymous";
             
             await new Promise((resolve, reject) => {
-                img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    resolve();
-                };
+                img.onload = () => { canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0); resolve(); };
                 img.onerror = () => reject(new Error(getTranslatedText("loadError")));
                 img.src = imgUrl;
             });
@@ -278,44 +268,11 @@
             loadingDiv.style.display = "none";
             canvas.style.display = "block";
             rsvpSection.style.display = "block";
+            checkPreviousAnswer();
 
-            // These functions rely on the guestPath and guestData retrieved above
-            const recordAnswer = async (answer) => {
-                yesBtn.disabled = true;
-                noBtn.disabled = true;
-                const answerText = answer === 'Yes' ? getTranslatedText('yes') : getTranslatedText('no');
-                try {
-                    await update(databaseRef(database, guestPath), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
-                    // Re-fetch the data to ensure it's up to date
-                    const updatedSnapshot = await get(databaseRef(database, guestPath));
-                    guestData = updatedSnapshot.val(); 
-                    showNotification(getTranslatedText("answerRecorded") + answerText);
-                    checkPreviousAnswer();
-                } catch (e) {
-                    showNotification(getTranslatedText("answerError") + e.message, "red");
-                    checkPreviousAnswer(); // Re-enable buttons if error
-                }
-            };
-            
-            const checkPreviousAnswer = () => {
-                yesBtn.disabled = true;
-                noBtn.disabled = true;
-                if (guestData && guestData.حضور) {
-                    const answerDisplay = guestData.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
-                    showNotification(getTranslatedText("alreadyAnswered") + answerDisplay);
-                } else {
-                    yesBtn.disabled = false;
-                    noBtn.disabled = false;
-                    showNotification(""); 
-                }
-            };
-
-            // Attach event listeners now that everything is loaded and functions are defined
             yesBtn.addEventListener("click", () => recordAnswer("Yes"));
             noBtn.addEventListener("click", () => recordAnswer("No"));
-            
-            // Initial check
-            checkPreviousAnswer();
+            confirmAttendanceBtn.addEventListener("click", confirmAttendanceWithCompanions);
 
         } catch (error) {
             loadingDiv.textContent = error.message;
@@ -324,6 +281,73 @@
             rsvpSection.style.display = 'none';
         }
     }
+
+    async function recordAnswer(answer) {
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+
+        if (answer === 'No') {
+            try {
+                await update(databaseRef(getDatabase(), guestPath), { حضور: 'لا', companionsConfirmed: 0 });
+                const updatedSnapshot = await get(databaseRef(getDatabase(), guestPath));
+                guestData = updatedSnapshot.val(); 
+                checkPreviousAnswer();
+            } catch (e) {
+                showNotification(getTranslatedText("answerError") + e.message, "red");
+                checkPreviousAnswer();
+            }
+        } else if (answer === 'Yes') {
+            const companionsAllowed = guestData.companionsAllowed || 0;
+            if (companionsAllowed > 0) {
+                rsvpSection.style.display = 'none';
+                companionsSelect.innerHTML = '';
+                for (let i = 0; i <= companionsAllowed; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    companionsSelect.appendChild(option);
+                }
+                companionsSection.style.display = 'block';
+            } else {
+                // No companions allowed, just confirm attendance for 1 person
+                await confirmAttendanceWithCompanions();
+            }
+        }
+    }
+
+    async function confirmAttendanceWithCompanions() {
+        companionsSection.style.display = 'none';
+        const companionsCount = parseInt(companionsSelect.value, 10) || 0;
+        try {
+            await update(databaseRef(getDatabase(), guestPath), { حضور: 'نعم', companionsConfirmed: companionsCount });
+            const updatedSnapshot = await get(databaseRef(getDatabase(), guestPath));
+            guestData = updatedSnapshot.val();
+            rsvpSection.style.display = 'block';
+            checkPreviousAnswer();
+        } catch (e) {
+            showNotification(getTranslatedText("answerError") + e.message, "red");
+            checkPreviousAnswer();
+        }
+    }
+
+    const checkPreviousAnswer = () => {
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+        if (guestData && guestData.حضور) {
+            if (guestData.حضور === 'نعم') {
+                const confirmedCount = guestData.companionsConfirmed ?? 0;
+                const message = getTranslatedText("alreadyAnsweredWithCompanions", { count: confirmedCount });
+                showNotification(message);
+            } else {
+                const answerDisplay = getTranslatedText('no');
+                showNotification(getTranslatedText("alreadyAnswered") + answerDisplay);
+            }
+        } else {
+            yesBtn.disabled = false;
+            noBtn.disabled = false;
+            showNotification(""); 
+        }
+    };
     
     // Run the application
     setLanguage(getCurrentLanguage());
