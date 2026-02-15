@@ -201,6 +201,7 @@
     const yesBtn = document.querySelector(".yes");
     const noBtn = document.querySelector(".no");
     const langSwitcher = document.getElementById('lang-switcher-invite');
+    
     let guestData = null;
 
     const setLanguage = (lang) => {
@@ -222,31 +223,43 @@
     langSwitcher.addEventListener('click', () => {
         const newLang = getCurrentLanguage() === 'en' ? 'ar' : 'en';
         setLanguage(newLang);
-        checkPreviousAnswer(); // Re-check to update notification language
+        // After language change, re-run the check to update the message if an answer was already given
+        if (guestData) {
+            checkPreviousAnswer();
+        }
     });
 
     function getTranslatedText(key) {
         return translations[getCurrentLanguage()][key];
     }
     
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
+    function showNotification(message, color = "var(--color-primary-dark-text)") {
+        notif.textContent = message;
+        notif.style.color = color;
+    }
 
-    const params = new URLSearchParams(window.location.search);
-    const guestPath = decodeURIComponent(params.get("id") || '');
-    
-    async function initializeInvite() {
+    async function main() {
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        let guestPath = '';
+
         try {
-            if (!guestPath) throw new Error(getTranslatedText("invalidLink"));
+            const params = new URLSearchParams(window.location.search);
+            const shortId = params.get("s");
+            if (!shortId) throw new Error(getTranslatedText("invalidLink"));
+
+            const shortLinkSnapshot = await get(databaseRef(database, `shortlinks/${shortId}`));
+            if (!shortLinkSnapshot.exists()) throw new Error(getTranslatedText("invalidLink"));
+            guestPath = shortLinkSnapshot.val();
 
             const guestSnapshot = await get(databaseRef(database, guestPath));
             if (!guestSnapshot.exists()) throw new Error(getTranslatedText("invalidLink"));
-            
             guestData = guestSnapshot.val();
-            const imgUrl = guestData.imageUrl;
-
-            if (!imgUrl) throw new Error(getTranslatedText("loadError"));
             
+            const imgUrl = guestData.imageUrl;
+            if (!imgUrl) throw new Error(getTranslatedText("loadError"));
+
             const ctx = canvas.getContext("2d");
             const img = new Image();
             img.crossOrigin = "anonymous";
@@ -256,19 +269,53 @@
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
-                    
-                    loadingDiv.style.display = "none";
-                    canvas.style.display = "block";
-                    rsvpSection.style.display = "block";
-                    checkPreviousAnswer();
                     resolve();
                 };
                 img.onerror = () => reject(new Error(getTranslatedText("loadError")));
                 img.src = imgUrl;
             });
             
+            loadingDiv.style.display = "none";
+            canvas.style.display = "block";
+            rsvpSection.style.display = "block";
+
+            // These functions rely on the guestPath and guestData retrieved above
+            const recordAnswer = async (answer) => {
+                yesBtn.disabled = true;
+                noBtn.disabled = true;
+                const answerText = answer === 'Yes' ? getTranslatedText('yes') : getTranslatedText('no');
+                try {
+                    await update(databaseRef(database, guestPath), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
+                    // Re-fetch the data to ensure it's up to date
+                    const updatedSnapshot = await get(databaseRef(database, guestPath));
+                    guestData = updatedSnapshot.val(); 
+                    showNotification(getTranslatedText("answerRecorded") + answerText);
+                    checkPreviousAnswer();
+                } catch (e) {
+                    showNotification(getTranslatedText("answerError") + e.message, "red");
+                    checkPreviousAnswer(); // Re-enable buttons if error
+                }
+            };
+            
+            const checkPreviousAnswer = () => {
+                yesBtn.disabled = true;
+                noBtn.disabled = true;
+                if (guestData && guestData.حضور) {
+                    const answerDisplay = guestData.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
+                    showNotification(getTranslatedText("alreadyAnswered") + answerDisplay);
+                } else {
+                    yesBtn.disabled = false;
+                    noBtn.disabled = false;
+                    showNotification(""); 
+                }
+            };
+
+            // Attach event listeners now that everything is loaded and functions are defined
             yesBtn.addEventListener("click", () => recordAnswer("Yes"));
             noBtn.addEventListener("click", () => recordAnswer("No"));
+            
+            // Initial check
+            checkPreviousAnswer();
 
         } catch (error) {
             loadingDiv.textContent = error.message;
@@ -277,43 +324,11 @@
             rsvpSection.style.display = 'none';
         }
     }
-
-    function showNotification(message, color = "var(--color-primary-dark-text)") {
-        notif.textContent = message;
-        notif.style.color = color;
-    }
-
-    async function recordAnswer(answer) {
-        if (!guestPath) return;
-        yesBtn.disabled = true;
-        noBtn.disabled = true;
-        const answerText = answer === 'Yes' ? getTranslatedText('yes') : getTranslatedText('no');
-        try {
-            await update(databaseRef(database, guestPath), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
-            showNotification(getTranslatedText("answerRecorded") + answerText);
-        } catch (e) {
-            showNotification(getTranslatedText("answerError") + e.message, "red");
-            checkPreviousAnswer();
-        }
-    }
     
-    function checkPreviousAnswer() {
-        if (!guestPath) return;
-        yesBtn.disabled = true;
-        noBtn.disabled = true;
-
-        if (guestData && guestData.حضور) {
-            const answerDisplay = guestData.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
-            showNotification(getTranslatedText("alreadyAnswered") + answerDisplay);
-        } else {
-            yesBtn.disabled = false;
-            noBtn.disabled = false;
-            showNotification(""); // Clear previous messages
-        }
-    }
-
+    // Run the application
     setLanguage(getCurrentLanguage());
-    initializeInvite();
+    main();
+
   </script>
 </body>
 </html>
