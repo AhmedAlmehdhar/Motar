@@ -331,8 +331,7 @@ async function generateAndUploadCardForGuest(guestName, template) {
 
     await set(databaseRef(database, `shortlinks/${shortId}`), fullGuestPath);
 
-    const invitePath = window.location.pathname.replace('manager.html', 'invite.html');
-    const inviteLink = `${window.location.origin}${invitePath}?s=${shortId}`;
+    const inviteLink = `${window.location.origin}/invite.html?s=${shortId}`;
     
     return set(newNodeRef, { 
         'الإسم': guestName.trim(), 
