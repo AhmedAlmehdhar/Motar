@@ -56,6 +56,11 @@
 </head>
 <body class="text-gray-200" style="display: none;">
 
+<div id="page-loader" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center">
+    <div class="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] text-indigo-400" role="status"></div>
+    <p class="text-lg text-gray-400 mt-4" data-lang-key="loadingDesign">Loading your design...</p>
+</div>
+
 <header class="bg-slate-900/50 backdrop-blur-lg border-b border-white/10 sticky top-0 z-20">
   <div class="container mx-auto px-4 py-4 flex justify-between items-center">
     <h1 id="header-title" class="text-xl font-bold text-gray-100" data-lang-key="headerTitle">Design Card</h1>
@@ -211,17 +216,18 @@
     let currentUser = null;
     let side = '';
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
             document.body.style.display = 'block';
-            initializePage();
+            await initializePage();
+            document.getElementById('page-loader').style.display = 'none';
         } else {
             window.location.href = 'login.html';
         }
     });
 
-    function initializePage() {
+    async function initializePage() {
         const urlParams = new URLSearchParams(window.location.search);
         side = urlParams.get('side');
         if (!side) {
@@ -230,7 +236,7 @@
             return;
         }
         document.getElementById('templates-link').href = `templates.html?side=${side}`;
-        loadInitialDesign();
+        await loadInitialDesign();
     }
 
     document.getElementById('logout-button').addEventListener('click', () => {
@@ -238,12 +244,12 @@
     });
     
     const translations = {
-        en: { headerTitle: "Design Your Card", headerTitleGroom: "Design Groom's Card", headerTitleBride: "Design Bride's Card", backToHub: "← Back to Hub", uploadTitle: "1. Upload Invitation Design", uploadDesc: "Drag & drop your image file or click to select. This will be the background for your card.", clickToUpload: "Click to upload", orDragDrop: " or drag and drop", orUseTemplate: "Don't have a design?", chooseTemplateLink: "Choose one of our templates", uploadBtn: "Upload & Continue to Editor", uploading: "Uploading to secure storage...", editorTitle: "2. Position & Style Guest Details", editorDesc: "Drag the placeholders to position them. Use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", selectImageFirst: "Please select an image first", uploadSuccess: "Upload successful! Now, design your card.", uploadFailed: "Image upload failed: ", designSaved: "Design saved! Redirecting...", designSaveError: "Error saving design: ", logout: "Logout", templateLoaded: "Template loaded and saved! You can now edit it.", designLoaded: "Saved design loaded.", eyedropperFail: "Could not start color picker.", eyedropperInstruction: "Click anywhere on the design to pick a color.", activeCardTitle: "Your Active Design", activeCardDesc: "You can continue editing your saved design or start over with a new one.", editCardBtn: "Edit Design", removeCardBtn: "Remove & Start Over", designRemoved: "Design removed. You can now upload a new one." },
-        ar: { headerTitle: "تصميم بطاقتك", headerTitleGroom: "تصميم بطاقة العريس", headerTitleBride: "تصميم بطاقة العروس", backToHub: "→ العودة للمركز", uploadTitle: "١. رفع تصميم الدعوة", uploadDesc: "اسحب وأفلت ملف الصورة أو انقر للاختيار. ستكون هذه هي خلفية بطاقتك.", clickToUpload: "انقر للرفع", orDragDrop: " أو اسحب وأفلت", orUseTemplate: "ليس لديك تصميم؟", chooseTemplateLink: "اختر أحد قوالبنا", uploadBtn: "رفع ومتابعة إلى المحرر", uploading: "جاري الرفع إلى التخزين الآمن...", editorTitle: "٢. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "اسحب العناصر لتحديد أماكنها. استخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", selectImageFirst: "الرجاء اختيار صورة أولاً", uploadSuccess: "تم الرفع بنجاح! الآن، قم بتصميم بطاقتك.", uploadFailed: "فشل رفع الصورة: ", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", designSaveError: "خطأ في حفظ التصميم: ", logout: "تسجيل الخروج", templateLoaded: "تم تحميل القالب وحفظه! يمكنك الآن تعديله.", designLoaded: "تم تحميل التصميم المحفوظ.", eyedropperFail: "تعذر بدء منتقي الألوان.", eyedropperInstruction: "انقر في أي مكان على التصميم لاختيار لون.", activeCardTitle: "تصميمك الحالي", activeCardDesc: "يمكنك متابعة تعديل تصميمك المحفوظ أو البدء من جديد.", editCardBtn: "تعديل التصميم", removeCardBtn: "إزالة والبدء من جديد", designRemoved: "تمت إزالة التصميم. يمكنك الآن رفع تصميم جديد." }
+        en: { headerTitle: "Design Your Card", headerTitleGroom: "Design Groom's Card", headerTitleBride: "Design Bride's Card", backToHub: "← Back to Hub", uploadTitle: "1. Upload Invitation Design", uploadDesc: "Drag & drop your image file or click to select. This will be the background for your card.", clickToUpload: "Click to upload", orDragDrop: " or drag and drop", orUseTemplate: "Don't have a design?", chooseTemplateLink: "Choose one of our templates", uploadBtn: "Upload & Continue to Editor", uploading: "Uploading to secure storage...", editorTitle: "2. Position & Style Guest Details", editorDesc: "Drag the placeholders to position them. Use the controls on the right to customize their appearance.", guestName: "Guest Name", nameStyleTitle: "Guest Name Customization", fontColor: "Font Color", fontFamily: "Font Family", fontSize: "Font Size", rotation: "Rotation", bold: "Bold", italic: "Italic", textShadow: "Text Shadow", textStroke: "Text Stroke", qrStyleTitle: "QR Code Customization", qrSize: "Size", qrLogo: "Center Logo", saveBtn: "Save Design & Continue →", selectImageFirst: "Please select an image first", uploadSuccess: "Upload successful! Now, design your card.", uploadFailed: "Image upload failed: ", designSaved: "Design saved! Redirecting...", designSaveError: "Error saving design: ", logout: "Logout", templateLoaded: "Template loaded and saved! You can now edit it.", designLoaded: "Saved design loaded.", eyedropperFail: "Could not start color picker.", eyedropperInstruction: "Click anywhere on the design to pick a color.", activeCardTitle: "Your Active Design", activeCardDesc: "You can continue editing your saved design or start over with a new one.", editCardBtn: "Edit Design", removeCardBtn: "Remove & Start Over", designRemoved: "Design removed. You can now upload a new one.", loadingDesign: "Loading your design..." },
+        ar: { headerTitle: "تصميم بطاقتك", headerTitleGroom: "تصميم بطاقة العريس", headerTitleBride: "تصميم بطاقة العروس", backToHub: "→ العودة للمركز", uploadTitle: "١. رفع تصميم الدعوة", uploadDesc: "اسحب وأفلت ملف الصورة أو انقر للاختيار. ستكون هذه هي خلفية بطاقتك.", clickToUpload: "انقر للرفع", orDragDrop: " أو اسحب وأفلت", orUseTemplate: "ليس لديك تصميم؟", chooseTemplateLink: "اختر أحد قوالبنا", uploadBtn: "رفع ومتابعة إلى المحرر", uploading: "جاري الرفع إلى التخزين الآمن...", editorTitle: "٢. تحديد أماكن وتنسيق تفاصيل الضيف", editorDesc: "اسحب العناصر لتحديد أماكنها. استخدم عناصر التحكم على اليسار لتخصيص مظهرها.", guestName: "اسم الضيف", nameStyleTitle: "تخصيص اسم الضيف", fontColor: "لون الخط", fontFamily: "نوع الخط", fontSize: "حجم الخط", rotation: "دوران", bold: "عريض", italic: "مائل", textShadow: "ظل النص", textStroke: "إطار النص", qrStyleTitle: "تخصيص رمز QR", qrSize: "الحجم", qrLogo: "شعار في المنتصف", saveBtn: "حفظ التصميم والمتابعة ←", selectImageFirst: "الرجاء اختيار صورة أولاً", uploadSuccess: "تم الرفع بنجاح! الآن، قم بتصميم بطاقتك.", uploadFailed: "فشل رفع الصورة: ", designSaved: "تم حفظ التصميم! جارٍ إعادة التوجيه...", designSaveError: "خطأ في حفظ التصميم: ", logout: "تسجيل الخروج", templateLoaded: "تم تحميل القالب وحفظه! يمكنك الآن تعديله.", designLoaded: "تم تحميل التصميم المحفوظ.", eyedropperFail: "تعذر بدء منتقي الألوان.", eyedropperInstruction: "انقر في أي مكان على التصميم لاختيار لون.", activeCardTitle: "تصميمك الحالي", activeCardDesc: "يمكنك متابعة تعديل تصميمك المحفوظ أو البدء من جديد.", editCardBtn: "تعديل التصميم", removeCardBtn: "إزالة والبدء من جديد", designRemoved: "تمت إزالة التصميم. يمكنك الآن رفع تصميم جديد.", loadingDesign: "جاري تحميل تصميمك..." }
     };
     const langSwitcher = document.getElementById('lang-switcher');
     let currentLang = localStorage.getItem('language') || 'en';
-    const setLanguage = (lang) => { localStorage.setItem('language', lang); currentLang = lang; document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; langSwitcher.textContent = lang === 'ar' ? 'EN' : 'AR'; document.querySelectorAll('[data-lang-key]').forEach(el => { const key = el.getAttribute('data-lang-key'); if (translations[lang][key]) { if (key === 'orDragDrop') { el.previousElementSibling.textContent = translations[lang]['clickToUpload']; el.textContent = translations[lang]['orDragDrop']; } else if(key === 'chooseTemplateLink') { el.previousElementSibling.textContent = translations[lang]['orUseTemplate'] + ' '; el.textContent = translations[lang]['chooseTemplateLink']; } else { el.textContent = translations[lang][key]; } } }); const headerTitleKey = side === 'groom' ? 'headerTitleGroom' : 'headerTitleBride'; document.getElementById('header-title').textContent = translations[lang][headerTitleKey] || translations[lang].headerTitle; document.title = translations[lang][headerTitleKey] || translations[lang].headerTitle; const namePlaceholder = document.getElementById('name-placeholder'); if (namePlaceholder) { namePlaceholder.textContent = translations[lang].guestName; } };
+    const setLanguage = (lang) => { localStorage.setItem('language', lang); currentLang = lang; document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; langSwitcher.textContent = lang === 'ar' ? 'EN' : 'AR'; document.querySelectorAll('[data-lang-key]').forEach(el => { const key = el.getAttribute('data-lang-key'); if (translations[lang][key]) { if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = translations[lang][key]; else el.textContent = translations[lang][key]; } }); const headerTitleKey = side === 'groom' ? 'headerTitleGroom' : 'headerTitleBride'; document.getElementById('header-title').textContent = translations[lang][headerTitleKey] || translations[lang].headerTitle; document.title = translations[lang][headerTitleKey] || translations[lang].headerTitle; const namePlaceholder = document.getElementById('name-placeholder'); if (namePlaceholder) { namePlaceholder.textContent = translations[lang].guestName; } };
     langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
     
     const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
