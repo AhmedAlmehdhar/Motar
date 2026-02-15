@@ -298,8 +298,8 @@ async function generateAndUploadCardForGuest(guestName, template) {
     const personalizedImageUrl = result.data.url;
     const invitePath = window.location.pathname.replace('manager.html', 'invite.html');
     const fullGuestPath = `guests/${currentUser.uid}/${currentSide}/${newNodeKey}`;
-    const inviteLink = `${window.location.origin}${invitePath}?id=${encodeURIComponent(fullGuestPath)}&img=${encodeURIComponent(personalizedImageUrl)}`;
-    return set(newNodeRef, { 'الإسم': guestName.trim(), 'رقم_عشوائي': randomNumber, 'scanned': false, 'link': inviteLink });
+    const inviteLink = `${window.location.origin}${invitePath}?id=${encodeURIComponent(fullGuestPath)}`;
+    return set(newNodeRef, { 'الإسم': guestName.trim(), 'رقم_عشوائي': randomNumber, 'scanned': false, 'link': inviteLink, 'imageUrl': personalizedImageUrl });
 }
 
 function renderGuestList() {
