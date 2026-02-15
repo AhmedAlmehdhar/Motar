@@ -94,7 +94,7 @@
     <div id="scan-result-icon" class="mb-6">
       <!-- SVG icon will be injected here -->
     </div>
-    <p id="scan-result-message" class="text-2xl font-bold"></p>
+    <p id="scan-result-message" class="text-xl font-bold"></p>
   </div>
 </div>
 
@@ -124,8 +124,8 @@ document.getElementById('logout-button').addEventListener('click', () => {
 });
 
 const translations = {
-    en: { headerTitle: "Step 3: Guest Check-in", backToHub: "← Back to Hub", scannerTitle: "QR Code Scanner", startCamera: "Start Camera", stopCamera: "Stop Camera", guestListTitle: "Guest List", loadingGuests: "Loading guest list...", noGuests: "No guests found.", tableHeaderName: "Name", tableHeaderSide: "Side", tableHeaderStatus: "Status", statusCheckedIn: "Checked In", statusNotHere: "Not Here", groomSide: "Groom", brideSide: "Bride", scanSuccess: "Guest checked in successfully!", scanAlready: "Guest already checked in.", scanNotFound: "QR code not found in guest list.", cameraError: "Could not access camera. Please check permissions.", logout: "Logout" },
-    ar: { headerTitle: "الخطوة ٣: تسجيل وصول الضيوف", backToHub: "→ العودة للمركز", scannerTitle: "ماسح رمز QR", startCamera: "تشغيل الكاميرا", stopCamera: "إيقاف الكاميرا", guestListTitle: "قائمة الضيوف", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف.", tableHeaderName: "الاسم", tableHeaderSide: "الجانب", tableHeaderStatus: "الحالة", statusCheckedIn: "تم تسجيل الوصول", statusNotHere: "لم يصل بعد", groomSide: "العريس", brideSide: "العروس", scanSuccess: "تم تسجيل وصول الضيف بنجاح!", scanAlready: "الضيف مسجل وصوله بالفعل.", scanNotFound: "رمز QR غير موجود في قائمة الضيوف.", cameraError: "لا يمكن الوصول إلى الكاميرا. يرجى التحقق من الأذونات.", logout: "تسجيل الخروج" }
+    en: { headerTitle: "Step 3: Guest Check-in", backToHub: "← Back to Hub", scannerTitle: "QR Code Scanner", startCamera: "Start Camera", stopCamera: "Stop Camera", guestListTitle: "Guest List", loadingGuests: "Loading guest list...", noGuests: "No guests found.", tableHeaderName: "Name", tableHeaderSide: "Side", tableHeaderStatus: "Status", tableHeaderPartySize: "Party Size", statusCheckedIn: "Checked In", statusNotHere: "Not Here", groomSide: "Groom", brideSide: "Bride", scanSuccessParty: "Welcome, {guestName}! Party of {partySize} checked in.", scanAlready: "Guest already checked in.", scanNotFound: "QR code not found in guest list.", scanNotAttending: "Guest {guestName} RSVP'd No.", cameraError: "Could not access camera. Please check permissions.", logout: "Logout" },
+    ar: { headerTitle: "الخطوة ٣: تسجيل وصول الضيوف", backToHub: "→ العودة للمركز", scannerTitle: "ماسح رمز QR", startCamera: "تشغيل الكاميرا", stopCamera: "إيقاف الكاميرا", guestListTitle: "قائمة الضيوف", loadingGuests: "جاري تحميل قائمة الضيوف...", noGuests: "لا يوجد ضيوف.", tableHeaderName: "الاسم", tableHeaderSide: "الجانب", tableHeaderStatus: "الحالة", tableHeaderPartySize: "حجم المجموعة", statusCheckedIn: "تم تسجيل الوصول", statusNotHere: "لم يصل بعد", groomSide: "العريس", brideSide: "العروس", scanSuccessParty: "مرحباً {guestName}! تم تسجيل وصول مجموعة من {partySize}.", scanAlready: "الضيف مسجل وصوله بالفعل.", scanNotFound: "رمز QR غير موجود في قائمة الضيوف.", scanNotAttending: "الضيف {guestName} أكد عدم حضوره.", cameraError: "لا يمكن الوصول إلى الكاميرا. يرجى التحقق من الأذونات.", logout: "تسجيل الخروج" }
 };
 
 let currentLang = localStorage.getItem('language') || 'en';
@@ -192,12 +192,17 @@ function readData() {
         let tableHTML = `<div class="overflow-x-auto"><table class="min-w-full"><thead class="bg-white/5"><tr>
                         <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderName}</th>
                         <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderSide}</th>
+                        <th class="py-3 px-4 text-center text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderPartySize}</th>
                         <th class="py-3 px-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400">${translations[currentLang].tableHeaderStatus}</th></tr></thead>
                         <tbody class="text-gray-300">`;
         
         allGuests.sort((a,b) => (a.data['الإسم'] || '').localeCompare(b.data['الإسم'] || '')).forEach(guest => {
             const isScanned = guest.data.scanned === true;
             if (isScanned && guest.data['رقم_عشوائي']) scannedBarcodes.add(guest.data['رقم_عشوائي']);
+            
+            const rsvpRaw = guest.data['حضور'];
+            const isAttending = rsvpRaw === 'نعم';
+            const partySize = isAttending ? 1 + (guest.data.companionsConfirmed ?? 0) : '-';
             
             const statusText = isScanned ? translations[currentLang].statusCheckedIn : translations[currentLang].statusNotHere;
             const statusClass = isScanned ? 'bg-green-500/20 text-green-300' : 'bg-slate-500/20 text-slate-300';
@@ -208,6 +213,7 @@ function readData() {
             tableHTML += `<tr id="row-${guest.key}" class="border-b border-white/10 hover:bg-white/5 transition-colors">
                     <td class="py-4 px-4 font-semibold text-white">${guest.data['الإسم'] || ''}</td>
                     <td class="py-4 px-4 font-semibold ${sideClass}">${sideText}</td>
+                    <td class="py-4 px-4 text-center font-mono">${partySize}</td>
                     <td class="py-4 px-4 status-cell"><span class="${statusClass} text-xs font-medium px-2.5 py-1 rounded-full">${statusText}</span></td></tr>`;
         });
         tableHTML += `</tbody></table></div>`;
@@ -233,7 +239,7 @@ function startCamera() {
         .catch(err => {
             console.error(err);
             stopCamera();
-            showNotification('cameraError', 'red');
+            showNotification(translations[currentLang].cameraError, 'red');
         });
 }
 
@@ -273,11 +279,11 @@ function handleScan(qrCodeData) {
     onValue(userGuestsRef, (snapshot) => {
         const sides = snapshot.val();
         if (!sides) {
-            showNotification('scanNotFound', 'yellow');
+            showNotification(translations[currentLang].scanNotFound, 'yellow');
             return;
         }
 
-        let found = false, alreadyScanned = false, guestPath = null;
+        let guestData = null, guestPath = null, found = false;
 
         for (const side of ['groom', 'bride']) {
             if (sides[side]) {
@@ -285,7 +291,7 @@ function handleScan(qrCodeData) {
                     if (sides[side][key]['رقم_عشوائي'] === qrCodeData) {
                         found = true;
                         guestPath = `guests/${currentUser.uid}/${side}/${key}`;
-                        alreadyScanned = sides[side][key].scanned === true;
+                        guestData = sides[side][key];
                         break;
                     }
                 }
@@ -293,13 +299,22 @@ function handleScan(qrCodeData) {
             if (found) break;
         }
 
-        if (found && !alreadyScanned) {
-            showNotification('scanSuccess', 'green');
-            update(databaseRef(database, guestPath), { scanned: true, scanDate: new Date().toISOString() });
-        } else if (found && alreadyScanned) {
-            showNotification('scanAlready', 'red');
+        if (found) {
+            if (guestData.scanned === true) {
+                showNotification(translations[currentLang].scanAlready, 'red');
+            } else if (guestData['حضور'] === 'لا') {
+                 const message = translations[currentLang].scanNotAttending.replace('{guestName}', guestData['الإسم']);
+                 showNotification(message, 'yellow');
+            } else {
+                const partySize = 1 + (guestData.companionsConfirmed || 0);
+                const message = translations[currentLang].scanSuccessParty
+                    .replace('{guestName}', guestData['الإسم'])
+                    .replace('{partySize}', partySize);
+                showNotification(message, 'green');
+                update(databaseRef(database, guestPath), { scanned: true, scanDate: new Date().toISOString() });
+            }
         } else {
-            showNotification('scanNotFound', 'yellow');
+            showNotification(translations[currentLang].scanNotFound, 'yellow');
         }
     }, { onlyOnce: true });
 }
@@ -310,13 +325,12 @@ const ICONS = {
     yellow: `<svg class="w-24 h-24 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>`,
 };
 
-function showNotification(messageKey, type = 'green') {
+function showNotification(message, type = 'green') {
     const modal = document.getElementById('scan-result-modal');
     const card = document.getElementById('scan-result-card');
     const iconContainer = document.getElementById('scan-result-icon');
     const messageEl = document.getElementById('scan-result-message');
     
-    const message = translations[currentLang][messageKey];
     const colors = {
         green: 'bg-green-500/90',
         red: 'bg-rose-500/90',
