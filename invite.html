@@ -229,87 +229,91 @@
         return translations[getCurrentLanguage()][key];
     }
     
-    try {
-      const app = initializeApp(firebaseConfig);
-      const database = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
 
-      const params = new URLSearchParams(window.location.search);
-      const imgUrl = params.get("img");
-      const guestPath = decodeURIComponent(params.get("id") || '');
+    const params = new URLSearchParams(window.location.search);
+    const guestPath = decodeURIComponent(params.get("id") || '');
+    
+    async function initializeInvite() {
+        try {
+            if (!guestPath) throw new Error(getTranslatedText("invalidLink"));
 
-      if (!imgUrl || !guestPath) throw new Error(getTranslatedText("invalidLink"));
-      
-      const ctx = canvas.getContext("2d");
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        
-        loadingDiv.style.display = "none";
-        canvas.style.display = "block";
+            const guestSnapshot = await get(databaseRef(database, guestPath));
+            if (!guestSnapshot.exists()) throw new Error(getTranslatedText("invalidLink"));
+            
+            guestData = guestSnapshot.val();
+            const imgUrl = guestData.imageUrl;
 
-        if (guestPath) {
-            rsvpSection.style.display = "block";
-            checkPreviousAnswer();
+            if (!imgUrl) throw new Error(getTranslatedText("loadError"));
+            
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            
+            await new Promise((resolve, reject) => {
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    loadingDiv.style.display = "none";
+                    canvas.style.display = "block";
+                    rsvpSection.style.display = "block";
+                    checkPreviousAnswer();
+                    resolve();
+                };
+                img.onerror = () => reject(new Error(getTranslatedText("loadError")));
+                img.src = imgUrl;
+            });
+            
+            yesBtn.addEventListener("click", () => recordAnswer("Yes"));
+            noBtn.addEventListener("click", () => recordAnswer("No"));
+
+        } catch (error) {
+            loadingDiv.textContent = error.message;
+            loadingDiv.style.color = "red";
+            canvas.style.display = 'none';
+            rsvpSection.style.display = 'none';
         }
-      };
-      img.onerror = () => { throw new Error(getTranslatedText("loadError")); };
-      img.src = imgUrl;
+    }
 
-      function showNotification(message, color = "var(--color-primary-dark-text)") {
+    function showNotification(message, color = "var(--color-primary-dark-text)") {
         notif.textContent = message;
         notif.style.color = color;
-      }
+    }
 
-      async function recordAnswer(answer) {
+    async function recordAnswer(answer) {
         if (!guestPath) return;
         yesBtn.disabled = true;
         noBtn.disabled = true;
         const answerText = answer === 'Yes' ? getTranslatedText('yes') : getTranslatedText('no');
         try {
-          await update(databaseRef(database, guestPath), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
-          showNotification(getTranslatedText("answerRecorded") + answerText);
+            await update(databaseRef(database, guestPath), { حضور: answer === 'Yes' ? 'نعم' : 'لا' });
+            showNotification(getTranslatedText("answerRecorded") + answerText);
         } catch (e) {
-          showNotification(getTranslatedText("answerError") + e.message, "red");
-          checkPreviousAnswer();
+            showNotification(getTranslatedText("answerError") + e.message, "red");
+            checkPreviousAnswer();
         }
-      }
-      
-      async function checkPreviousAnswer() {
+    }
+    
+    function checkPreviousAnswer() {
         if (!guestPath) return;
         yesBtn.disabled = true;
         noBtn.disabled = true;
 
-        try {
-          const snapshot = await get(databaseRef(database, guestPath));
-          guestData = snapshot.val();
-          if (guestData && guestData.حضور) {
+        if (guestData && guestData.حضور) {
             const answerDisplay = guestData.حضور === 'نعم' ? getTranslatedText('yes') : getTranslatedText('no');
             showNotification(getTranslatedText("alreadyAnswered") + answerDisplay);
-          } else {
+        } else {
             yesBtn.disabled = false;
             noBtn.disabled = false;
-          }
-        } catch (e) {
-          console.error(e);
-          showNotification(getTranslatedText("checkAnswerError"), "red");
+            showNotification(""); // Clear previous messages
         }
-      }
-      if(guestPath) {
-        yesBtn.addEventListener("click", () => recordAnswer("Yes"));
-        noBtn.addEventListener("click", () => recordAnswer("No"));
-      }
-    } catch (error) {
-      loadingDiv.textContent = error.message;
-      loadingDiv.style.color = "red";
-      canvas.style.display = 'none';
-      rsvpSection.style.display = 'none';
     }
 
     setLanguage(getCurrentLanguage());
+    initializeInvite();
   </script>
 </body>
 </html>
