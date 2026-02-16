@@ -245,9 +245,11 @@ async function renderCard(canvas, guestName, template, qrCodeValue, allowedGuest
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
+        const fontSize = qrSize * 0.18;
         const displayX = qs.x * canvas.width;
-        const displayY = qs.y * canvas.height;
-        const fontSize = (qs.size * canvas.width) * 0.25;
+        const qrTopY = (qs.y * canvas.height) - (qrSize / 2);
+        const padding = fontSize * 0.4;
+        const displayY = qrTopY - padding - (fontSize / 2);
 
         const numberText = allowedGuests.toString();
         const iconText = 'groups';
@@ -263,8 +265,8 @@ async function renderCard(canvas, guestName, template, qrCodeValue, allowedGuest
         const iconX = displayX - (totalWidth / 2) + (iconWidth / 2);
         const numberX = iconX + (iconWidth / 2) + gap + (numberWidth / 2);
 
-        ctx.fillStyle = 'white';
-        ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillStyle = 'black';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
         ctx.lineWidth = fontSize / 12;
 
         ctx.font = `${fontSize}px 'Material Symbols Outlined'`;
