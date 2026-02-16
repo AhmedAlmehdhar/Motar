@@ -239,32 +239,42 @@ async function renderCard(canvas, guestName, template, qrCodeValue, allowedGuest
         const logoY = qrY + (qrSize - logoSize) / 2;
         ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
     }
-
-    if (qs.showPartySize && qs.partySizeSettings && allowedGuests > 0) {
-        const ps = qs.partySizeSettings;
+    
+    if (qs.showPartySize && allowedGuests > 0) {
         ctx.save();
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        const textX = qrX + qrSize / 2;
-        const textY = qrY + qrSize / 2 + (ps.offsetY || 0) * qrSize;
-        ctx.translate(textX, textY);
-        ctx.rotate((ps.rotation || 0) * Math.PI / 180);
-        ctx.fillStyle = ps.color;
-        const psFontStyle = ps.italic ? 'italic' : 'normal';
-        const psFontWeight = ps.bold ? 'bold' : 'normal';
-        ctx.font = `${psFontStyle} ${psFontWeight} ${ps.fontSize * canvas.height}px ${ps.family}`;
-        if (ps.shadow && ps.shadow.enabled) {
-            ctx.shadowColor = ps.shadow.color;
-            ctx.shadowBlur = ps.shadow.blur;
-            ctx.shadowOffsetX = ps.shadow.x;
-            ctx.shadowOffsetY = ps.shadow.y;
-        }
-        if (ps.stroke && ps.stroke.enabled) {
-            ctx.strokeStyle = ps.stroke.color;
-            ctx.lineWidth = ps.stroke.width;
-            ctx.strokeText(allowedGuests.toString(), 0, 0);
-        }
-        ctx.fillText(allowedGuests.toString(), 0, 0);
+
+        const displayX = qs.x * canvas.width;
+        const displayY = qs.y * canvas.height;
+        const fontSize = (qs.size * canvas.width) * 0.25;
+
+        const numberText = allowedGuests.toString();
+        const iconText = 'groups';
+
+        ctx.font = `bold ${fontSize}px 'Roboto', sans-serif`;
+        const numberWidth = ctx.measureText(numberText).width;
+        ctx.font = `${fontSize}px 'Material Symbols Outlined'`;
+        const iconWidth = ctx.measureText(iconText).width;
+        
+        const gap = fontSize * 0.15;
+        const totalWidth = iconWidth + gap + numberWidth;
+
+        const iconX = displayX - (totalWidth / 2) + (iconWidth / 2);
+        const numberX = iconX + (iconWidth / 2) + gap + (numberWidth / 2);
+
+        ctx.fillStyle = 'white';
+        ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+        ctx.lineWidth = fontSize / 12;
+
+        ctx.font = `${fontSize}px 'Material Symbols Outlined'`;
+        ctx.strokeText(iconText, iconX, displayY);
+        ctx.fillText(iconText, iconX, displayY);
+
+        ctx.font = `bold ${fontSize}px 'Roboto', sans-serif`;
+        ctx.strokeText(numberText, numberX, displayY);
+        ctx.fillText(numberText, numberX, displayY);
+        
         ctx.restore();
     }
 }
