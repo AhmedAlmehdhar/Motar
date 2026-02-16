@@ -240,7 +240,7 @@ async function renderCard(canvas, guestName, template, qrCodeValue, allowedGuest
         ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
     }
 
-    if (qs.showPartySize && allowedGuests > 0) {
+    if (qs.showPartySize && qs.partySizeSettings && allowedGuests > 0) {
         const ps = qs.partySizeSettings;
         ctx.save();
         ctx.textAlign = 'center';
