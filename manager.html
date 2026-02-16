@@ -392,9 +392,17 @@ function renderGuestList() {
         const sideText = side === 'groom' ? translations[currentLang].groomSide : translations[currentLang].brideSide;
         const sideClass = side === 'groom' ? 'text-blue-400' : 'text-pink-400';
         
-        const isAttending = rsvpRaw === 'نعم';
-        const companionsConfirmed = data.companionsConfirmed ?? 0;
-        const partySize = isAttending ? 1 + companionsConfirmed : (rsvpRaw === 'لا' ? '-' : translations[currentLang].rsvpNA);
+        let partySizeText;
+        const companionsAllowed = data.companionsAllowed ?? 0;
+
+        if (rsvpRaw === 'نعم') {
+            const companionsConfirmed = data.companionsConfirmed ?? 0;
+            partySizeText = 1 + companionsConfirmed;
+        } else if (rsvpRaw === 'لا') {
+            partySizeText = '-';
+        } else {
+            partySizeText = `1 (+${companionsAllowed})`;
+        }
 
         const shareMessage = encodeURIComponent(`${translations[currentLang].shareMessage}${data.link}`);
         const whatsappLink = `https://wa.me/?text=${shareMessage}`;
@@ -402,7 +410,7 @@ function renderGuestList() {
             <td class="py-2 px-2 font-semibold text-white">${data['الإسم'] || ''}</td>
             <td class="py-2 px-2 font-semibold ${sideClass}">${sideText}</td>
             <td class="py-2 px-2 font-bold ${rsvpClass}">${rsvp}</td>
-            <td class="py-2 px-2 text-center font-mono">${partySize}</td>
+            <td class="py-2 px-2 text-center font-mono">${partySizeText}</td>
             <td class="py-2 px-2"><div class="flex items-center justify-start gap-x-3">
                 ${data.link ? `<a href="${data.link}" target="_blank" title="${translations[currentLang].viewCard}" class="text-indigo-400 hover:text-indigo-300 transition-colors"><span class="material-symbols-outlined">visibility</span></a>` : ''}
                 ${data.link ? `<a href="${whatsappLink}" target="_blank" title="${translations[currentLang].share}" class="text-green-400 hover:text-green-300 transition-colors"><span class="material-symbols-outlined">share</span></a>` : ''}
