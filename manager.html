@@ -191,7 +191,7 @@ let allGuests = {};
 
 const loadImage = (src) => new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = "anonymous"; img.onload = () => resolve(img); img.onerror = reject; img.src = src; });
 
-async function renderCard(canvas, guestName, template, qrCodeValue) {
+async function renderCard(canvas, guestName, template, qrCodeValue, allowedGuests) {
     const ctx = canvas.getContext('2d');
     const bgImg = await loadImage(template.imageUrl);
     canvas.width = bgImg.width;
@@ -239,6 +239,34 @@ async function renderCard(canvas, guestName, template, qrCodeValue) {
         const logoY = qrY + (qrSize - logoSize) / 2;
         ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
     }
+
+    if (qs.showPartySize && allowedGuests > 0) {
+        const ps = qs.partySizeSettings;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const textX = qrX + qrSize / 2;
+        const textY = qrY + qrSize / 2 + (ps.offsetY || 0) * qrSize;
+        ctx.translate(textX, textY);
+        ctx.rotate((ps.rotation || 0) * Math.PI / 180);
+        ctx.fillStyle = ps.color;
+        const psFontStyle = ps.italic ? 'italic' : 'normal';
+        const psFontWeight = ps.bold ? 'bold' : 'normal';
+        ctx.font = `${psFontStyle} ${psFontWeight} ${ps.fontSize * canvas.height}px ${ps.family}`;
+        if (ps.shadow && ps.shadow.enabled) {
+            ctx.shadowColor = ps.shadow.color;
+            ctx.shadowBlur = ps.shadow.blur;
+            ctx.shadowOffsetX = ps.shadow.x;
+            ctx.shadowOffsetY = ps.shadow.y;
+        }
+        if (ps.stroke && ps.stroke.enabled) {
+            ctx.strokeStyle = ps.stroke.color;
+            ctx.lineWidth = ps.stroke.width;
+            ctx.strokeText(allowedGuests.toString(), 0, 0);
+        }
+        ctx.fillText(allowedGuests.toString(), 0, 0);
+        ctx.restore();
+    }
 }
 
 async function previewCard(name) {
@@ -251,7 +279,8 @@ async function previewCard(name) {
     addGuestButton.disabled = false;
     const previewContainer = document.getElementById('preview-container');
     const tempCanvas = document.createElement('canvas');
-    await renderCard(tempCanvas, name, activeCardTemplate, 'PREVIEW-QR');
+    const allowedGuests = 1 + (parseInt(guestCompanionsInput.value, 10) || 0);
+    await renderCard(tempCanvas, name, activeCardTemplate, 'PREVIEW-QR', allowedGuests);
     
     const aspectRatio = tempCanvas.width / tempCanvas.height;
     const containerWidth = previewContainer.offsetWidth - 8;
@@ -292,6 +321,7 @@ async function initializePage() {
     setLanguage(currentLang);
 }
 guestNameInput.addEventListener('input', () => previewCard(guestNameInput.value));
+guestCompanionsInput.addEventListener('input', () => previewCard(guestNameInput.value));
 document.addEventListener('DOMContentLoaded', () => setLanguage(currentLang));
 
 addGuestButton.addEventListener('click', async () => {
@@ -321,6 +351,7 @@ function generateShortId(length = 7) {
 async function generateAndUploadCardForGuest(guestName, template) {
     if(!currentUser) throw new Error("User not logged in.");
     const companionsAllowed = parseInt(guestCompanionsInput.value, 10) || 0;
+    const allowedGuests = 1 + companionsAllowed;
 
     const guestListRef = databaseRef(database, `guests/${currentUser.uid}/${currentSide}`);
     const newNodeRef = push(guestListRef);
@@ -328,7 +359,7 @@ async function generateAndUploadCardForGuest(guestName, template) {
     const randomNumber = Math.random().toString(36).substring(2, 10).toUpperCase();
     
     const canvas = document.createElement('canvas');
-    await renderCard(canvas, guestName, template, randomNumber);
+    await renderCard(canvas, guestName, template, randomNumber, allowedGuests);
     
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     const formData = new FormData();
