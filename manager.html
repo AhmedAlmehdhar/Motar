@@ -38,7 +38,12 @@
   }
   .btn-primary:disabled { background: #374151; box-shadow: none; transform: none; cursor: not-allowed; opacity: 0.6; }
   #previewCanvas { max-width: 100%; height: auto; border-radius: 8px; }
-  .side-btn.active { @apply bg-indigo-600 text-white ring-2 ring-offset-2 ring-offset-slate-800 ring-indigo-500; }
+  .side-btn.active {
+    background-color: #4f46e5; /* indigo-600 */
+    color: #ffffff;
+    outline: 2px solid #6366f1; /* indigo-500 */
+    outline-offset: 2px;
+  }
   .guest-tab.active { @apply border-indigo-400 text-indigo-300; }
 </style>
 </head>
@@ -180,7 +185,7 @@ const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
 let groomCardTemplate = null;
 let brideCardTemplate = null;
 let activeCardTemplate = null;
-let currentSide = 'groom';
+let currentSide = localStorage.getItem('managerCurrentSide') || 'groom';
 let currentGuestTab = 'all';
 let allGuests = {};
 
@@ -489,6 +494,7 @@ document.getElementById('side-selector').addEventListener('click', (e) => {
     const button = e.target.closest('.side-btn');
     if (button) {
         currentSide = button.dataset.side;
+        localStorage.setItem('managerCurrentSide', currentSide);
         document.querySelectorAll('.side-btn').forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
         updateActiveDesign();
