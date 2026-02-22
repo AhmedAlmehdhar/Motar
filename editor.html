@@ -111,8 +111,8 @@
       <div class="glass-card p-6 rounded-2xl">
         <h2 class="text-xl font-semibold text-gray-100 mb-2" data-lang-key="editorTitle">2. Position & Style Guest Details</h2>
         <p class="text-sm text-gray-400 mb-6" data-lang-key="editorDesc">Drag the placeholders to position them. Use the controls on the right to customize their appearance.</p>
-        <div class="relative grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div id="positioning-area" class="lg:col-span-2 relative inline-block select-none overflow-hidden rounded-lg border-2 border-white/10 bg-black transition-all duration-300 ease-in-out">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div id="positioning-area" class="lg:col-span-3 relative inline-block select-none overflow-hidden rounded-lg border-2 border-white/10 bg-black transition-all duration-300 ease-in-out">
             <img id="editor-image-preview" src="" crossorigin="anonymous" class="max-w-full h-auto block" alt="Invitation Preview"/>
             <div id="name-placeholder" class="placeholder p-2 font-bold" style="color: white; font-family: 'Roboto', sans-serif;" data-lang-key="guestName">Guest Name</div>
             <div id="qr-placeholder" class="placeholder">
@@ -129,9 +129,8 @@
             </div>
           </div>
           
-        </div>
-        <div id="controls-panel" class="hidden lg:block absolute top-0 transition-all duration-300 ease-in-out" style="width: 320px; right: -340px;">
-              <div class="bg-slate-800/60 backdrop-blur-lg p-4 rounded-lg border border-slate-700">
+        <div id="controls-panel" class="hidden lg:block lg:col-span-1">
+              <div class="bg-slate-800/60 backdrop-blur-lg p-4 rounded-lg border border-slate-700 h-full">
                 <div id="panel-tabs" class="flex border-b border-slate-600 mb-4">
                   <button data-tab="name" class="panel-tab-button flex-1 py-2 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition-colors" data-lang-key="nameStyleTitle">Guest Name</button>
                   <button data-tab="qr" class="panel-tab-button flex-1 py-2 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition-colors" data-lang-key="qrStyleTitle">QR Code</button>
@@ -270,7 +269,7 @@
     const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
     const DOMElements = { uploaderSection: document.getElementById('uploader-section'), editorSection: document.getElementById('editor-section'), imageUploader: document.getElementById('imageUploader'), imagePreview: document.getElementById('imagePreview'), uploadButton: document.getElementById('uploadButton'), uploadSpinner: document.getElementById('uploadSpinner'), imageDropArea: document.getElementById('image-drop-area'), editorImagePreview: document.getElementById('editor-image-preview'), positioningArea: document.getElementById('positioning-area'), namePlaceholder: document.getElementById('name-placeholder'), qrPlaceholder: document.getElementById('qr-placeholder'), qrPlaceholderImg: document.getElementById('qr-placeholder-img'), qrPartySizePreview: document.getElementById('qr-party-size-preview'), savePositionsButton: document.getElementById('save-positions-button'), notification: document.getElementById('notification'), eyedropperOverlay: document.getElementById('eyedropper-overlay'), magnifier: document.getElementById('magnifier'), eyedropperInstruction: document.getElementById('eyedropper-instruction'), sizeControls: document.getElementById('size-controls'), decreaseSizeBtn: document.getElementById('decrease-size-btn'), increaseSizeBtn: document.getElementById('increase-size-btn'), currentSizeLabel: document.getElementById('current-size-label'), uploaderInterface: document.getElementById('uploader-interface'), activeCardSection: document.getElementById('active-card-section'), activeCardPreview: document.getElementById('activeCardPreview'), editCardButton: document.getElementById('edit-card-button'), removeCardButton: document.getElementById('remove-card-button'), controlsPanel: document.getElementById('controls-panel'), panelTabs: document.getElementById('panel-tabs'), nameControlsContent: document.getElementById('name-controls-content'), qrControlsContent: document.getElementById('qr-controls-content') };
     const controls = { color: document.getElementById('font-color-picker'), colorDisplay: document.getElementById('font-color-display'), colorEyedropper: document.getElementById('font-color-eyedropper'), family: document.getElementById('font-family-select'), size: document.getElementById('font-size-slider'), rotation: document.getElementById('font-rotation-slider'), bold: document.getElementById('font-bold-toggle'), italic: document.getElementById('font-italic-toggle'), shadow: document.getElementById('shadow-toggle'), shadowControls: document.getElementById('shadow-controls'), shadowColor: document.getElementById('shadow-color-picker'), shadowColorDisplay: document.getElementById('shadow-color-display'), shadowColorEyedropper: document.getElementById('shadow-color-eyedropper'), shadowBlur: document.getElementById('shadow-blur-slider'), shadowX: document.getElementById('shadow-offset-x-slider'), shadowY: document.getElementById('shadow-offset-y-slider'), stroke: document.getElementById('stroke-toggle'), strokeControls: document.getElementById('stroke-controls'), strokeColor: document.getElementById('stroke-color-picker'), strokeColorDisplay: document.getElementById('stroke-color-display'), strokeColorEyedropper: document.getElementById('stroke-color-eyedropper'), strokeWidth: document.getElementById('stroke-width-slider'), qrSize: document.getElementById('qr-size-slider'), qrColorDark: document.getElementById('qr-color-dark-picker'), qrColorDarkDisplay: document.getElementById('qr-color-dark-display'), qrColorDarkEyedropper: document.getElementById('qr-color-dark-eyedropper'), qrColorLight: document.getElementById('qr-color-light-picker'), qrColorLightDisplay: document.getElementById('qr-color-light-display'), qrColorLightEyedropper: document.getElementById('qr-color-light-eyedropper'), qrLogo: document.getElementById('qr-logo-uploader'), showPartySize: document.getElementById('show-party-size-toggle') };
-    let selectedFile = null, cardImageUrl = '', qrLogoUrl = '', selectedPlaceholder = null;
+    let selectedFile = null, cardImageUrl = '', qrLogoUrl = '', selectedPlaceholder = null, editorInitialized = false;
     const defaultSettings = { 
         name: { x: 20, y: 20, color: '#FFFFFF', family: "'Roboto', sans-serif", size: 40, rotation: 0, bold: false, italic: false, shadow: { enabled: false, color: '#000000', blur: 0, x: 0, y: 0 }, stroke: { enabled: false, color: '#000000', width: 1 } }, 
         qr: { x: 20, y: 80, size: 160, colorDark: '#000000', colorLight: '#FFFFFF', logoUrl: '', showPartySize: false } 
@@ -305,8 +304,10 @@
     function makeDraggable(element, settingObj) { let active = false, initialX, initialY; const dragStart = (e) => { if (e.target === element || element.contains(e.target)) { toggleSizeControls(element); active = true; element.style.zIndex = 10; initialX = e.type === 'touchstart' ? e.touches[0].clientX - settingObj.x : e.clientX - settingObj.x; initialY = e.type === 'touchstart' ? e.touches[0].clientY - settingObj.y : e.clientY - settingObj.y; } }; const dragEnd = () => { active = false; element.style.zIndex = 1; }; const drag = (e) => { if (active) { e.preventDefault(); const currentX = e.type === 'touchmove' ? e.touches[0].clientX - initialX : e.clientX - initialX; const currentY = e.type === 'touchmove' ? e.touches[0].clientY - initialY : e.clientY - initialY; const parentRect = DOMElements.positioningArea.getBoundingClientRect(); const elemRect = element.getBoundingClientRect(); settingObj.x = Math.max(0, Math.min(currentX, parentRect.width - elemRect.width)); settingObj.y = Math.max(0, Math.min(currentY, parentRect.height - elemRect.height)); updatePlaceholders().then(() => { if (element === selectedPlaceholder) updateSizeControlsPosition(); }); } }; ['touchstart', 'mousedown'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragStart, false)); ['touchend', 'mouseup', 'mouseleave'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragEnd, false)); ['touchmove', 'mousemove'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, drag, false)); }
 
     function initializeEditorInteractivity() {
+        if (editorInitialized) return;
         makeDraggable(DOMElements.namePlaceholder, settings.name);
         makeDraggable(DOMElements.qrPlaceholder, settings.qr);
+        editorInitialized = true;
     }
     
     function updateSizeControlsPosition() { if (!selectedPlaceholder) return; const placeholderRect = selectedPlaceholder.getBoundingClientRect(); const areaRect = DOMElements.positioningArea.getBoundingClientRect(); let top = placeholderRect.top - areaRect.top - DOMElements.sizeControls.offsetHeight - 5; if (top < 5) { top = placeholderRect.bottom - areaRect.top + 5; } DOMElements.sizeControls.style.left = `${placeholderRect.left - areaRect.left + (placeholderRect.width / 2) - (DOMElements.sizeControls.offsetWidth / 2)}px`; DOMElements.sizeControls.style.top = `${top}px`; if (selectedPlaceholder.id === 'name-placeholder') { DOMElements.currentSizeLabel.textContent = settings.name.size; } else if (selectedPlaceholder.id === 'qr-placeholder') { DOMElements.currentSizeLabel.textContent = settings.qr.size; } }
@@ -408,11 +409,13 @@
         controls.qrColorDarkEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorDark));
         controls.qrColorLightEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorLight));
         controls.qrLogo.addEventListener('change', e => {if (e.target.files[0]) uploadAndSetUrl(e.target.files[0], url => { settings.qr.logoUrl = url; updatePlaceholders(); })});
+
         DOMElements.positioningArea.addEventListener('mousedown', (e) => { 
-    if (e.target === DOMElements.positioningArea || e.target === DOMElements.editorImagePreview) { 
-        toggleSizeControls(null); 
-    } 
-});
+            if (e.target === DOMElements.positioningArea || e.target === DOMElements.editorImagePreview) { 
+                toggleSizeControls(null); 
+            } 
+        });
+        
 
         DOMElements.panelTabs.addEventListener('click', (e) => {
             if (e.target.classList.contains('panel-tab-button')) {
@@ -433,28 +436,24 @@
         }
 
         function showControlsPanel(activeTab) {
-            const editorContentRect = DOMElements.positioningArea.parentElement.getBoundingClientRect();
-            const panelWidth = 320;
+            DOMElements.positioningArea.classList.remove('lg:col-span-3');
+            DOMElements.positioningArea.classList.add('lg:col-span-2');
             DOMElements.controlsPanel.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                DOMElements.positioningArea.classList.remove('lg:col-span-2');
-                DOMElements.controlsPanel.style.right = `${editorContentRect.right - panelWidth}px`;
-            });
             switchTab(activeTab);
         }
 
         function hideControlsPanel() {
-            DOMElements.positioningArea.classList.add('lg:col-span-2');
-            DOMElements.controlsPanel.style.right = '-340px';
-            setTimeout(() => DOMElements.controlsPanel.classList.add('hidden'), 300);
+            DOMElements.positioningArea.classList.remove('lg:col-span-2');
+            DOMElements.positioningArea.classList.add('lg:col-span-3');
+            DOMElements.controlsPanel.classList.add('hidden');
         }
         DOMElements.sizeControls.addEventListener('mousedown', e => e.stopPropagation());
         DOMElements.increaseSizeBtn.addEventListener('click', () => changeSize(1));
         DOMElements.decreaseSizeBtn.addEventListener('click', () => changeSize(-1));
-        DOMElements.editCardButton.addEventListener('click', async () => {
+                DOMElements.editCardButton.addEventListener('click', async () => {
             DOMElements.uploaderSection.classList.add('hidden');
             DOMElements.editorSection.classList.remove('hidden');
-            await resetAndCenterPlaceholders();
+            await updatePlaceholders();
             initializeEditorInteractivity();
         });
         DOMElements.removeCardButton.addEventListener('click', removeAndResetDesign);
@@ -606,8 +605,9 @@
         isEyedropperActive = false;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
+        initializeEditorInteractivity();
     });
 </script>
 </body>
