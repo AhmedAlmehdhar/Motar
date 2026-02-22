@@ -329,14 +329,12 @@ function handleScan(qrCodeData) {
                  if (!guestData.scanned) { // Data correction
                     update(databaseRef(database, guestPath), { scanned: true });
                 }
-            } else if (guestData['حضور'] === 'لا') {
-                 const message = translations[currentLang].scanNotAttending.replace('{guestName}', guestData['الإسم']);
-                 showNotification(message, 'yellow');
             } else {
                 const newScannedCount = scannedCount + 1;
                 const updates = { 
                     scannedCount: newScannedCount, 
-                    lastScanDate: new Date().toISOString() 
+                    lastScanDate: new Date().toISOString(),
+                    'حضور': 'نعم' // Set status to 'attending' upon scan
                 };
                 
                 if (!guestData.firstScanDate) {
