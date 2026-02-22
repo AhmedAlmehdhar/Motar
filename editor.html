@@ -112,7 +112,7 @@
         <h2 class="text-xl font-semibold text-gray-100 mb-2" data-lang-key="editorTitle">2. Position & Style Guest Details</h2>
         <p class="text-sm text-gray-400 mb-6" data-lang-key="editorDesc">Drag the placeholders to position them. Use the controls on the right to customize their appearance.</p>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div id="positioning-area" class="lg:col-span-3 relative inline-block select-none overflow-hidden rounded-lg border-2 border-white/10 bg-black transition-all duration-300 ease-in-out">
+          <div id="positioning-area" class="lg:col-span-2 relative inline-block select-none overflow-hidden rounded-lg border-2 border-white/10 bg-black">
             <img id="editor-image-preview" src="" crossorigin="anonymous" class="max-w-full h-auto block" alt="Invitation Preview"/>
             <div id="name-placeholder" class="placeholder p-2 font-bold" style="color: white; font-family: 'Roboto', sans-serif;" data-lang-key="guestName">Guest Name</div>
             <div id="qr-placeholder" class="placeholder">
@@ -128,15 +128,9 @@
                 <button id="increase-size-btn" class="w-7 h-7 bg-slate-700 hover:bg-slate-600 rounded text-lg font-bold">+</button>
             </div>
           </div>
-          
-        <div id="controls-panel" class="hidden lg:block lg:col-span-1">
-              <div class="bg-slate-800/60 backdrop-blur-lg p-4 rounded-lg border border-slate-700 h-full">
-                <div id="panel-tabs" class="flex border-b border-slate-600 mb-4">
-                  <button data-tab="name" class="panel-tab-button flex-1 py-2 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition-colors" data-lang-key="nameStyleTitle">Guest Name</button>
-                  <button data-tab="qr" class="panel-tab-button flex-1 py-2 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition-colors" data-lang-key="qrStyleTitle">QR Code</button>
-                </div>
-
-                <div id="name-controls-content" class="panel-tab-content space-y-4">
+          <div class="space-y-4">
+              <div class="bg-slate-800/50 p-4 rounded-lg">
+                  <h3 class="font-bold text-lg text-gray-100 border-b border-white/10 mb-3 pb-2" data-lang-key="nameStyleTitle">Guest Name Customization</h3>
                   <div class="grid grid-cols-2 gap-4">
                       <div>
                         <label class="block text-sm font-medium text-gray-400" data-lang-key="fontColor">Font Color</label>
@@ -177,10 +171,10 @@
                           <div><label class="text-xs text-gray-400">Width</label><input type="range" id="stroke-width-slider" min="0" max="5" step="0.5" class="w-full"></div>
                       </div>
                   </div>
-                </div>
-
-                <div id="qr-controls-content" class="panel-tab-content hidden space-y-4">
-                   <div class="grid grid-cols-2 gap-4">
+              </div>
+              <div class="bg-slate-800/50 p-4 rounded-lg">
+                  <h3 class="font-bold text-lg text-gray-100 border-b border-white/10 mb-3 pb-2" data-lang-key="qrStyleTitle">QR Code Customization</h3>
+                  <div class="grid grid-cols-2 gap-4">
                       <div class="col-span-2"><label class="block text-sm font-medium text-gray-400" data-lang-key="qrSize">Size</label><input id="qr-size-slider" type="range" min="40" max="400" class="w-full h-2 bg-slate-700 rounded-lg cursor-pointer"></div>
                       <div>
                         <label class="text-sm text-gray-400">Modules</label>
@@ -202,9 +196,9 @@
                      
                       <div class="col-span-2 border-t border-white/10 pt-3"><label class="flex items-center"><input type="checkbox" id="show-party-size-toggle" class="h-4 w-4 rounded"><span class="ms-2 text-sm font-medium text-gray-300" data-lang-key="showPartySize">Show Party Size</span></label></div>
                   </div>
-                </div>
               </div>
-            </div>
+          </div>
+        </div>
         <button id="save-positions-button" class="mt-8 w-full btn-primary" data-lang-key="saveBtn">Save Design & Continue &rarr;</button>
       </div>
     </div>
@@ -267,9 +261,9 @@
     langSwitcher.addEventListener('click', () => setLanguage(currentLang === 'en' ? 'ar' : 'en'));
     
     const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
-    const DOMElements = { uploaderSection: document.getElementById('uploader-section'), editorSection: document.getElementById('editor-section'), imageUploader: document.getElementById('imageUploader'), imagePreview: document.getElementById('imagePreview'), uploadButton: document.getElementById('uploadButton'), uploadSpinner: document.getElementById('uploadSpinner'), imageDropArea: document.getElementById('image-drop-area'), editorImagePreview: document.getElementById('editor-image-preview'), positioningArea: document.getElementById('positioning-area'), namePlaceholder: document.getElementById('name-placeholder'), qrPlaceholder: document.getElementById('qr-placeholder'), qrPlaceholderImg: document.getElementById('qr-placeholder-img'), qrPartySizePreview: document.getElementById('qr-party-size-preview'), savePositionsButton: document.getElementById('save-positions-button'), notification: document.getElementById('notification'), eyedropperOverlay: document.getElementById('eyedropper-overlay'), magnifier: document.getElementById('magnifier'), eyedropperInstruction: document.getElementById('eyedropper-instruction'), sizeControls: document.getElementById('size-controls'), decreaseSizeBtn: document.getElementById('decrease-size-btn'), increaseSizeBtn: document.getElementById('increase-size-btn'), currentSizeLabel: document.getElementById('current-size-label'), uploaderInterface: document.getElementById('uploader-interface'), activeCardSection: document.getElementById('active-card-section'), activeCardPreview: document.getElementById('activeCardPreview'), editCardButton: document.getElementById('edit-card-button'), removeCardButton: document.getElementById('remove-card-button'), controlsPanel: document.getElementById('controls-panel'), panelTabs: document.getElementById('panel-tabs'), nameControlsContent: document.getElementById('name-controls-content'), qrControlsContent: document.getElementById('qr-controls-content') };
+    const DOMElements = { uploaderSection: document.getElementById('uploader-section'), editorSection: document.getElementById('editor-section'), imageUploader: document.getElementById('imageUploader'), imagePreview: document.getElementById('imagePreview'), uploadButton: document.getElementById('uploadButton'), uploadSpinner: document.getElementById('uploadSpinner'), imageDropArea: document.getElementById('image-drop-area'), editorImagePreview: document.getElementById('editor-image-preview'), positioningArea: document.getElementById('positioning-area'), namePlaceholder: document.getElementById('name-placeholder'), qrPlaceholder: document.getElementById('qr-placeholder'), qrPlaceholderImg: document.getElementById('qr-placeholder-img'), qrPartySizePreview: document.getElementById('qr-party-size-preview'), savePositionsButton: document.getElementById('save-positions-button'), notification: document.getElementById('notification'), eyedropperOverlay: document.getElementById('eyedropper-overlay'), magnifier: document.getElementById('magnifier'), eyedropperInstruction: document.getElementById('eyedropper-instruction'), sizeControls: document.getElementById('size-controls'), decreaseSizeBtn: document.getElementById('decrease-size-btn'), increaseSizeBtn: document.getElementById('increase-size-btn'), currentSizeLabel: document.getElementById('current-size-label'), uploaderInterface: document.getElementById('uploader-interface'), activeCardSection: document.getElementById('active-card-section'), activeCardPreview: document.getElementById('activeCardPreview'), editCardButton: document.getElementById('edit-card-button'), removeCardButton: document.getElementById('remove-card-button') };
     const controls = { color: document.getElementById('font-color-picker'), colorDisplay: document.getElementById('font-color-display'), colorEyedropper: document.getElementById('font-color-eyedropper'), family: document.getElementById('font-family-select'), size: document.getElementById('font-size-slider'), rotation: document.getElementById('font-rotation-slider'), bold: document.getElementById('font-bold-toggle'), italic: document.getElementById('font-italic-toggle'), shadow: document.getElementById('shadow-toggle'), shadowControls: document.getElementById('shadow-controls'), shadowColor: document.getElementById('shadow-color-picker'), shadowColorDisplay: document.getElementById('shadow-color-display'), shadowColorEyedropper: document.getElementById('shadow-color-eyedropper'), shadowBlur: document.getElementById('shadow-blur-slider'), shadowX: document.getElementById('shadow-offset-x-slider'), shadowY: document.getElementById('shadow-offset-y-slider'), stroke: document.getElementById('stroke-toggle'), strokeControls: document.getElementById('stroke-controls'), strokeColor: document.getElementById('stroke-color-picker'), strokeColorDisplay: document.getElementById('stroke-color-display'), strokeColorEyedropper: document.getElementById('stroke-color-eyedropper'), strokeWidth: document.getElementById('stroke-width-slider'), qrSize: document.getElementById('qr-size-slider'), qrColorDark: document.getElementById('qr-color-dark-picker'), qrColorDarkDisplay: document.getElementById('qr-color-dark-display'), qrColorDarkEyedropper: document.getElementById('qr-color-dark-eyedropper'), qrColorLight: document.getElementById('qr-color-light-picker'), qrColorLightDisplay: document.getElementById('qr-color-light-display'), qrColorLightEyedropper: document.getElementById('qr-color-light-eyedropper'), qrLogo: document.getElementById('qr-logo-uploader'), showPartySize: document.getElementById('show-party-size-toggle') };
-    let selectedFile = null, cardImageUrl = '', qrLogoUrl = '', selectedPlaceholder = null, isEditorReady = false;
+    let selectedFile = null, cardImageUrl = '', qrLogoUrl = '', selectedPlaceholder = null;
     const defaultSettings = { 
         name: { x: 20, y: 20, color: '#FFFFFF', family: "'Roboto', sans-serif", size: 40, rotation: 0, bold: false, italic: false, shadow: { enabled: false, color: '#000000', blur: 0, x: 0, y: 0 }, stroke: { enabled: false, color: '#000000', width: 1 } }, 
         qr: { x: 20, y: 80, size: 160, colorDark: '#000000', colorLight: '#FFFFFF', logoUrl: '', showPartySize: false } 
@@ -301,66 +295,15 @@
         }, 3000);
     };
     
-            { element: DOMElements.qrPlaceholder, settings: settings.qr }
-        ];
+    function makeDraggable(element, settingObj) { let active = false, initialX, initialY; const dragStart = (e) => { if (e.target === element || element.contains(e.target)) { toggleSizeControls(element); active = true; element.style.zIndex = 10; initialX = e.type === 'touchstart' ? e.touches[0].clientX - settingObj.x : e.clientX - settingObj.x; initialY = e.type === 'touchstart' ? e.touches[0].clientY - settingObj.y : e.clientY - settingObj.y; } }; const dragEnd = () => { active = false; element.style.zIndex = 1; }; const drag = (e) => { if (active) { e.preventDefault(); const currentX = e.type === 'touchmove' ? e.touches[0].clientX - initialX : e.clientX - initialX; const currentY = e.type === 'touchmove' ? e.touches[0].clientY - initialY : e.clientY - initialY; const parentRect = DOMElements.positioningArea.getBoundingClientRect(); const elemRect = element.getBoundingClientRect(); settingObj.x = Math.max(0, Math.min(currentX, parentRect.width - elemRect.width)); settingObj.y = Math.max(0, Math.min(currentY, parentRect.height - elemRect.height)); updatePlaceholders().then(() => { if (element === selectedPlaceholder) updateSizeControlsPosition(); }); } }; ['touchstart', 'mousedown'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragStart, false)); ['touchend', 'mouseup', 'mouseleave'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragEnd, false)); ['touchmove', 'mousemove'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, drag, false)); }
 
-        const dragStart = (e) => {
-            for (const draggable of draggables) {
-                if (e.target === draggable.element || draggable.element.contains(e.target)) {
-                    activeElement = draggable.element;
-                    settingObj = draggable.settings;
-                    toggleSizeControls(activeElement);
-                    activeElement.style.zIndex = 10;
-                    initialX = e.type === 'touchstart' ? e.touches[0].clientX - settingObj.x : e.clientX - settingObj.x;
-                    initialY = e.type === 'touchstart' ? e.touches[0].clientY - settingObj.y : e.clientY - settingObj.y;
-                    return;
-                }
-            }
-        };
-
-        const dragEnd = () => {
-            if (activeElement) {
-                activeElement.style.zIndex = 1;
-            }
-            activeElement = null;
-            settingObj = null;
-        };
-
-        const drag = (e) => {
-            if (activeElement) {
-                e.preventDefault();
-                const currentX = e.type === 'touchmove' ? e.touches[0].clientX - initialX : e.clientX - initialX;
-                const currentY = e.type === 'touchmove' ? e.touches[0].clientY - initialY : e.clientY - initialY;
-                const parentRect = DOMElements.positioningArea.getBoundingClientRect();
-                const elemRect = activeElement.getBoundingClientRect();
-                settingObj.x = Math.max(0, Math.min(currentX, parentRect.width - elemRect.width));
-                settingObj.y = Math.max(0, Math.min(currentY, parentRect.height - elemRect.height));
-                updatePlaceholders().then(() => {
-                    if (activeElement === selectedPlaceholder) updateSizeControlsPosition();
-                });
-            }
-        };
-
-        ['touchstart', 'mousedown'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragStart, false));
-        ['touchend', 'mouseup', 'mouseleave'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragEnd, false));
-        ['touchmove', 'mousemove'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, drag, false));
-        
-        editorInitialized = true;
+    function initializeEditorInteractivity() {
+        makeDraggable(DOMElements.namePlaceholder, settings.name);
+        makeDraggable(DOMElements.qrPlaceholder, settings.qr);
     }
     
     function updateSizeControlsPosition() { if (!selectedPlaceholder) return; const placeholderRect = selectedPlaceholder.getBoundingClientRect(); const areaRect = DOMElements.positioningArea.getBoundingClientRect(); let top = placeholderRect.top - areaRect.top - DOMElements.sizeControls.offsetHeight - 5; if (top < 5) { top = placeholderRect.bottom - areaRect.top + 5; } DOMElements.sizeControls.style.left = `${placeholderRect.left - areaRect.left + (placeholderRect.width / 2) - (DOMElements.sizeControls.offsetWidth / 2)}px`; DOMElements.sizeControls.style.top = `${top}px`; if (selectedPlaceholder.id === 'name-placeholder') { DOMElements.currentSizeLabel.textContent = settings.name.size; } else if (selectedPlaceholder.id === 'qr-placeholder') { DOMElements.currentSizeLabel.textContent = settings.qr.size; } }
-    function toggleSizeControls(element) { 
-    if (element) { 
-        selectedPlaceholder = element; 
-        DOMElements.sizeControls.classList.remove('hidden'); 
-        updateSizeControlsPosition(); 
-        showControlsPanel(element.id.includes('name') ? 'name' : 'qr');
-    } else { 
-        selectedPlaceholder = null; 
-        DOMElements.sizeControls.classList.add('hidden'); 
-        hideControlsPanel();
-    } 
-}
+    function toggleSizeControls(element) { if (selectedPlaceholder === element) { return; } if (element) { selectedPlaceholder = element; DOMElements.sizeControls.classList.remove('hidden'); updateSizeControlsPosition(); } else { selectedPlaceholder = null; DOMElements.sizeControls.classList.add('hidden'); } }
     function changeSize(delta) { if (!selectedPlaceholder) return; const step = selectedPlaceholder.id === 'name-placeholder' ? 2 : 5; if (selectedPlaceholder.id === 'name-placeholder') { let newSize = parseInt(settings.name.size) + (delta * step); newSize = Math.max(8, Math.min(100, newSize)); settings.name.size = newSize; controls.size.value = newSize; } else if (selectedPlaceholder.id === 'qr-placeholder') { let newSize = parseInt(settings.qr.size) + (delta * step); newSize = Math.max(40, Math.min(400, newSize)); settings.qr.size = newSize; controls.qrSize.value = newSize; } updatePlaceholders().then(() => { updateSizeControlsPosition(); }); }
 
     const updatePlaceholders = async () => { const s = settings.name; const np = DOMElements.namePlaceholder; np.style.color = s.color; np.style.fontFamily = s.family; np.style.fontSize = `${s.size}px`; np.style.fontWeight = s.bold ? 'bold' : 'normal'; np.style.fontStyle = s.italic ? 'italic' : 'normal'; np.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) rotate(${s.rotation}deg)`; np.style.textShadow = s.shadow.enabled ? `${s.shadow.x}px ${s.shadow.y}px ${s.shadow.blur}px ${s.shadow.color}` : 'none'; np.style.webkitTextStroke = s.stroke.enabled ? `${s.stroke.width}px ${s.stroke.color}` : 'unset'; const q = settings.qr; const qp = DOMElements.qrPlaceholder; qp.style.width = `${q.size}px`; qp.style.height = `${q.size}px`; qp.style.transform = `translate3d(${q.x}px, ${q.y}px, 0)`; const qrDataUrl = await QRCode.toDataURL('PREVIEW', { width: 400, margin: 1, errorCorrectionLevel: 'H', color: { dark: q.colorDark, light: q.colorLight } }); DOMElements.qrPlaceholderImg.src = qrDataUrl; const psp = DOMElements.qrPartySizePreview; psp.style.display = q.showPartySize ? 'flex' : 'none'; if (q.showPartySize) { const fontSize = q.size * 0.18; psp.style.fontSize = `${fontSize}px`; psp.style.bottom = '100%'; psp.style.left = '50%'; psp.style.transform = 'translateX(-50%)'; psp.style.marginBottom = `${fontSize * 0.3}px`; psp.style.color = 'black'; psp.style.textShadow = '0px 0px 4px white, 0px 0px 2px white'; } };
@@ -412,7 +355,7 @@
         }
     }
 
-EventListeners = () => {
+    const setupEventListeners = () => {
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, evt => { evt.preventDefault(); evt.stopPropagation(); }, false));
         ['dragenter', 'dragover'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.add('dragover'), false));
         ['dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.remove('dragover'), false));
@@ -427,17 +370,16 @@ EventListeners = () => {
             DOMElements.uploadButton.disabled = true;
             DOMElements.uploadSpinner.classList.remove('hidden');
 
+            await uploadAndSetUrl(selectedFile, async (url) => {
                 cardImageUrl = url;
                 showNotification('uploadSuccess', 'green');
-                
-                const image = DOMElements.editorImagePreview;
-                image.src = cardImageUrl;
-
-                const onImageReady = async () => {
-                    await resetAndCenterPlaceholders();
-                    DOMElements.uploaderSection.classList.add('hidden');
-                    DOMElements.editorSection.classList.remove('hidden');
-                    DOMElements.uploadSpinner.classList.add('hidden');
+                DOMElements.editorImagePreview.src = cardImageUrl;
+                await resetAndCenterPlaceholders();
+                DOMElements.uploaderSection.classList.add('hidden');
+                DOMElements.editorSection.classList.remove('hidden');
+                DOMElements.uploadSpinner.classList.add('hidden');
+                initializeEditorInteractivity();
+            });
         });
 
         for (const key in controls) { const el = controls[key]; if (el && (el.type === 'checkbox' || el.type === 'range' || el.tagName === 'SELECT' || el.type === 'hidden')) el.addEventListener('input', updateSettings); }
@@ -448,48 +390,15 @@ EventListeners = () => {
         controls.qrColorDarkEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorDark));
         controls.qrColorLightEyedropper.addEventListener('click', () => startEyedropper(controls.qrColorLight));
         controls.qrLogo.addEventListener('change', e => {if (e.target.files[0]) uploadAndSetUrl(e.target.files[0], url => { settings.qr.logoUrl = url; updatePlaceholders(); })});
-
-        DOMElements.positioningArea.addEventListener('mousedown', (e) => { 
-            if (e.target === DOMElements.positioningArea || e.target === DOMElements.editorImagePreview) { 
-                toggleSizeControls(null); 
-            } 
-        });
-        
-
-        DOMElements.panelTabs.addEventListener('click', (e) => {
-            if (e.target.classList.contains('panel-tab-button')) {
-                const tab = e.target.dataset.tab;
-                switchTab(tab);
-            }
-        });
-
-        function switchTab(tab) {
-            document.querySelectorAll('.panel-tab-button').forEach(btn => {
-                btn.classList.remove('text-white', 'border-indigo-400');
-                btn.classList.add('text-slate-400', 'border-transparent');
-            });
-            document.querySelector(`.panel-tab-button[data-tab="${tab}"]`).classList.add('text-white', 'border-indigo-400');
-
-            document.querySelectorAll('.panel-tab-content').forEach(content => content.classList.add('hidden'));
-            document.getElementById(`${tab}-controls-content`).classList.remove('hidden');
-        }
-
-        function showControlsPanel(activeTab) {
-            DOMElements.positioningArea.classList.remove('lg:col-span-3');
-            DOMElements.positioningArea.classList.add('lg:col-span-2');
-            DOMElements.controlsPanel.classList.remove('hidden');
-            switchTab(activeTab);
-        }
-
-        function hideControlsPanel() {
-            DOMElements.positioningArea.classList.remove('lg:col-span-2');
-            DOMElements.positioningArea.classList.add('lg:col-span-3');
-            DOMElements.controlsPanel.classList.add('hidden');
-        }
+        DOMElements.positioningArea.addEventListener('mousedown', (e) => { if (e.target === DOMElements.positioningArea) toggleSizeControls(null); });
         DOMElements.sizeControls.addEventListener('mousedown', e => e.stopPropagation());
         DOMElements.increaseSizeBtn.addEventListener('click', () => changeSize(1));
         DOMElements.decreaseSizeBtn.addEventListener('click', () => changeSize(-1));
-        activity);
+        DOMElements.editCardButton.addEventListener('click', async () => {
+            DOMElements.uploaderSection.classList.add('hidden');
+            DOMElements.editorSection.classList.remove('hidden');
+            await resetAndCenterPlaceholders();
+            initializeEditorInteractivity();
         });
         DOMElements.removeCardButton.addEventListener('click', removeAndResetDesign);
     };
@@ -640,7 +549,7 @@ EventListeners = () => {
         isEyedropperActive = false;
     }
 
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
     });
 </script>
