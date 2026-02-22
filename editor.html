@@ -269,7 +269,7 @@
     const IMGBB_API_KEY = '97c60166127ae9258012f463e09b1e2d';
     const DOMElements = { uploaderSection: document.getElementById('uploader-section'), editorSection: document.getElementById('editor-section'), imageUploader: document.getElementById('imageUploader'), imagePreview: document.getElementById('imagePreview'), uploadButton: document.getElementById('uploadButton'), uploadSpinner: document.getElementById('uploadSpinner'), imageDropArea: document.getElementById('image-drop-area'), editorImagePreview: document.getElementById('editor-image-preview'), positioningArea: document.getElementById('positioning-area'), namePlaceholder: document.getElementById('name-placeholder'), qrPlaceholder: document.getElementById('qr-placeholder'), qrPlaceholderImg: document.getElementById('qr-placeholder-img'), qrPartySizePreview: document.getElementById('qr-party-size-preview'), savePositionsButton: document.getElementById('save-positions-button'), notification: document.getElementById('notification'), eyedropperOverlay: document.getElementById('eyedropper-overlay'), magnifier: document.getElementById('magnifier'), eyedropperInstruction: document.getElementById('eyedropper-instruction'), sizeControls: document.getElementById('size-controls'), decreaseSizeBtn: document.getElementById('decrease-size-btn'), increaseSizeBtn: document.getElementById('increase-size-btn'), currentSizeLabel: document.getElementById('current-size-label'), uploaderInterface: document.getElementById('uploader-interface'), activeCardSection: document.getElementById('active-card-section'), activeCardPreview: document.getElementById('activeCardPreview'), editCardButton: document.getElementById('edit-card-button'), removeCardButton: document.getElementById('remove-card-button'), controlsPanel: document.getElementById('controls-panel'), panelTabs: document.getElementById('panel-tabs'), nameControlsContent: document.getElementById('name-controls-content'), qrControlsContent: document.getElementById('qr-controls-content') };
     const controls = { color: document.getElementById('font-color-picker'), colorDisplay: document.getElementById('font-color-display'), colorEyedropper: document.getElementById('font-color-eyedropper'), family: document.getElementById('font-family-select'), size: document.getElementById('font-size-slider'), rotation: document.getElementById('font-rotation-slider'), bold: document.getElementById('font-bold-toggle'), italic: document.getElementById('font-italic-toggle'), shadow: document.getElementById('shadow-toggle'), shadowControls: document.getElementById('shadow-controls'), shadowColor: document.getElementById('shadow-color-picker'), shadowColorDisplay: document.getElementById('shadow-color-display'), shadowColorEyedropper: document.getElementById('shadow-color-eyedropper'), shadowBlur: document.getElementById('shadow-blur-slider'), shadowX: document.getElementById('shadow-offset-x-slider'), shadowY: document.getElementById('shadow-offset-y-slider'), stroke: document.getElementById('stroke-toggle'), strokeControls: document.getElementById('stroke-controls'), strokeColor: document.getElementById('stroke-color-picker'), strokeColorDisplay: document.getElementById('stroke-color-display'), strokeColorEyedropper: document.getElementById('stroke-color-eyedropper'), strokeWidth: document.getElementById('stroke-width-slider'), qrSize: document.getElementById('qr-size-slider'), qrColorDark: document.getElementById('qr-color-dark-picker'), qrColorDarkDisplay: document.getElementById('qr-color-dark-display'), qrColorDarkEyedropper: document.getElementById('qr-color-dark-eyedropper'), qrColorLight: document.getElementById('qr-color-light-picker'), qrColorLightDisplay: document.getElementById('qr-color-light-display'), qrColorLightEyedropper: document.getElementById('qr-color-light-eyedropper'), qrLogo: document.getElementById('qr-logo-uploader'), showPartySize: document.getElementById('show-party-size-toggle') };
-    let selectedFile = null, cardImageUrl = '', qrLogoUrl = '', selectedPlaceholder = null, editorInitialized = false;
+    let selectedFile = null, cardImageUrl = '', qrLogoUrl = '', selectedPlaceholder = null, isEditorReady = false;
     const defaultSettings = { 
         name: { x: 20, y: 20, color: '#FFFFFF', family: "'Roboto', sans-serif", size: 40, rotation: 0, bold: false, italic: false, shadow: { enabled: false, color: '#000000', blur: 0, x: 0, y: 0 }, stroke: { enabled: false, color: '#000000', width: 1 } }, 
         qr: { x: 20, y: 80, size: 160, colorDark: '#000000', colorLight: '#FFFFFF', logoUrl: '', showPartySize: false } 
@@ -301,12 +301,50 @@
         }, 3000);
     };
     
-    function makeDraggable(element, settingObj) { let active = false, initialX, initialY; const dragStart = (e) => { if (e.target === element || element.contains(e.target)) { toggleSizeControls(element); active = true; element.style.zIndex = 10; initialX = e.type === 'touchstart' ? e.touches[0].clientX - settingObj.x : e.clientX - settingObj.x; initialY = e.type === 'touchstart' ? e.touches[0].clientY - settingObj.y : e.clientY - settingObj.y; } }; const dragEnd = () => { active = false; element.style.zIndex = 1; }; const drag = (e) => { if (active) { e.preventDefault(); const currentX = e.type === 'touchmove' ? e.touches[0].clientX - initialX : e.clientX - initialX; const currentY = e.type === 'touchmove' ? e.touches[0].clientY - initialY : e.clientY - initialY; const parentRect = DOMElements.positioningArea.getBoundingClientRect(); const elemRect = element.getBoundingClientRect(); settingObj.x = Math.max(0, Math.min(currentX, parentRect.width - elemRect.width)); settingObj.y = Math.max(0, Math.min(currentY, parentRect.height - elemRect.height)); updatePlaceholders().then(() => { if (element === selectedPlaceholder) updateSizeControlsPosition(); }); } }; ['touchstart', 'mousedown'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragStart, false)); ['touchend', 'mouseup', 'mouseleave'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragEnd, false)); ['touchmove', 'mousemove'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, drag, false)); }
+            { element: DOMElements.qrPlaceholder, settings: settings.qr }
+        ];
 
-    function initializeEditorInteractivity() {
-        if (editorInitialized) return;
-        makeDraggable(DOMElements.namePlaceholder, settings.name);
-        makeDraggable(DOMElements.qrPlaceholder, settings.qr);
+        const dragStart = (e) => {
+            for (const draggable of draggables) {
+                if (e.target === draggable.element || draggable.element.contains(e.target)) {
+                    activeElement = draggable.element;
+                    settingObj = draggable.settings;
+                    toggleSizeControls(activeElement);
+                    activeElement.style.zIndex = 10;
+                    initialX = e.type === 'touchstart' ? e.touches[0].clientX - settingObj.x : e.clientX - settingObj.x;
+                    initialY = e.type === 'touchstart' ? e.touches[0].clientY - settingObj.y : e.clientY - settingObj.y;
+                    return;
+                }
+            }
+        };
+
+        const dragEnd = () => {
+            if (activeElement) {
+                activeElement.style.zIndex = 1;
+            }
+            activeElement = null;
+            settingObj = null;
+        };
+
+        const drag = (e) => {
+            if (activeElement) {
+                e.preventDefault();
+                const currentX = e.type === 'touchmove' ? e.touches[0].clientX - initialX : e.clientX - initialX;
+                const currentY = e.type === 'touchmove' ? e.touches[0].clientY - initialY : e.clientY - initialY;
+                const parentRect = DOMElements.positioningArea.getBoundingClientRect();
+                const elemRect = activeElement.getBoundingClientRect();
+                settingObj.x = Math.max(0, Math.min(currentX, parentRect.width - elemRect.width));
+                settingObj.y = Math.max(0, Math.min(currentY, parentRect.height - elemRect.height));
+                updatePlaceholders().then(() => {
+                    if (activeElement === selectedPlaceholder) updateSizeControlsPosition();
+                });
+            }
+        };
+
+        ['touchstart', 'mousedown'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragStart, false));
+        ['touchend', 'mouseup', 'mouseleave'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, dragEnd, false));
+        ['touchmove', 'mousemove'].forEach(evt => DOMElements.positioningArea.addEventListener(evt, drag, false));
+        
         editorInitialized = true;
     }
     
@@ -374,7 +412,7 @@
         }
     }
 
-    const setupEventListeners = () => {
+EventListeners = () => {
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, evt => { evt.preventDefault(); evt.stopPropagation(); }, false));
         ['dragenter', 'dragover'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.add('dragover'), false));
         ['dragleave', 'drop'].forEach(e => DOMElements.imageDropArea.addEventListener(e, () => DOMElements.imageDropArea.classList.remove('dragover'), false));
@@ -389,16 +427,17 @@
             DOMElements.uploadButton.disabled = true;
             DOMElements.uploadSpinner.classList.remove('hidden');
 
-            await uploadAndSetUrl(selectedFile, async (url) => {
                 cardImageUrl = url;
                 showNotification('uploadSuccess', 'green');
-                DOMElements.editorImagePreview.src = cardImageUrl;
-                await resetAndCenterPlaceholders();
-                DOMElements.uploaderSection.classList.add('hidden');
-                DOMElements.editorSection.classList.remove('hidden');
-                DOMElements.uploadSpinner.classList.add('hidden');
-                initializeEditorInteractivity();
-            });
+                
+                const image = DOMElements.editorImagePreview;
+                image.src = cardImageUrl;
+
+                const onImageReady = async () => {
+                    await resetAndCenterPlaceholders();
+                    DOMElements.uploaderSection.classList.add('hidden');
+                    DOMElements.editorSection.classList.remove('hidden');
+                    DOMElements.uploadSpinner.classList.add('hidden');
         });
 
         for (const key in controls) { const el = controls[key]; if (el && (el.type === 'checkbox' || el.type === 'range' || el.tagName === 'SELECT' || el.type === 'hidden')) el.addEventListener('input', updateSettings); }
@@ -450,11 +489,7 @@
         DOMElements.sizeControls.addEventListener('mousedown', e => e.stopPropagation());
         DOMElements.increaseSizeBtn.addEventListener('click', () => changeSize(1));
         DOMElements.decreaseSizeBtn.addEventListener('click', () => changeSize(-1));
-                DOMElements.editCardButton.addEventListener('click', async () => {
-            DOMElements.uploaderSection.classList.add('hidden');
-            DOMElements.editorSection.classList.remove('hidden');
-            await updatePlaceholders();
-            initializeEditorInteractivity();
+        activity);
         });
         DOMElements.removeCardButton.addEventListener('click', removeAndResetDesign);
     };
@@ -607,7 +642,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
         setupEventListeners();
-        initializeEditorInteractivity();
     });
 </script>
 </body>
